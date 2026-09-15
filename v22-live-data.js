@@ -1,0 +1,1 @@
+window.EFGCLiveData={enabled:true,source:'Supabase RLS'};
