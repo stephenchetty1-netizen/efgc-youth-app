@@ -1,0 +1,1 @@
+window.EFGCPhotoSecurity={bucket:'member-photos',maxBytes:5242880,allowed:['image/jpeg','image/png','image/webp'],private:true};
