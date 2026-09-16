@@ -14,7 +14,10 @@
     });
     const hero = $('.hero');
     if(hero){
-      hero.style.backgroundImage = `url("${heroAsset}")`;
+      hero.style.backgroundImage = 'linear-gradient(90deg,rgba(1,19,48,.88),rgba(1,19,48,.16)),url("assets/v49-sunrise.webp")';
+      const home = $('#home');
+      const heading = home?.querySelector('.v49-heading');
+      if(home && heading && hero.parentElement !== home) heading.after(hero);
       hero.setAttribute('aria-label','You are a light — Matthew 5:16');
       hero.classList.add('mockup-hero');
     }
@@ -30,9 +33,9 @@
     welcome.innerHTML = `
       <div class="mock-welcome-glow"></div>
       <img src="${logoAsset}" class="mock-welcome-logo" alt="Emmanuel Full Gospel Church logo">
-      <div class="mock-youth-word">YOUTH</div>
+      <div class="mock-youth-word">YOUTH<span>.</span></div>
       <div class="mock-tagline">BUILD <span>•</span> BELONG <span>•</span> BE A LIGHT</div>
-      <blockquote>“Let your light shine before men...”<small>Matthew 5:16 (KJV)</small></blockquote>
+      <h1 class="v49-welcome-title">Your faith.<br>Your people.<br>Your <em>purpose.</em></h1>
       <div class="mock-welcome-actions">
         <button id="mockLoginButton" class="mock-primary" type="button">Login</button>
         <button id="mockCreateButton" class="mock-secondary" type="button">Create Account</button>
@@ -40,11 +43,15 @@
       <div class="mock-generation">A GENERATION FOR HIS GLORY</div>`;
     login.insertBefore(welcome, card);
     card.classList.add('mock-login-card','mock-login-hidden');
+    const back = document.createElement('button');
+    back.type='button'; back.className='v49-back'; back.textContent='← Welcome';
+    back.addEventListener('click',()=>{card.classList.add('mock-login-hidden');welcome.classList.remove('hidden');$('#mockLoginButton')?.focus();});
+    card.prepend(back);
     const openLogin = (role='youth') => {
       welcome.classList.add('hidden');
       card.classList.remove('mock-login-hidden');
       try { selectRole(role); } catch {}
-      card.scrollIntoView({behavior:'smooth',block:'start'});
+      card.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
     };
     $('#mockLoginButton')?.addEventListener('click',()=>openLogin('youth'));
     $('#mockCreateButton')?.addEventListener('click',()=>openLogin('youth'));
