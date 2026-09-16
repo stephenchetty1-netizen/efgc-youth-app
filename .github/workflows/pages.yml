@@ -39,17 +39,22 @@ jobs:
           node --check v43-ministry-tools.js
           node --check v44-updates.js
           node --check v45-theme.js
+          node --check v46-genz.js
+          node --check v46-media.js
           test -f index.html
           test -f manifest.webmanifest
           test -f v43.css
           test -f v44.css
           test -f v45-theme.css
+          test -f v46-genz.css
+          test -f v46-genz-extra.css
+          test -f v46-media.css
           test -f assets/efgc-logo-reference.webp
           test -f assets/efgc-home-hero.webp
-          for asset in backend-adapter.js auth-adapter.js app.js v22-live-data.js v23-photo-security.js v36-password-recovery.js v21-auth-ui.js v43-ministry-tools.js v44-updates.js v45-theme.js v43.css v44.css v45-theme.css assets/efgc-logo-reference.webp; do
+          for asset in backend-adapter.js auth-adapter.js app.js v22-live-data.js v23-photo-security.js v36-password-recovery.js v21-auth-ui.js v43-ministry-tools.js v44-updates.js v45-theme.js v46-genz.js v46-media.js v43.css v44.css v45-theme.css v46-genz.css v46-genz-extra.css v46-media.css assets/efgc-logo-reference.webp; do
             grep -q "$asset" index.html || { echo "Missing reference to $asset"; exit 1; }
           done
-          grep -q 'assets/efgc-home-hero.webp' v45-theme.js
+          grep -q 'assets/efgc-home-hero.webp' v46-genz.js
           grep -q 'id="forgotPasswordButton"' index.html
           grep -q 'id="plannerMenu"' index.html
           grep -q 'id="attendanceMenu"' index.html
@@ -61,8 +66,9 @@ jobs:
           grep -q 'adminEventImage' v44-updates.js
           grep -q 'saveOwnLeaderProfile' v44-updates.js
           grep -q 'mock-welcome' v45-theme.js
-          grep -q 'mock-dashboard' v45-theme.css
-          grep -q 'mock-attendance' v45-theme.css
+          grep -q 'v46-welcome-bar' v46-genz-extra.css
+          grep -q 'optimizeImage' v46-media.js
+          grep -q 'v46-hero' v46-genz.css
           if grep -q 'onclick="requestAdminPasswordReset' index.html; then
             echo "Admin recovery must have exactly one JavaScript binding to avoid duplicate reset emails."
             exit 1
@@ -81,7 +87,9 @@ jobs:
           trap 'kill $server_pid || true' EXIT
           sleep 2
           curl --fail --silent --show-error http://127.0.0.1:8080/index.html | grep -q 'EFGC YOUTH'
-          curl --fail --silent --show-error http://127.0.0.1:8080/v45-theme.js | grep -q 'mockup-driven'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v46-genz.js | grep -q 'image quality'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v46-media.js | grep -q 'high-quality image processing'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v46-genz.css | grep -q 'Gen Z visual polish'
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo-reference.webp >/dev/null
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-home-hero.webp >/dev/null
           curl --fail --silent --show-error http://127.0.0.1:8080/v36-password-recovery.js | grep -q 'requestAdminPasswordReset'
