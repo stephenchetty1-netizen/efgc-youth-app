@@ -1,0 +1,80 @@
+name: Validate and deploy EFGC Youth App
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "efgc-youth-pages"
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Validate JavaScript and app shell
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check app.js
+          node --check auth-adapter.js
+          node --check v21-auth-ui.js
+          node --check v22-live-data.js
+          node --check v23-photo-security.js
+          node --check v31-attendance-ui.js
+          test -f index.html
+          test -f manifest.webmanifest
+          for asset in backend-adapter.js auth-adapter.js app.js v22-live-data.js v23-photo-security.js v31-attendance-ui.js v21-auth-ui.js; do
+            grep -q "$asset" index.html
+          done
+          if grep -R -E 'service_role|sb_secret_' --include='*.js' --include='*.html' .; then
+            echo "Secret/service-role material must never be shipped to the browser."
+            exit 1
+          fi
+
+      - name: Smoke-test static site
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8080 >/tmp/efgc-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid || true' EXIT
+          sleep 2
+          curl --fail --silent --show-error http://127.0.0.1:8080/index.html | grep -q 'EFGC YOUTH'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v31-attendance-ui.js >/dev/null
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: "."
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
