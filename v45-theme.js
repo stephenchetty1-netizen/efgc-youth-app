@@ -1,7 +1,7 @@
 /** EFGC Youth v45 — mockup-driven mobile theme using the user's supplied reference artwork. */
 (() => {
   const $ = (s) => document.querySelector(s);
-  const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+  const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const logoAsset = 'assets/efgc-logo-reference.webp?v=45';
   const heroAsset = 'assets/efgc-home-hero.webp?v=45';
 
@@ -74,14 +74,7 @@
     if(!s) return [];
     const staff = s.role==='admin' || (s.role==='leader' && s.approval_status==='approved');
     if(s.role==='admin') return [
-      ['Manage Events','calendar','admin','adminEventTitle'],
-      ['Record Attendance','users','attendanceAdmin'],
-      ['Youth Register','list','admin','adminPanel'],
-      ['Safeguarding Contacts','shield','admin','adminPanel'],
-      ['Leader Management','users','leaders'],
-      ['Duty Roster','calendar','plannerRoster'],
-      ['Feedback','chat','news'],
-      ['Settings','gear','security']
+      ['Manage Events','calendar','admin','adminEventTitle'],['Record Attendance','users','attendanceAdmin'],['Youth Register','list','admin','adminPanel'],['Safeguarding Contacts','shield','admin','adminPanel'],['Leader Management','users','leaders'],['Duty Roster','calendar','plannerRoster'],['Feedback','chat','news'],['Settings','gear','security']
     ];
     if(staff) return [
       ['News Feed','news','news'],['Events','calendar','events'],['Duty Roster','users','plannerRoster'],['Daily Scripture','book','scripture'],['Leaders','users','leaders'],['Profile','profile','profile'],['Feedback','chat','news'],['Contact','phone','leaders']
@@ -108,7 +101,6 @@
   function syncThemeShell(){
     const signed=Boolean(activeSession()?.uid);
     $('#mockWelcome')?.classList.toggle('hidden', signed);
-    $('.mock-login-card')?.classList.toggle('mock-login-hidden', signed || !$('#mockWelcome')?.classList.contains('hidden'));
     $('#mockBottomNav')?.classList.toggle('hidden', !signed);
     document.body.classList.toggle('mock-authenticated',signed);
     ensureHomeDashboard();
@@ -137,8 +129,8 @@
   function filterEventCards(){
     const host=$('#eventList'); if(!host)return;
     const view=host.dataset.view||'upcoming'; const now=Date.now();
-    host.querySelectorAll('.event-card').forEach(card=>{
-      const raw=card.dataset.eventDate; const t=raw?new Date(raw).getTime():NaN;
+    host.querySelectorAll('.event-card[data-event-date]').forEach(card=>{
+      const t=new Date(card.dataset.eventDate).getTime();
       card.classList.toggle('hidden',Number.isFinite(t) && (view==='upcoming'?t<now:t>=now));
     });
   }
@@ -152,18 +144,13 @@
     dash.innerHTML=`<div class="mock-admin-title"><h2>Admin Centre</h2><span>${icon('gear')}</span></div><div class="mock-admin-grid">${tiles.map(([label,ico,tab,anchor])=>`<button type="button" data-mock-tab="${tab}" ${anchor?`data-mock-anchor="${anchor}"`:''}>${icon(ico)}<strong>${label}</strong></button>`).join('')}</div>`;
   }
 
-  function restyleLeaderCards(){
-    document.querySelectorAll('#leaderList .leader-directory-card').forEach(card=>card.classList.add('mock-leader-row'));
-  }
-
-  function restyleEventCards(){
+  function restyleLeaderCards(){ document.querySelectorAll('#leaderList .leader-directory-card').forEach(card=>card.classList.add('mock-leader-row')); }
+  async function restyleEventCards(){
     const cards=[...document.querySelectorAll('#eventList .event-card')];
-    cards.forEach(card=>{
-      if(card.dataset.eventDate) return;
-      const kicker=card.querySelector('.module-kicker')?.textContent||'';
-      card.dataset.eventDate = card.dataset.eventDate || '';
-      card.classList.add('mock-event-row');
-    });
+    try{
+      const events=await EFGCLive.events();
+      cards.forEach((card,i)=>{ card.classList.add('mock-event-row'); if(events[i]?.event_date) card.dataset.eventDate=events[i].event_date; });
+    }catch{ cards.forEach(card=>card.classList.add('mock-event-row')); }
     filterEventCards();
   }
 
@@ -175,28 +162,23 @@
   }
 
   document.addEventListener('click',e=>{
-    const b=e.target.closest('[data-mock-tab]'); if(!b) return;
-    gotoTab(b.dataset.mockTab,b.dataset.mockAnchor||'');
+    const b=e.target.closest('[data-mock-tab]');
+    if(b) gotoTab(b.dataset.mockTab,b.dataset.mockAnchor||'');
+    if(e.target.closest('.userbar button')) setTimeout(syncThemeShell,250);
   });
-
-  const originalShowTab=window.showTab;
-  if(typeof originalShowTab==='function'){
-    window.showTab=function(id){ originalShowTab(id); document.querySelectorAll('#mockBottomNav button').forEach(b=>b.classList.toggle('active',b.dataset.mockTab===id)); };
-  }
 
   const previousRenderLive=window.renderLiveData;
   if(typeof previousRenderLive==='function'){
     window.renderLiveData=async function(){
       await previousRenderLive();
       ensureHomeDashboard(); ensureAdminDashboard(); enhanceEventsTabs();
-      await renderAttendanceMock(); restyleLeaderCards(); restyleEventCards();
-      syncThemeShell();
+      await renderAttendanceMock(); restyleLeaderCards(); await restyleEventCards(); syncThemeShell();
     };
   }
 
   document.addEventListener('DOMContentLoaded',()=>{
     applyBrandAssets(); ensureWelcome(); ensureBottomNav(); enhanceEventsTabs(); syncThemeShell();
-    setTimeout(()=>{ applyBrandAssets(); syncThemeShell(); restyleLeaderCards(); restyleEventCards(); },400);
+    setTimeout(async()=>{ applyBrandAssets(); syncThemeShell(); restyleLeaderCards(); await restyleEventCards(); },400);
   });
   setTimeout(()=>{ applyBrandAssets(); ensureWelcome(); ensureBottomNav(); syncThemeShell(); },900);
 })();
