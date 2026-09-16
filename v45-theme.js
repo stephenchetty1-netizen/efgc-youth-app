@@ -2,7 +2,7 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const logoAsset = 'assets/efgc-logo-reference.webp?v=45';
+  const logoAsset = 'assets/efgc-logo-reference.webp?v=49.1';
   const heroAsset = 'assets/efgc-home-hero.webp?v=45';
 
   function activeSession(){ try { return session || null; } catch { return null; } }
@@ -14,7 +14,7 @@
     });
     const hero = $('.hero');
     if(hero){
-      hero.style.backgroundImage = 'linear-gradient(90deg,rgba(1,19,48,.88),rgba(1,19,48,.16)),url("assets/v49-sunrise.webp")';
+      hero.style.backgroundImage = 'linear-gradient(90deg,rgba(1,19,48,.88),rgba(1,19,48,.16)),url("assets/v49-youth-fellowship.webp")';
       const home = $('#home');
       const heading = home?.querySelector('.v49-heading');
       if(home && heading && hero.parentElement !== home) heading.after(hero);

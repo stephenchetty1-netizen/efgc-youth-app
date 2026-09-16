@@ -46,6 +46,7 @@ jobs:
           test -f v45-theme.css
           test -f v49-vibrant.css
           test -f assets/v49-sunrise.webp
+          test -f assets/v49-youth-fellowship.webp
           test -f assets/efgc-logo-reference.webp
           test -f assets/efgc-home-hero.webp
           for asset in backend-adapter.js auth-adapter.js app.js v22-live-data.js v23-photo-security.js v36-password-recovery.js v21-auth-ui.js v43-ministry-tools.js v44-updates.js v45-theme.js v43.css v44.css v45-theme.css assets/efgc-logo-reference.webp; do
