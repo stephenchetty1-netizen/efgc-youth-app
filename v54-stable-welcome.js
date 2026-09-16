@@ -1,7 +1,7 @@
-/** V58 — single-source EFGC Youth welcome screen and approved-logo enforcement. */
+/** V59 — single-source EFGC Youth welcome screen and correct official-logo enforcement. */
 (() => {
   const $ = (s) => document.querySelector(s);
-  const OFFICIAL_LOGO = 'assets/efgc-logo-reference.webp?v=58.0';
+  const OFFICIAL_LOGO = 'assets/efgc-logo.svg?v=59.0';
 
   function currentSession() { try { return typeof session !== 'undefined' ? session : null; } catch { return null; } }
   function fixBrandLogos() {
@@ -23,7 +23,7 @@
   function buildWelcome() {
     fixBrandLogos(); const login = $('#login'), card = $('#login .login-card'); if (!login || !card) return false;
     let welcome = $('#mockWelcome'); if (!welcome) { welcome = document.createElement('div'); welcome.id = 'mockWelcome'; login.insertBefore(welcome, card); }
-    welcome.className = 'v57-welcome'; welcome.dataset.v58 = '1';
+    welcome.className = 'v57-welcome'; welcome.dataset.v59 = '1';
     welcome.innerHTML = `
       <div class="v57-bg" aria-hidden="true"></div>
       <div class="v57-content">
