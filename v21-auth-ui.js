@@ -1,4 +1,4 @@
-/** EFGC Youth v35 — Admin password sign-in + email verification for Youth/Leader. */
+/** EFGC Youth v42 — Admin password sign-in + email verification for Youth/Leader. */
 (() => {
   let pending = null;
   const $ = (s) => document.querySelector(s);
@@ -34,6 +34,10 @@
   }
 
   async function finishExistingProfile(profile, authUser) {
+    if (window.EFGCPasswordRecovery?.isActive?.()) {
+      window.EFGCPasswordRecovery.showForm?.();
+      return;
+    }
     session = sessionFromProfile(profile, authUser);
     localStorage.setItem('efgcYouthSession', JSON.stringify(session));
     localStorage.removeItem('efgcPendingRole');
@@ -62,7 +66,7 @@
 
     const r = await fetch(`${c.url}/auth/v1/token?grant_type=password`, {
       method: 'POST',
-      headers: { apikey: c.publishableKey, 'Content-Type': 'application/json' },
+      headers: { apikey: c.publishableKey, 'Content-Type':'application/json' },
       body: JSON.stringify({ email: d.email.trim().toLowerCase(), password: d.password }),
     });
     const data = await r.json().catch(() => ({}));
@@ -124,6 +128,10 @@
       syncRoleUi();
       const a = await EFGCAuth.restoreCallback();
       if (!a?.access_token) return;
+      if (window.EFGCPasswordRecovery?.isActive?.()) {
+        window.EFGCPasswordRecovery.showForm?.();
+        return;
+      }
       const p = await EFGCAuth.getMyProfile();
       if (p) return finishExistingProfile(p, a.user);
       msg('Email verified. Complete the profile form below, then press Continue to finish registration.');
