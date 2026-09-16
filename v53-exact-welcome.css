@@ -1,15 +1,1 @@
-/* V53 — use the approved artwork itself as the welcome screen. */
-body:not(.mock-authenticated){margin:0!important;padding:0!important;background:#00142e!important;min-height:100dvh!important;overflow-x:hidden!important}
-body:not(.mock-authenticated)>header,body:not(.mock-authenticated)>footer{display:none!important}
-body:not(.mock-authenticated) main,body:not(.mock-authenticated) #login{width:100%!important;max-width:none!important;min-height:100dvh!important;margin:0!important;padding:0!important}
-#mockWelcome.v53-exact-welcome{position:relative!important;display:block!important;width:100%!important;height:100dvh!important;min-height:100dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#00142e!important}
-#mockWelcome.v53-exact-welcome.hidden{display:none!important}
-.v53-artboard{position:relative;width:100%;height:100%;overflow:hidden;background:#00142e}
-.v53-art{position:absolute;inset:0;width:100%;height:100%;display:block;object-fit:cover;object-position:center center;user-select:none;-webkit-user-drag:none}
-.v53-hotspot{position:absolute;z-index:5;left:12%;width:76%;height:5.8%;border:0!important;border-radius:999px!important;background:transparent!important;color:transparent!important;box-shadow:none!important;opacity:.001;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.v53-login{top:80.1%}
-.v53-create{top:86.55%}
-.v53-hotspot:focus-visible{opacity:.2;outline:3px solid #fff!important;background:#0a96ff!important}
-body:not(.mock-authenticated) #login .login-card{width:min(94vw,520px)!important;max-width:520px!important;margin:20px auto!important;border-radius:26px!important;box-shadow:0 30px 80px rgba(0,17,45,.34)!important}
-@media(min-width:700px){#mockWelcome.v53-exact-welcome{width:min(100vw,560px)!important;max-width:560px!important;margin:0 auto!important;box-shadow:0 0 90px rgba(0,16,42,.5)!important}}
-@media(max-height:760px){.v53-art{object-position:center 47%}.v53-login{top:80.1%}.v53-create{top:86.55%}}
+/* V53 retired in V55. Compatibility placeholder only. */
