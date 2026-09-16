@@ -1,1 +1,199 @@
-(()=>{const c=EFGC_SUPABASE,A=`${c.url}/auth/v1`,R=`${c.url}/rest/v1`,K='efgcSupabaseAuth',H=(t,x={})=>({apikey:c.publishableKey,'Content-Type':'application/json',...(t?{Authorization:`Bearer ${t}`}:{ }),...x}),read=()=>JSON.parse(localStorage.getItem(K)||'null'),write=v=>v?localStorage.setItem(K,JSON.stringify(v)):localStorage.removeItem(K);async function req(u,o={}){const r=await fetch(u,o);let b={};try{b=await r.json()}catch{}if(!r.ok)throw Error(b.msg||b.message||b.error_description||b.error||`Request failed (${r.status})`);return b}const za=p=>{let d=String(p||'').replace(/[^\d+]/g,'');if(d[0]==='+')return d;if(d.startsWith('0'))return '+27'+d.slice(1);if(d.startsWith('27'))return '+'+d;return d};async function restoreCallback(){const h=new URLSearchParams(location.hash.replace(/^#/,''));const access_token=h.get('access_token'),refresh_token=h.get('refresh_token');if(!access_token)return read();try{const user=await req(`${A}/user`,{headers:H(access_token)});const s={access_token,refresh_token,token_type:h.get('token_type')||'bearer',expires_in:Number(h.get('expires_in')||3600),expires_at:Number(h.get('expires_at')||0),user};write(s);history.replaceState(null,'',location.pathname+location.search);return s}catch(e){console.error('Auth callback restore failed',e);return null}}window.EFGCAuth={session:read,restoreCallback,normalizeZA:za,async requestPhoneOtp(p){p=za(p);if(!/^\+\d{8,15}$/.test(p))throw Error('Use a valid cellphone number.');await req(`${A}/otp`,{method:'POST',headers:H(),body:JSON.stringify({phone:p,create_user:true})});return p},async verifyPhoneOtp(p,t){const d=await req(`${A}/verify`,{method:'POST',headers:H(),body:JSON.stringify({type:'sms',phone:za(p),token:String(t).trim()})});write(d);return d},async requestEmailOtp(email){email=String(email||'').trim().toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw Error('Enter a valid email address.');await req(`${A}/otp`,{method:'POST',headers:H(),body:JSON.stringify({email,create_user:true})});return email},async verifyEmailOtp(email,t){const d=await req(`${A}/verify`,{method:'POST',headers:H(),body:JSON.stringify({type:'email',email:String(email).trim().toLowerCase(),token:String(t).trim()})});write(d);return d},async upsertProfile(v){const s=read();if(!s?.access_token||!s.user?.id)throw Error('Authentication required');const rows=await req(`${R}/profiles?on_conflict=id`,{method:'POST',headers:H(s.access_token,{Prefer:'resolution=merge-duplicates,return=representation'}),body:JSON.stringify({id:s.user.id,...v})});return rows[0]},async getMyProfile(){const s=read();if(!s?.access_token||!s.user?.id)return null;const rows=await req(`${R}/profiles?id=eq.${encodeURIComponent(s.user.id)}&select=*`,{headers:H(s.access_token)});return rows[0]||null},async upsertSafeguarding(v){const s=read();const rows=await req(`${R}/safeguarding_contacts?on_conflict=youth_id`,{method:'POST',headers:H(s.access_token,{Prefer:'resolution=merge-duplicates,return=representation'}),body:JSON.stringify({youth_id:s.user.id,...v})});return rows[0]},async signOut(){const s=read();if(s?.access_token)try{await fetch(`${A}/logout`,{method:'POST',headers:H(s.access_token)})}catch{}write(null)}}})();
+/** EFGC Youth v28 — Supabase Auth + REST adapter.
+ * Browser-safe only: project URL + publishable key. RLS remains authoritative.
+ */
+(() => {
+  const c = window.EFGC_SUPABASE;
+  if (!c) throw new Error('EFGC Supabase configuration missing');
+  const A = `${c.url}/auth/v1`;
+  const R = `${c.url}/rest/v1`;
+  const S = `${c.url}/storage/v1`;
+  const K = 'efgcSupabaseAuth';
+  const H = (token, extra = {}) => ({
+    apikey: c.publishableKey,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...extra,
+  });
+  const read = () => {
+    try { return JSON.parse(localStorage.getItem(K) || 'null'); }
+    catch { return null; }
+  };
+  const write = (v) => v ? localStorage.setItem(K, JSON.stringify(v)) : localStorage.removeItem(K);
+
+  async function req(url, options = {}) {
+    const r = await fetch(url, options);
+    let body = null;
+    const ct = r.headers.get('content-type') || '';
+    try { body = ct.includes('json') ? await r.json() : await r.text(); } catch { body = null; }
+    if (!r.ok) {
+      const msg = body?.msg || body?.message || body?.error_description || body?.error || (typeof body === 'string' && body) || `Request failed (${r.status})`;
+      const e = new Error(msg);
+      e.status = r.status;
+      throw e;
+    }
+    return body;
+  }
+
+  async function refresh() {
+    const s = read();
+    if (!s?.refresh_token) return null;
+    const data = await req(`${A}/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { ...H(null), 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: s.refresh_token }),
+    });
+    write(data);
+    return data;
+  }
+
+  async function authed(url, options = {}) {
+    let s = read();
+    if (!s?.access_token) throw new Error('Authentication required');
+    try {
+      return await req(url, { ...options, headers: { ...H(s.access_token), ...(options.headers || {}) } });
+    } catch (e) {
+      if (e.status !== 401 || !s.refresh_token) throw e;
+      s = await refresh();
+      if (!s?.access_token) throw e;
+      return req(url, { ...options, headers: { ...H(s.access_token), ...(options.headers || {}) } });
+    }
+  }
+
+  function normalizeZA(phone) {
+    const d = String(phone || '').replace(/[^\d+]/g, '');
+    if (d.startsWith('+')) return d;
+    if (d.startsWith('0')) return `+27${d.slice(1)}`;
+    if (d.startsWith('27')) return `+${d}`;
+    return d;
+  }
+
+  async function restoreCallback() {
+    const url = new URL(location.href);
+    const hash = new URLSearchParams(url.hash.replace(/^#/, ''));
+    const access_token = hash.get('access_token');
+    const refresh_token = hash.get('refresh_token');
+    if (access_token) {
+      try {
+        const user = await req(`${A}/user`, { headers: H(access_token) });
+        const s = {
+          access_token,
+          refresh_token,
+          token_type: hash.get('token_type') || 'bearer',
+          expires_in: Number(hash.get('expires_in') || 3600),
+          expires_at: Number(hash.get('expires_at') || 0),
+          user,
+        };
+        write(s);
+        history.replaceState(null, '', location.pathname + location.search);
+        return s;
+      } catch (e) {
+        console.error('Auth callback restore failed', e);
+      }
+    }
+
+    const token_hash = url.searchParams.get('token_hash');
+    const type = url.searchParams.get('type') || 'email';
+    if (token_hash) {
+      const data = await req(`${A}/verify`, {
+        method: 'POST',
+        headers: { ...H(null), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token_hash, type }),
+      });
+      write(data);
+      url.searchParams.delete('token_hash');
+      url.searchParams.delete('type');
+      history.replaceState(null, '', url.pathname + (url.search ? url.search : ''));
+      return data;
+    }
+
+    const existing = read();
+    if (existing?.access_token) {
+      try {
+        await req(`${A}/user`, { headers: H(existing.access_token) });
+        return existing;
+      } catch (e) {
+        if (e.status === 401 && existing.refresh_token) return refresh();
+      }
+    }
+    return null;
+  }
+
+  window.EFGCAuth = {
+    session: read,
+    restoreCallback,
+    refresh,
+    normalizeZA,
+    userId() { return read()?.user?.id || null; },
+    accessToken() { return read()?.access_token || null; },
+    async requestEmailOtp(email) {
+      email = String(email || '').trim().toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Enter a valid email address.');
+      await req(`${A}/otp`, {
+        method: 'POST',
+        headers: { ...H(null), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, create_user: true }),
+      });
+      return email;
+    },
+    async verifyEmailOtp(email, token) {
+      const data = await req(`${A}/verify`, {
+        method: 'POST',
+        headers: { ...H(null), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'email', email: String(email).trim().toLowerCase(), token: String(token).trim() }),
+      });
+      write(data);
+      return data;
+    },
+    async getMyProfile() {
+      const s = read();
+      if (!s?.access_token || !s.user?.id) return null;
+      const rows = await authed(`${R}/profiles?id=eq.${encodeURIComponent(s.user.id)}&select=*`);
+      return rows?.[0] || null;
+    },
+    async upsertProfile(v) {
+      const s = read();
+      if (!s?.access_token || !s.user?.id) throw new Error('Authentication required');
+      const rows = await authed(`${R}/profiles?on_conflict=id`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' },
+        body: JSON.stringify({ id: s.user.id, ...v }),
+      });
+      return rows?.[0] || null;
+    },
+    async upsertSafeguarding(v) {
+      const s = read();
+      if (!s?.access_token || !s.user?.id) throw new Error('Authentication required');
+      const rows = await authed(`${R}/safeguarding_contacts?on_conflict=youth_id`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' },
+        body: JSON.stringify({ youth_id: s.user.id, ...v }),
+      });
+      return rows?.[0] || null;
+    },
+    async rest(path, options = {}) {
+      return authed(`${R}/${path.replace(/^\//, '')}`, options);
+    },
+    async uploadPrivatePhoto(file) {
+      const s = read();
+      if (!s?.access_token || !s.user?.id) throw new Error('Authentication required');
+      if (!file || !/^image\/(jpeg|png|webp)$/.test(file.type)) throw new Error('Use JPG, PNG or WebP.');
+      if (file.size > 5 * 1024 * 1024) throw new Error('Photo must be 5 MB or smaller.');
+      const ext = file.type === 'image/png' ? 'png' : file.type === 'image/webp' ? 'webp' : 'jpg';
+      const path = `${s.user.id}/profile-${Date.now()}.${ext}`;
+      const encoded = path.split('/').map(encodeURIComponent).join('/');
+      await authed(`${S}/object/member-photos/${encoded}`, {
+        method: 'POST',
+        headers: { 'Content-Type': file.type, 'x-upsert': 'false' },
+        body: file,
+      });
+      return path;
+    },
+    async signOut() {
+      const s = read();
+      if (s?.access_token) {
+        try { await fetch(`${A}/logout`, { method: 'POST', headers: H(s.access_token) }); } catch {}
+      }
+      write(null);
+      localStorage.removeItem('efgcYouthSession');
+    },
+  };
+})();
