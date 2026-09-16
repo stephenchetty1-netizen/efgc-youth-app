@@ -1,4 +1,4 @@
-/** V55 — robust welcome bootstrap. It creates its own UI and does not depend on older welcome scripts. */
+/** V56 — robust welcome bootstrap. It creates its own UI and does not depend on older welcome scripts. */
 (() => {
   const $ = (s) => document.querySelector(s);
 
@@ -29,13 +29,13 @@
     }
 
     welcome.className = 'v54-welcome';
-    welcome.dataset.v55 = '1';
+    welcome.dataset.v56 = '1';
     welcome.innerHTML = `
       <div class="v54-backdrop" aria-hidden="true"></div>
       <div class="v54-content">
         <div class="v54-brand-zone">
           <div class="v54-logo-glow">
-            <img src="assets/efgc-logo.svg?v=55.0" alt="Emmanuel Full Gospel Church — God with us — Pass on the Baton — Est 1943" class="v54-logo" decoding="async" fetchpriority="high">
+            <img src="assets/efgc-logo.svg?v=56.0" alt="Emmanuel Full Gospel Church — God with us — Pass on the Baton — Est 1943" class="v54-logo" decoding="async" fetchpriority="high">
           </div>
           <span class="v54-side-note v54-left-note">BUILD<br>BELONG<br>BE A LIGHT</span>
           <span class="v54-side-note v54-right-note">GOD<br>WITH<br>US</span>
