@@ -22,7 +22,7 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: "24"
 
@@ -36,11 +36,18 @@ jobs:
           node --check v22-live-data.js
           node --check v23-photo-security.js
           node --check v31-attendance-ui.js
+          node --check v36-password-recovery.js
           test -f index.html
           test -f manifest.webmanifest
-          for asset in backend-adapter.js auth-adapter.js app.js v22-live-data.js v23-photo-security.js v31-attendance-ui.js v21-auth-ui.js; do
+          for asset in backend-adapter.js auth-adapter.js app.js v22-live-data.js v23-photo-security.js v31-attendance-ui.js v36-password-recovery.js v21-auth-ui.js; do
             grep -q "$asset" index.html
           done
+          grep -q 'id="forgotPasswordButton"' index.html
+          grep -q 'requestAdminPasswordReset' v36-password-recovery.js
+          if grep -q 'onclick="requestAdminPasswordReset' index.html; then
+            echo "Admin recovery must have exactly one JavaScript binding to avoid duplicate reset emails."
+            exit 1
+          fi
           if grep -R -E 'service_role|sb_secret_' --include='*.js' --include='*.html' .; then
             echo "Secret/service-role material must never be shipped to the browser."
             exit 1
@@ -56,6 +63,7 @@ jobs:
           sleep 2
           curl --fail --silent --show-error http://127.0.0.1:8080/index.html | grep -q 'EFGC YOUTH'
           curl --fail --silent --show-error http://127.0.0.1:8080/v31-attendance-ui.js >/dev/null
+          curl --fail --silent --show-error http://127.0.0.1:8080/v36-password-recovery.js | grep -q 'requestAdminPasswordReset'
 
   deploy:
     needs: validate
