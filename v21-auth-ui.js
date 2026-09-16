@@ -68,6 +68,15 @@
       $("#otpLabel").textContent = "Email verification code";
       msg("Verification requested. Check your email and enter the code to continue.");
     } catch (e) {
+      if (/email rate limit exceeded/i.test(String(e.message))) {
+        const button = $("#continueButton");
+        button.disabled = true;
+        button.textContent = "Email limit reached";
+        msg(
+          "The secure email service has reached its hourly sending limit. Please wait up to one hour, refresh the page, and request one new code.",
+        );
+        return;
+      }
       const wait = Number(String(e.message).match(/after\s+(\d+)\s+seconds?/i)?.[1]);
       if (wait > 0) {
         const button = $("#continueButton");
