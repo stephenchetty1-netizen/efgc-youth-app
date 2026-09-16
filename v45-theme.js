@@ -31,16 +31,15 @@
     welcome.id = 'mockWelcome';
     welcome.className = 'mock-welcome';
     welcome.innerHTML = `
-      <div class="mock-welcome-glow"></div>
-      <img src="${logoAsset}" class="mock-welcome-logo" alt="Emmanuel Full Gospel Church logo">
-      <div class="mock-youth-word">YOUTH<span>.</span></div>
-      <div class="mock-tagline">BUILD <span>•</span> BELONG <span>•</span> BE A LIGHT</div>
-      <h1 class="v49-welcome-title">Your faith.<br>Your people.<br>Your <em>purpose.</em></h1>
+      <div class="welcome-brand"><img src="${logoAsset}" class="mock-welcome-logo" alt="Emmanuel Full Gospel Church logo"><div><strong>EFGC <span>YOUTH</span></strong><small>Emmanuel Full Gospel Church</small></div></div>
+      <div class="welcome-photo" role="img" aria-label="Illustration of youth gathering for worship"><span>BUILD • BELONG • BE A LIGHT</span></div>
+      <div class="welcome-content"><p class="welcome-eyebrow">A GENERATION FOR HIS GLORY</p>
+      <h1 class="v49-welcome-title">Find your people.<br><em>Grow in faith.</em></h1>
+      <p class="welcome-description">A place to belong, serve and shine together.</p>
       <div class="mock-welcome-actions">
-        <button id="mockLoginButton" class="mock-primary" type="button">Login</button>
-        <button id="mockCreateButton" class="mock-secondary" type="button">Create Account</button>
-      </div>
-      <div class="mock-generation">A GENERATION FOR HIS GLORY</div>`;
+        <button id="mockLoginButton" class="mock-primary" type="button">Log in <span aria-hidden="true">→</span></button>
+        <button id="mockCreateButton" class="mock-secondary" type="button">Create account</button>
+      </div><p class="welcome-scripture">“Let your light so shine before men”<br><span>Matthew 5:16 • KJV</span></p></div>`;
     login.insertBefore(welcome, card);
     card.classList.add('mock-login-card','mock-login-hidden');
     const back = document.createElement('button');
