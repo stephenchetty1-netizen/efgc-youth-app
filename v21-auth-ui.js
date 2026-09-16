@@ -68,6 +68,26 @@
       $("#otpLabel").textContent = "Email verification code";
       msg("Verification requested. Check your email and enter the code to continue.");
     } catch (e) {
+      const wait = Number(String(e.message).match(/after\s+(\d+)\s+seconds?/i)?.[1]);
+      if (wait > 0) {
+        const button = $("#continueButton");
+        button.disabled = true;
+        let remaining = wait;
+        const updateCooldown = () => {
+          if (remaining <= 0) {
+            button.disabled = false;
+            button.textContent = "Continue";
+            msg("You can request a new verification code now.");
+            return;
+          }
+          button.textContent = `Wait ${remaining}s`;
+          msg(`For your security, please wait ${remaining} seconds before requesting another code.`);
+          remaining -= 1;
+          setTimeout(updateCooldown, 1000);
+        };
+        updateCooldown();
+        return;
+      }
       msg(`Secure sign-in could not start: ${e.message}`);
     }
   };
