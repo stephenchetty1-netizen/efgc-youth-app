@@ -5,10 +5,10 @@
   <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0b86e8"/><stop offset=".5" stop-color="#0664b8"/><stop offset="1" stop-color="#023b7b"/></linearGradient>
   <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff36b"/><stop offset=".38" stop-color="#ffc329"/><stop offset="1" stop-color="#ef6a00"/></linearGradient>
   <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#001a35" flood-opacity=".55"/></filter>
-  <path id="arc" d="M76 190 A185 185 0 0 1 436 190"/>
+  <path id="arc" d="M64 190 A192 192 0 0 1 448 190"/>
 </defs>
 <g filter="url(#shadow)">
-  <text fill="#fff" stroke="#043c78" stroke-width="5" paint-order="stroke" font-family="Arial,Helvetica,sans-serif" font-size="35" font-weight="900" letter-spacing="1"><textPath href="#arc" startOffset="50%" text-anchor="middle">EMMANUEL FULL GOSPEL CHURCH</textPath></text>
+  <text fill="#fff" stroke="#043c78" stroke-width="4" paint-order="stroke" font-family="Arial,Helvetica,sans-serif" font-size="29" font-weight="900" letter-spacing=".35"><textPath href="#arc" startOffset="50%" text-anchor="middle">EMMANUEL FULL GOSPEL CHURCH</textPath></text>
   <path d="M208 82h88v105h82v80h-82v173h-88V267h-82v-80h82z" fill="url(#blue)" stroke="#012d60" stroke-width="8"/>
   <path d="M328 116c52 48 45 92 6 127-16 14-22 27-18 44-42-18-61-50-44-82 13-25 46-41 56-89z" fill="url(#gold)" stroke="#c65100" stroke-width="6"/>
   <g transform="translate(86 226)">
