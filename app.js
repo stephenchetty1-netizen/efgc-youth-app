@@ -1,8 +1,18 @@
 let loginRole = 'youth';
-let session = null; // Never trust a role restored only from localStorage. Auth boot reloads role from Supabase.
+let session = null; // Supabase profile is the role authority; localStorage is not.
 const $ = (s) => document.querySelector(s);
 const escapeHtml = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmtDate = (v) => v ? new Date(v).toLocaleString('en-ZA', { day:'2-digit', month:'short', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+
+const dailyScriptures = [
+  { ref:'Matthew 5:16', text:'Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven.' },
+  { ref:'Philippians 4:13', text:'I can do all things through Christ which strengtheneth me.' },
+  { ref:'Psalm 119:105', text:'Thy word is a lamp unto my feet, and a light unto my path.' },
+  { ref:'Isaiah 40:31', text:'They that wait upon the LORD shall renew their strength; they shall mount up with wings as eagles.' },
+  { ref:'Joshua 1:9', text:'Be strong and of a good courage; be not afraid: for the LORD thy God is with thee whithersoever thou goest.' },
+  { ref:'Psalm 46:10', text:'Be still, and know that I am God.' },
+  { ref:'Romans 8:28', text:'All things work together for good to them that love God, to them who are the called according to his purpose.' },
+];
 
 function selectRole(r) {
   loginRole = r;
@@ -27,6 +37,24 @@ document.addEventListener('click', (e) => {
   if (tab && session) showTab(tab.dataset.tab);
 });
 
+document.addEventListener('change', (e) => {
+  if (e.target?.id !== 'loginPhoto') return;
+  const file = e.target.files?.[0];
+  const preview = $('#photoPreview');
+  if (!preview) return;
+  preview.innerHTML = '';
+  if (!file) return;
+  if (!/^image\/(jpeg|png|webp)$/.test(file.type) || file.size > 5 * 1024 * 1024) {
+    preview.textContent = 'Use a JPG, PNG or WebP image up to 5 MB.';
+    return;
+  }
+  const img = document.createElement('img');
+  img.alt = 'Selected profile photo preview';
+  img.src = URL.createObjectURL(file);
+  img.onload = () => URL.revokeObjectURL(img.src);
+  preview.appendChild(img);
+});
+
 function showLogin(){ $('#login').classList.remove('hidden'); }
 function hideLogin(){ $('#login').classList.add('hidden'); }
 function showTab(id){
@@ -38,6 +66,15 @@ function showTab(id){
 
 function roleAllowed(role, approval='approved') {
   return role === 'admin' || (role === 'leader' && approval === 'approved');
+}
+
+function renderDailyScripture(){
+  const now = new Date();
+  const day = Math.floor(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) / 86400000);
+  const s = dailyScriptures[((day % dailyScriptures.length) + dailyScriptures.length) % dailyScriptures.length];
+  const html = `<article class="card scripture-card"><small>DAILY SCRIPTURE • KJV</small><h3>${escapeHtml(s.ref)}</h3><p>${escapeHtml(s.text)}</p><strong>Build • Belong • Be a Light</strong></article>`;
+  if ($('#scriptureCardHome')) $('#scriptureCardHome').innerHTML = html;
+  if ($('#scriptureCard')) $('#scriptureCard').innerHTML = `<h2>Daily Scripture</h2>${html}`;
 }
 
 function renderShell(){
@@ -53,12 +90,67 @@ function renderShell(){
   $('#currentUser').textContent = `${session.name || 'EFGC Member'} • ${session.role}${session.approval_status === 'pending' ? ' • Pending approval' : ''}`;
   $('#adminMenu')?.classList.toggle('hidden', session.role !== 'admin');
   hideLogin();
+  renderDailyScripture();
   showTab('home');
 }
 
 function card(title, body, meta='') {
   return `<article class="card"><h3>${escapeHtml(title)}</h3>${meta ? `<small>${escapeHtml(meta)}</small>` : ''}<p>${escapeHtml(body)}</p></article>`;
 }
+
+function adminProfileCard(p){
+  const pendingLeader = p.role === 'leader' && p.approval_status === 'pending';
+  const actions = pendingLeader ? `<div class="admin-actions"><button class="primary-login" type="button" onclick="adminSetLeaderApproval('${p.id}','approved')">Approve Leader</button><button class="ghost-login" type="button" onclick="adminSetLeaderApproval('${p.id}','rejected')">Reject</button></div>` : '';
+  return `<article class="card"><h3>${escapeHtml(p.full_name)}</h3><small>${escapeHtml(p.leader_role || '')}</small><p>${escapeHtml(`${p.role} • ${p.approval_status}`)}</p>${actions}</article>`;
+}
+
+function adminTools(){
+  return `<div class="security-grid">
+    <article class="card"><h3>Create Youth Event</h3><label>Event title<input id="adminEventTitle" type="text" placeholder="Youth Meeting"></label><label>Date & time<input id="adminEventDate" type="datetime-local"></label><label>Theme<input id="adminEventTheme" type="text" placeholder="Optional theme"></label><label>Scripture<input id="adminEventScripture" type="text" placeholder="e.g. Matthew 5:16"></label><button class="primary-login" type="button" onclick="adminCreateEvent()">Create Event</button></article>
+    <article class="card"><h3>Publish News</h3><label>Announcement<textarea id="adminNewsContent" rows="5" placeholder="Write an approved EFGC Youth update"></textarea></label><button class="primary-login" type="button" onclick="adminPublishNews()">Publish Update</button></article>
+  </div><p id="adminActionMessage" class="login-message"></p>`;
+}
+
+function setAdminMessage(text){ const el=$('#adminActionMessage'); if(el) el.textContent=text; }
+
+window.adminSetLeaderApproval = async (id, status) => {
+  if (session?.role !== 'admin') return;
+  try {
+    setAdminMessage('Saving Leader decision…');
+    await EFGCLive.adminSetLeaderApproval(id, status);
+    await renderLiveData();
+    setAdminMessage(status === 'approved' ? 'Leader approved successfully.' : 'Leader application rejected.');
+  } catch(e){ setAdminMessage(`Could not update Leader: ${e.message}`); }
+};
+
+window.adminCreateEvent = async () => {
+  if (session?.role !== 'admin') return;
+  const title=$('#adminEventTitle')?.value.trim();
+  const localDate=$('#adminEventDate')?.value;
+  const theme=$('#adminEventTheme')?.value.trim() || '';
+  const scripture=$('#adminEventScripture')?.value.trim() || '';
+  if (!title || !localDate) return setAdminMessage('Event title and date/time are required.');
+  try {
+    const d=new Date(localDate);
+    if (Number.isNaN(d.getTime())) throw new Error('Enter a valid event date and time.');
+    setAdminMessage('Creating event…');
+    await EFGCLive.adminCreateEvent({ title, event_date:d.toISOString(), theme, scripture });
+    await renderLiveData();
+    setAdminMessage('Event created successfully.');
+  } catch(e){ setAdminMessage(`Could not create event: ${e.message}`); }
+};
+
+window.adminPublishNews = async () => {
+  if (session?.role !== 'admin') return;
+  const content=$('#adminNewsContent')?.value.trim();
+  if (!content) return setAdminMessage('Write an announcement before publishing.');
+  try {
+    setAdminMessage('Publishing update…');
+    await EFGCLive.adminPublishNews(content);
+    await renderLiveData();
+    setAdminMessage('News update published.');
+  } catch(e){ setAdminMessage(`Could not publish update: ${e.message}`); }
+};
 
 async function renderLiveData(){
   if (!session?.uid || !window.EFGCLive) return;
@@ -107,7 +199,7 @@ async function renderLiveData(){
     try {
       const profiles = await EFGCLive.adminProfiles();
       const pending = profiles.filter(p => p.role === 'leader' && p.approval_status === 'pending').length;
-      $('#adminPanel').innerHTML = `<h2>Admin Centre</h2><article class="card"><h3>${profiles.length} account${profiles.length===1?'':'s'}</h3><p>${pending} pending leader application${pending===1?'':'s'}.</p></article>` + profiles.slice(0,25).map(p => card(p.full_name, `${p.role} • ${p.approval_status}`, p.leader_role || '')).join('');
+      $('#adminPanel').innerHTML = `<h2>Admin Centre</h2><article class="card"><h3>${profiles.length} account${profiles.length===1?'':'s'}</h3><p>${pending} pending Leader application${pending===1?'':'s'}.</p></article>${adminTools()}<h2>Accounts</h2>` + profiles.slice(0,50).map(adminProfileCard).join('');
     } catch(e){ errors.push(`Admin: ${e.message}`); }
   } else {
     $('#adminPanel').innerHTML='';
