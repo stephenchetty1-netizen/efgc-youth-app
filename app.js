@@ -27,6 +27,7 @@ function selectRole(r) {
   $("#youthSafeguardingFields").classList.toggle("hidden", r !== "youth");
   $("#roleField").classList.toggle("hidden", r !== "leader");
   $("#photoField").classList.toggle("hidden", r === "admin");
+  $("#dobField").classList.toggle("hidden", r === "admin");
   $("#emailField").classList.remove("hidden");
 }
 document.addEventListener("click", (e) => {
@@ -40,9 +41,21 @@ function hideLogin() {
   $("#login").classList.add("hidden");
 }
 function render() {
+  const authenticated = Boolean(session);
+  document
+    .querySelectorAll("#mainMenu, .userbar")
+    .forEach((el) => el.classList.toggle("hidden", !authenticated));
+  if (!authenticated) {
+    document
+      .querySelectorAll(
+        "#home, #events, #news, #scripture, #mine, #leaders, #profile, #security, #admin",
+      )
+      .forEach((el) => el.classList.add("hidden"));
+  }
   if (session) {
     $("#currentUser").textContent = `${session.name} • ${session.role}`;
     $("#adminMenu")?.classList.toggle("hidden", session.role !== "admin");
+    $("#home").classList.remove("hidden");
     hideLogin();
   } else {
     $("#currentUser").textContent = "Not signed in";
