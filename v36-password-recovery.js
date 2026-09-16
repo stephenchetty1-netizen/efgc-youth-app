@@ -1,4 +1,4 @@
-/** EFGC Youth v37 — reliable Supabase password recovery controls for Admin. */
+/** EFGC Youth v42 — reliable Admin password recovery and authenticated password setup. */
 (() => {
   const c = window.EFGC_SUPABASE;
   if (!c?.url || !c?.publishableKey || !window.EFGCAuth) return;
@@ -70,6 +70,12 @@
     setMessage('Recovery link verified. Choose a new Admin password below.');
   }
 
+  // Allow the auth UI to explicitly yield to the recovery form instead of auto-opening the app shell.
+  window.EFGCPasswordRecovery = {
+    isActive: () => sessionStorage.getItem('efgcPasswordRecovery') === '1',
+    showForm: showRecoveryForm,
+  };
+
   const originalRestoreCallback = EFGCAuth.restoreCallback;
   EFGCAuth.restoreCallback = async (...args) => {
     const result = await originalRestoreCallback(...args);
@@ -106,7 +112,7 @@
       setMessage('Password-reset email requested. Open the secure link in that email; it will return you here to choose a new password.');
     } catch (e) {
       if (/rate limit/i.test(String(e.message))) {
-        setMessage('The Supabase email limit is still active. Please try again after the hourly email window clears.');
+        setMessage('The email limit is still active. Please wait before requesting another reset email.');
       } else {
         setMessage(`Password reset could not start: ${e.message}`);
       }
@@ -117,6 +123,37 @@
       }
     }
   };
+
+  async function updateCurrentPassword(password) {
+    const auth = EFGCAuth.session();
+    if (!auth?.access_token) throw new Error('Your secure Admin session is missing or expired.');
+    const r = await fetch(`${c.url}/auth/v1/user`, {
+      method: 'PUT',
+      headers: {
+        apikey: c.publishableKey,
+        Authorization: `Bearer ${auth.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ password }),
+    });
+    const body = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(body?.error_description || body?.msg || body?.message || 'Password could not be updated.');
+    return body;
+  }
+
+  async function finishPasswordChange(successText) {
+    sessionStorage.removeItem('efgcPasswordRecovery');
+    try { await EFGCAuth.signOut(); } catch {}
+    try { session = null; } catch {}
+    localStorage.removeItem('efgcYouthSession');
+    $('#passwordResetPanel')?.classList.add('hidden');
+    $('#continueButton')?.classList.remove('hidden');
+    try { selectRole('admin'); } catch {}
+    try { renderShell(); } catch {}
+    syncRecoveryUi();
+    if ($('#loginPassword')) $('#loginPassword').value = '';
+    setMessage(successText);
+  }
 
   window.completeAdminPasswordReset = async () => {
     const password = $('#newAdminPassword')?.value || '';
@@ -129,46 +166,60 @@
       setMessage('The two new-password entries do not match.');
       return;
     }
-    const auth = EFGCAuth.session();
-    if (!auth?.access_token) {
-      setMessage('The recovery session is missing or expired. Request a new password-reset email.');
-      return;
-    }
 
     try {
       setMessage('Saving your new Admin password…');
-      const r = await fetch(`${c.url}/auth/v1/user`, {
-        method: 'PUT',
-        headers: {
-          apikey: c.publishableKey,
-          Authorization: `Bearer ${auth.access_token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ password }),
-      });
-      const body = await r.json().catch(() => ({}));
-      if (!r.ok) throw new Error(body?.error_description || body?.msg || body?.message || 'Password could not be updated.');
-
-      sessionStorage.removeItem('efgcPasswordRecovery');
-      try { await EFGCAuth.signOut(); } catch {}
-      try { session = null; } catch {}
-      localStorage.removeItem('efgcYouthSession');
-      $('#passwordResetPanel')?.classList.add('hidden');
-      $('#continueButton')?.classList.remove('hidden');
-      try { selectRole('admin'); } catch {}
-      try { renderShell(); } catch {}
-      syncRecoveryUi();
-      if ($('#loginPassword')) $('#loginPassword').value = '';
-      setMessage('Password reset complete. Sign in with your new Admin password.');
+      await updateCurrentPassword(password);
+      await finishPasswordChange('Password reset complete. Sign in with your new Admin password.');
     } catch (e) {
       setMessage(`Password could not be reset: ${e.message}`);
     }
   };
 
+  function injectAuthenticatedPasswordCard() {
+    const panel = $('#adminPanel');
+    const auth = EFGCAuth.session();
+    if (!panel || !auth?.access_token || typeof session === 'undefined' || session?.role !== 'admin') return;
+    if ($('#adminPasswordCard')) return;
+
+    const card = document.createElement('article');
+    card.id = 'adminPasswordCard';
+    card.className = 'card';
+    card.innerHTML = '<h3>🔐 Admin Password</h3><p>Set or change the password for this signed-in Admin account. You will be signed out after saving and must sign in again with the new password.</p><label>New Admin password<input id="adminSessionNewPassword" type="password" autocomplete="new-password" placeholder="At least 10 characters"></label><label>Confirm new password<input id="adminSessionConfirmPassword" type="password" autocomplete="new-password" placeholder="Re-enter new password"></label><button class="primary-login" type="button" onclick="setAdminPasswordFromSession()">Set Admin Password</button><p id="adminPasswordMessage" class="login-message"></p>';
+    panel.prepend(card);
+  }
+
+  window.setAdminPasswordFromSession = async () => {
+    const password = $('#adminSessionNewPassword')?.value || '';
+    const confirm = $('#adminSessionConfirmPassword')?.value || '';
+    const message = $('#adminPasswordMessage');
+    const write = (text) => { if (message) message.textContent = text; };
+
+    if (password.length < 10) return write('Use a password with at least 10 characters.');
+    if (password !== confirm) return write('The two password entries do not match.');
+    if (typeof session === 'undefined' || session?.role !== 'admin') return write('Approved Admin access is required.');
+
+    try {
+      write('Saving the Admin password…');
+      await updateCurrentPassword(password);
+      await finishPasswordChange('Admin password saved. Sign in with the new password.');
+    } catch (e) {
+      write(`Password could not be saved: ${e.message}`);
+    }
+  };
+
   document.addEventListener('click', (e) => {
     if (e.target.closest('.login-type')) setTimeout(syncRecoveryUi, 0);
+    if (e.target.closest('[data-tab="admin"]')) setTimeout(injectAuthenticatedPasswordCard, 50);
   });
+
+  const adminPanel = $('#adminPanel');
+  if (adminPanel) {
+    new MutationObserver(() => setTimeout(injectAuthenticatedPasswordCard, 0))
+      .observe(adminPanel, { childList: true, subtree: false });
+  }
 
   injectRecoveryUi();
   if (sessionStorage.getItem('efgcPasswordRecovery') === '1') setTimeout(showRecoveryForm, 600);
+  setTimeout(injectAuthenticatedPasswordCard, 1000);
 })();
