@@ -59,9 +59,10 @@ jobs:
             grep -q "$asset" index.html || { echo "Missing reference to $asset"; exit 1; }
           done
           grep -q 'Pass on the Baton' assets/efgc-logo.svg
-          grep -q 'V55' v54-stable-welcome.js
+          grep -q 'V56' v54-stable-welcome.js
           grep -q 'buildWelcome' v54-stable-welcome.js
-          grep -q 'assets/efgc-logo.svg?v=55.0' v54-stable-welcome.js
+          grep -q 'assets/efgc-logo.svg?v=56.0' v54-stable-welcome.js
+          grep -q 'A GENERATION FOR HIS GLORY' v54-stable-welcome.js
           grep -q 'assets/efgc-home-hero.webp' v45-theme.js
           grep -q 'id="forgotPasswordButton"' index.html
           grep -q 'id="plannerMenu"' index.html
@@ -94,8 +95,9 @@ jobs:
           trap 'kill $server_pid || true' EXIT
           sleep 2
           curl --fail --silent --show-error http://127.0.0.1:8080/index.html | grep -q 'EFGC YOUTH'
-          curl --fail --silent --show-error http://127.0.0.1:8080/v54-stable-welcome.js | grep -q 'V55'
-          curl --fail --silent --show-error http://127.0.0.1:8080/v54-stable-welcome.css | grep -q 'stable welcome screen'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v54-stable-welcome.js | grep -q 'V56'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v54-stable-welcome.css | grep -q 'V56'
+          curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'EMMANUEL FULL GOSPEL CHURCH'
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'Pass on the Baton'
           curl --fail --silent --show-error http://127.0.0.1:8080/v36-password-recovery.js | grep -q 'requestAdminPasswordReset'
 
