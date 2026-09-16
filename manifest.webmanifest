@@ -1,1 +1,1 @@
-{"name":"EFGC Youth","short_name":"EFGC Youth","start_url":"./","display":"standalone","background_color":"#07142c","theme_color":"#0b3d91"}
+{"name":"EFGC Youth","short_name":"EFGC Youth","start_url":"./","display":"standalone","background_color":"#07142c","theme_color":"#0b3d91","icons":[{"src":"assets/efgc-logo.svg","sizes":"180x176","type":"image/svg+xml","purpose":"any"}]}
