@@ -41,6 +41,7 @@ jobs:
           node --check v45-theme.js
           node --check v50-reference-welcome.js
           node --check v53-exact-welcome.js
+          node --check v54-stable-welcome.js
           test -f index.html
           test -f manifest.webmanifest
           test -f v43.css
@@ -49,18 +50,18 @@ jobs:
           test -f v49-vibrant.css
           test -f v50-reference-welcome.css
           test -f v53-exact-welcome.css
+          test -f v54-stable-welcome.css
           test -f assets/v49-sunrise.webp
           test -f assets/v49-youth-fellowship.webp
           test -f assets/efgc-logo.svg
           test -f assets/efgc-home-hero.webp
-          for asset in backend-adapter.js auth-adapter.js app.js v22-live-data.js v23-photo-security.js v36-password-recovery.js v21-auth-ui.js v43-ministry-tools.js v44-updates.js v45-theme.js v50-reference-welcome.js v53-exact-welcome.js v43.css v44.css v45-theme.css v50-reference-welcome.css v53-exact-welcome.css assets/efgc-logo.svg; do
+          for asset in backend-adapter.js auth-adapter.js app.js v22-live-data.js v23-photo-security.js v36-password-recovery.js v21-auth-ui.js v43-ministry-tools.js v44-updates.js v45-theme.js v54-stable-welcome.js v43.css v44.css v45-theme.css v54-stable-welcome.css assets/efgc-logo.svg; do
             grep -q "$asset" index.html || { echo "Missing reference to $asset"; exit 1; }
           done
           grep -q 'Pass on the Baton' assets/efgc-logo.svg
-          grep -q 'v53-exact-welcome' index.html
-          grep -q 'data:image/webp;base64' v53-exact-welcome.js
-          grep -q 'v53Login' v53-exact-welcome.js
-          grep -q 'v53Create' v53-exact-welcome.js
+          grep -q 'V55' v54-stable-welcome.js
+          grep -q 'buildWelcome' v54-stable-welcome.js
+          grep -q 'assets/efgc-logo.svg?v=55.0' v54-stable-welcome.js
           grep -q 'assets/efgc-home-hero.webp' v45-theme.js
           grep -q 'id="forgotPasswordButton"' index.html
           grep -q 'id="plannerMenu"' index.html
@@ -93,8 +94,8 @@ jobs:
           trap 'kill $server_pid || true' EXIT
           sleep 2
           curl --fail --silent --show-error http://127.0.0.1:8080/index.html | grep -q 'EFGC YOUTH'
-          curl --fail --silent --show-error http://127.0.0.1:8080/v53-exact-welcome.js | grep -q 'V53'
-          curl --fail --silent --show-error http://127.0.0.1:8080/v53-exact-welcome.css | grep -q 'approved artwork'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v54-stable-welcome.js | grep -q 'V55'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v54-stable-welcome.css | grep -q 'stable welcome screen'
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'Pass on the Baton'
           curl --fail --silent --show-error http://127.0.0.1:8080/v36-password-recovery.js | grep -q 'requestAdminPasswordReset'
 
