@@ -37,11 +37,13 @@ jobs:
           node --check v23-photo-security.js
           node --check v36-password-recovery.js
           node --check v43-ministry-tools.js
+          node --check v44-updates.js
           test -f index.html
           test -f manifest.webmanifest
           test -f v43.css
+          test -f v44.css
           test -f assets/efgc-logo.svg
-          for asset in backend-adapter.js auth-adapter.js app.js v22-live-data.js v23-photo-security.js v36-password-recovery.js v21-auth-ui.js v43-ministry-tools.js v43.css assets/efgc-logo.svg; do
+          for asset in backend-adapter.js auth-adapter.js app.js v22-live-data.js v23-photo-security.js v36-password-recovery.js v21-auth-ui.js v43-ministry-tools.js v44-updates.js v43.css v44.css assets/efgc-logo.svg; do
             grep -q "$asset" index.html
           done
           grep -q 'id="forgotPasswordButton"' index.html
@@ -50,9 +52,12 @@ jobs:
           grep -q 'id="plannerRosterHost"' index.html
           grep -q 'id="attendanceAdminHost"' index.html
           grep -q 'requestAdminPasswordReset' v36-password-recovery.js
-          grep -q 'generateYearPlanner' v43-ministry-tools.js
-          grep -q 'saveRosterAssignments' v43-ministry-tools.js
-          grep -q 'saveAttendancePage' v43-ministry-tools.js
+          grep -q 'generateYearPlannerV44' v44-updates.js
+          grep -q 'saveRosterWeekV44' v44-updates.js
+          grep -q 'adminEventImage' v44-updates.js
+          grep -q 'saveOwnLeaderProfile' v44-updates.js
+          grep -q 'Pass on the Baton' assets/efgc-logo.svg
+          grep -q 'Est 1943' assets/efgc-logo.svg
           if grep -q 'onclick="requestAdminPasswordReset' index.html; then
             echo "Admin recovery must have exactly one JavaScript binding to avoid duplicate reset emails."
             exit 1
@@ -71,8 +76,8 @@ jobs:
           trap 'kill $server_pid || true' EXIT
           sleep 2
           curl --fail --silent --show-error http://127.0.0.1:8080/index.html | grep -q 'EFGC YOUTH'
-          curl --fail --silent --show-error http://127.0.0.1:8080/v43-ministry-tools.js | grep -q 'Year Planner'
-          curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'Emmanuel Full Gospel Church official emblem'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v44-updates.js | grep -q 'Week number'
+          curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'Emmanuel Full Gospel Church emblem'
           curl --fail --silent --show-error http://127.0.0.1:8080/v36-password-recovery.js | grep -q 'requestAdminPasswordReset'
 
   deploy:
