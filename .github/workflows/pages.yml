@@ -39,19 +39,22 @@ jobs:
           node --check v43-ministry-tools.js
           node --check v44-updates.js
           node --check v45-theme.js
+          node --check v50-reference-welcome.js
           test -f index.html
           test -f manifest.webmanifest
           test -f v43.css
           test -f v44.css
           test -f v45-theme.css
           test -f v49-vibrant.css
+          test -f v50-reference-welcome.css
           test -f assets/v49-sunrise.webp
           test -f assets/v49-youth-fellowship.webp
-          test -f assets/efgc-logo-reference.webp
+          test -f assets/efgc-logo.svg
           test -f assets/efgc-home-hero.webp
-          for asset in backend-adapter.js auth-adapter.js app.js v22-live-data.js v23-photo-security.js v36-password-recovery.js v21-auth-ui.js v43-ministry-tools.js v44-updates.js v45-theme.js v43.css v44.css v45-theme.css assets/efgc-logo-reference.webp; do
+          for asset in backend-adapter.js auth-adapter.js app.js v22-live-data.js v23-photo-security.js v36-password-recovery.js v21-auth-ui.js v43-ministry-tools.js v44-updates.js v45-theme.js v50-reference-welcome.js v43.css v44.css v45-theme.css v50-reference-welcome.css assets/efgc-logo.svg; do
             grep -q "$asset" index.html || { echo "Missing reference to $asset"; exit 1; }
           done
+          grep -q 'Pass on the Baton' assets/efgc-logo.svg
           grep -q 'assets/efgc-home-hero.webp' v45-theme.js
           grep -q 'id="forgotPasswordButton"' index.html
           grep -q 'id="plannerMenu"' index.html
@@ -66,6 +69,7 @@ jobs:
           grep -q 'mock-welcome' v45-theme.js
           grep -q 'mock-dashboard' v45-theme.css
           grep -q 'mock-attendance' v45-theme.css
+          grep -q 'v52-first-mockup' v50-reference-welcome.js
           if grep -q 'onclick="requestAdminPasswordReset' index.html; then
             echo "Admin recovery must have exactly one JavaScript binding to avoid duplicate reset emails."
             exit 1
@@ -84,8 +88,8 @@ jobs:
           trap 'kill $server_pid || true' EXIT
           sleep 2
           curl --fail --silent --show-error http://127.0.0.1:8080/index.html | grep -q 'EFGC YOUTH'
-          curl --fail --silent --show-error http://127.0.0.1:8080/v45-theme.js | grep -q 'mockup-driven'
-          curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo-reference.webp >/dev/null
+          curl --fail --silent --show-error http://127.0.0.1:8080/v50-reference-welcome.js | grep -q 'v52-first-mockup'
+          curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'Pass on the Baton'
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-home-hero.webp >/dev/null
           curl --fail --silent --show-error http://127.0.0.1:8080/v36-password-recovery.js | grep -q 'requestAdminPasswordReset'
 
