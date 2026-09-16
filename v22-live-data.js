@@ -1,4 +1,4 @@
-/** EFGC Youth v28 — live Supabase data reads using the authenticated REST adapter. */
+/** EFGC Youth v29 — live Supabase data reads using the authenticated REST adapter. */
 (() => {
   const esc = (v) => encodeURIComponent(String(v));
   const get = (path) => window.EFGCAuth.rest(path);
@@ -14,7 +14,8 @@
       return get(`attendance?select=status,recorded_at,event_id,events(id,title,event_date,attendance_approved)&youth_id=eq.${esc(userId)}&order=recorded_at.desc`);
     },
     async approvedLeaders() {
-      return get('profiles?select=id,full_name,phone,leader_role,face_photo_path&role=eq.leader&approval_status=eq.approved&order=full_name.asc');
+      // Safe projection: Youth can read only approved directory fields, never full Leader profile rows.
+      return get('leader_directory?select=leader_id,full_name,phone,leader_role&order=full_name.asc');
     },
     async planner() {
       return get('year_planner?select=id,event_id,week_start,meeting_title,theme,scripture,published&order=week_start.asc');
@@ -32,5 +33,5 @@
       return window.EFGCAuth.uploadPrivatePhoto(file);
     },
   };
-  window.EFGCLiveData = { enabled: true, source: 'Supabase RLS', version: 28 };
+  window.EFGCLiveData = { enabled: true, source: 'Supabase RLS', version: 29 };
 })();
