@@ -9,15 +9,11 @@
   window.renderLiveData = async function () {
     await originalRenderLiveData();
     const adminMenu = $('#adminMenu');
-    if (adminMenu && !adminMenu.classList.contains('hidden')) {
-      await renderAttendanceModule();
-    }
+    if (adminMenu && !adminMenu.classList.contains('hidden')) await renderAttendanceModule();
   };
 
-  function message(text) {
-    const el = $('#attendanceActionMessage');
-    if (el) el.textContent = text;
-  }
+  function message(text) { const el = $('#attendanceActionMessage'); if (el) el.textContent = text; }
+  function editorMessage(text) { const el = $('#attendanceEditorMessage'); if (el) el.textContent = text; }
 
   async function renderAttendanceModule() {
     const panel = $('#adminPanel');
@@ -47,10 +43,7 @@
     const event = eventCache.find(e => Number(e.id) === eventId);
     editor.innerHTML = '<article class="card"><p>Loading Youth register…</p></article>';
     try {
-      const [youth, existing] = await Promise.all([
-        EFGCLive.adminYouthProfiles(),
-        EFGCLive.adminAttendance(eventId),
-      ]);
+      const [youth, existing] = await Promise.all([EFGCLive.adminYouthProfiles(), EFGCLive.adminAttendance(eventId)]);
       const byYouth = new Map(existing.map(r => [r.youth_id, r.status]));
       if (!youth.length) {
         editor.innerHTML = '<article class="card"><h3>No registered Youth yet</h3><p>Add approved Youth accounts before completing attendance.</p></article>';
@@ -69,11 +62,6 @@
     }
   };
 
-  function editorMessage(text) {
-    const el = $('#attendanceEditorMessage');
-    if (el) el.textContent = text;
-  }
-
   function collectEntries() {
     const selects = [...document.querySelectorAll('#attendanceEditor .attendance-status')];
     if (!selects.length) throw new Error('No Youth are available in this register.');
@@ -87,25 +75,19 @@
     if (!activeEventId) return;
     try {
       editorMessage('Saving attendance…');
-      const entries = collectEntries();
-      await EFGCLive.adminSaveAttendance(activeEventId, entries);
+      await EFGCLive.adminSaveAttendance(activeEventId, collectEntries());
       editorMessage('Attendance saved. The register is still open for changes.');
-    } catch (e) {
-      editorMessage(`Could not save attendance: ${e.message}`);
-    }
+    } catch (e) { editorMessage(`Could not save attendance: ${e.message}`); }
   };
 
   window.finalizeAdminAttendance = async () => {
     if (!activeEventId) return;
     try {
       editorMessage('Saving and finalizing attendance…');
-      const entries = collectEntries();
-      await EFGCLive.adminSaveAttendance(activeEventId, entries);
+      await EFGCLive.adminSaveAttendance(activeEventId, collectEntries());
       await EFGCLive.adminFinalizeAttendance(activeEventId);
-      message('Attendance finalized successfully.');
       await window.renderLiveData();
-    } catch (e) {
-      editorMessage(`Could not finalize attendance: ${e.message}`);
-    }
+      message('Attendance finalized successfully. The register is now locked.');
+    } catch (e) { editorMessage(`Could not finalize attendance: ${e.message}`); }
   };
 })();
