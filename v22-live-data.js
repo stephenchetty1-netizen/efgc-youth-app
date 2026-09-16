@@ -1,4 +1,4 @@
-/** EFGC Youth v30 — live Supabase data reads and authorised Admin actions. */
+/** EFGC Youth v31 — live Supabase data and authorised Admin workflows. */
 (() => {
   const esc = (v) => encodeURIComponent(String(v));
   const jsonHeaders = { 'Content-Type': 'application/json', Prefer: 'return=representation' };
@@ -26,23 +26,26 @@
     async adminProfiles() {
       return get('profiles?select=id,full_name,phone,role,approval_status,leader_role,created_at&order=created_at.desc');
     },
+    async adminYouthProfiles() {
+      return get('profiles?select=id,full_name&role=eq.youth&approval_status=eq.approved&order=full_name.asc');
+    },
+    async adminAttendance(eventId) {
+      return get(`attendance?select=event_id,youth_id,status,recorded_at&event_id=eq.${esc(eventId)}&order=youth_id.asc`);
+    },
     async safeguardingDirectory() {
       return get('safeguarding_contacts?select=youth_id,parent_name,parent_phone,emergency_name,emergency_phone,updated_at&order=updated_at.desc');
     },
     async adminSetLeaderApproval(userId, status) {
       if (!['approved', 'rejected'].includes(status)) throw new Error('Invalid Leader approval status.');
       const rows = await window.EFGCAuth.rest(`profiles?id=eq.${esc(userId)}&role=eq.leader`, {
-        method: 'PATCH',
-        headers: jsonHeaders,
-        body: JSON.stringify({ approval_status: status }),
+        method: 'PATCH', headers: jsonHeaders, body: JSON.stringify({ approval_status: status }),
       });
       if (!rows?.length) throw new Error('Leader record was not updated. Check Admin permission and account status.');
       return rows[0];
     },
     async adminCreateEvent({ title, event_date, theme = null, scripture = null }) {
       const rows = await window.EFGCAuth.rest('events', {
-        method: 'POST',
-        headers: jsonHeaders,
+        method: 'POST', headers: jsonHeaders,
         body: JSON.stringify({ title, event_date, theme: theme || null, scripture: scripture || null, attendance_approved: false }),
       });
       return rows?.[0] || null;
@@ -51,15 +54,38 @@
       const author_id = window.EFGCAuth.userId();
       if (!author_id) throw new Error('Authentication required.');
       const rows = await window.EFGCAuth.rest('news_posts', {
-        method: 'POST',
-        headers: jsonHeaders,
+        method: 'POST', headers: jsonHeaders,
         body: JSON.stringify({ author_id, content, is_published: true }),
       });
       return rows?.[0] || null;
+    },
+    async adminSaveAttendance(eventId, entries) {
+      const recorded_by = window.EFGCAuth.userId();
+      if (!recorded_by) throw new Error('Authentication required.');
+      if (!Array.isArray(entries) || !entries.length) throw new Error('No Youth attendance entries to save.');
+      const rows = entries.map((e) => {
+        if (!['present', 'absent'].includes(e.status)) throw new Error('Every Youth must be marked Present or Absent.');
+        return { event_id: Number(eventId), youth_id: e.youth_id, status: e.status, recorded_by };
+      });
+      return window.EFGCAuth.rest('attendance?on_conflict=event_id,youth_id', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' },
+        body: JSON.stringify(rows),
+      });
+    },
+    async adminFinalizeAttendance(eventId) {
+      const approved_by = window.EFGCAuth.userId();
+      if (!approved_by) throw new Error('Authentication required.');
+      const rows = await window.EFGCAuth.rest(`events?id=eq.${esc(eventId)}`, {
+        method: 'PATCH', headers: jsonHeaders,
+        body: JSON.stringify({ attendance_approved: true, approved_by, approved_at: new Date().toISOString() }),
+      });
+      if (!rows?.length) throw new Error('Attendance could not be finalized.');
+      return rows[0];
     },
     async uploadOwnPhoto(file) {
       return window.EFGCAuth.uploadPrivatePhoto(file);
     },
   };
-  window.EFGCLiveData = { enabled: true, source: 'Supabase RLS', version: 30 };
+  window.EFGCLiveData = { enabled: true, source: 'Supabase RLS', version: 31 };
 })();

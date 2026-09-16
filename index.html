@@ -5,21 +5,13 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
     <meta name="theme-color" content="#07142c" />
     <link rel="manifest" href="manifest.webmanifest" />
-    <link rel="stylesheet" href="styles.css?v=30" />
+    <link rel="stylesheet" href="styles.css?v=31" />
     <title>EFGC Youth</title>
   </head>
   <body>
-    <header>
-      <div class="brand">
-        <div class="brand-mark" aria-label="EFGC">✝</div>
-        <div><b>EFGC YOUTH</b><span>BUILD • BELONG • BE A LIGHT</span></div>
-      </div>
-    </header>
+    <header><div class="brand"><div class="brand-mark" aria-label="EFGC">✝</div><div><b>EFGC YOUTH</b><span>BUILD • BELONG • BE A LIGHT</span></div></div></header>
     <main>
-      <section class="hero">
-        <div><small>EMMANUEL FULL GOSPEL CHURCH</small><h1>YOU ARE A LIGHT!</h1><p>Let your light shine before men. — Matthew 5:16</p></div>
-        <div class="cross">✝</div>
-      </section>
+      <section class="hero"><div><small>EMMANUEL FULL GOSPEL CHURCH</small><h1>YOU ARE A LIGHT!</h1><p>Let your light shine before men. — Matthew 5:16</p></div><div class="cross">✝</div></section>
       <section id="login" class="tab login-tab">
         <div class="login-card">
           <div class="login-switch"><button class="login-type active" data-role="youth">Youth Login</button><button class="login-type" data-role="leader">Leader Login</button><button class="login-type" data-role="admin">Admin</button></div>
@@ -27,13 +19,7 @@
           <label>Login name<input id="loginName" type="text" autocomplete="name" placeholder="Enter your name" /></label>
           <label id="emailField">Email address<input id="loginEmail" type="email" autocomplete="email" placeholder="Enter your email address" /></label>
           <label>Cellphone number<input id="loginPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="e.g. 071 234 5678" /></label>
-          <div id="youthSafeguardingFields">
-            <div class="required-section"><strong>🛡️ Safeguarding information <span class="required">Required for Youth</span></strong><small>Private — available only to authorised EFGC leaders/admin.</small></div>
-            <label>Parent / Guardian name<input id="parentName" type="text" autocomplete="name" placeholder="Parent or guardian full name" /></label>
-            <label>Parent / Guardian contact number<input id="parentPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Parent / guardian cellphone" /></label>
-            <label>Emergency contact name<input id="emergencyName" type="text" autocomplete="name" placeholder="Emergency contact full name" /></label>
-            <label>Emergency contact number<input id="emergencyPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Emergency contact cellphone" /></label>
-          </div>
+          <div id="youthSafeguardingFields"><div class="required-section"><strong>🛡️ Safeguarding information <span class="required">Required for Youth</span></strong><small>Private — available only to authorised EFGC leaders/admin.</small></div><label>Parent / Guardian name<input id="parentName" type="text" autocomplete="name" placeholder="Parent or guardian full name" /></label><label>Parent / Guardian contact number<input id="parentPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Parent / guardian cellphone" /></label><label>Emergency contact name<input id="emergencyName" type="text" autocomplete="name" placeholder="Emergency contact full name" /></label><label>Emergency contact number<input id="emergencyPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="Emergency contact cellphone" /></label></div>
           <label id="dobField">Birthday <span class="required">Required</span><input id="loginDob" type="date" autocomplete="bday" /></label>
           <label id="photoField">Face photo <span class="required">Required</span><input id="loginPhoto" type="file" accept="image/*" capture="user" /></label>
           <label id="roleField" class="hidden">Leadership role<input id="loginRoleText" type="text" placeholder="e.g. Youth Leader" /></label>
@@ -41,9 +27,7 @@
           <button id="continueButton" class="primary-login" onclick="loginUser()">Continue</button><button class="ghost-login" onclick="selectRole('youth')">← Back to Youth Login</button><p id="loginMessage" class="login-message"></p>
         </div>
       </section>
-      <nav class="menu-grid" id="mainMenu" aria-label="Main menu">
-        <button class="menu-item active" data-tab="home">🏠 Home</button><button class="menu-item" data-tab="events">📅 Events</button><button class="menu-item" data-tab="news">📰 News Feed</button><button class="menu-item" data-tab="scripture">📖 Daily Scripture</button><button class="menu-item" data-tab="mine">📊 My Attendance</button><button class="menu-item" data-tab="leaders">👥 Leaders</button><button class="menu-item" data-tab="profile">👤 Profile</button><button class="menu-item" data-tab="security">🔐 Security</button><button class="menu-item hidden" id="adminMenu" data-tab="admin">🛡️ Admin</button>
-      </nav>
+      <nav class="menu-grid" id="mainMenu" aria-label="Main menu"><button class="menu-item active" data-tab="home">🏠 Home</button><button class="menu-item" data-tab="events">📅 Events</button><button class="menu-item" data-tab="news">📰 News Feed</button><button class="menu-item" data-tab="scripture">📖 Daily Scripture</button><button class="menu-item" data-tab="mine">📊 My Attendance</button><button class="menu-item" data-tab="leaders">👥 Leaders</button><button class="menu-item" data-tab="profile">👤 Profile</button><button class="menu-item" data-tab="security">🔐 Security</button><button class="menu-item hidden" id="adminMenu" data-tab="admin">🛡️ Admin</button></nav>
       <div class="userbar"><div class="user-mini"><div class="avatar">👤</div><span id="currentUser">Not signed in</span></div><button onclick="logoutUser()">Log out</button></div>
       <section id="home" class="tab"><div id="leaderReminder"></div><div id="scriptureCardHome"></div><h2>Latest News</h2><div id="homeNews"><article class="card"><h3>Welcome to EFGC Youth</h3><p>Build • Belong • Be a Light. News and announcements will appear here.</p></article></div></section>
       <section id="events" class="tab hidden"><h2>Upcoming Youth Events</h2><p>Attendance is recorded by an authorised EFGC Admin after each meeting.</p><div id="eventList"></div></section>
@@ -56,11 +40,12 @@
       <section id="admin" class="tab hidden"><div id="adminPanel"></div></section>
     </main>
     <footer><div class="footer-mark">✦ EFGC YOUTH</div>Jesus • Youth • Community<br /><span>Philippians 4:13</span></footer>
-    <script src="backend-adapter.js?v=30"></script>
-    <script src="auth-adapter.js?v=30"></script>
-    <script src="app.js?v=30"></script>
-    <script src="v22-live-data.js?v=30"></script>
-    <script src="v23-photo-security.js?v=30"></script>
-    <script src="v21-auth-ui.js?v=30"></script>
+    <script src="backend-adapter.js?v=31"></script>
+    <script src="auth-adapter.js?v=31"></script>
+    <script src="app.js?v=31"></script>
+    <script src="v22-live-data.js?v=31"></script>
+    <script src="v23-photo-security.js?v=31"></script>
+    <script src="v31-attendance-ui.js?v=31"></script>
+    <script src="v21-auth-ui.js?v=31"></script>
   </body>
 </html>
