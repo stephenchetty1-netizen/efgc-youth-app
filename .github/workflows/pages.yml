@@ -55,12 +55,12 @@ jobs:
             grep -q "$asset" index.html || { echo "Missing reference to $asset"; exit 1; }
           done
           grep -q 'Pass on the Baton' assets/efgc-logo.svg
-          grep -q 'V57' v54-stable-welcome.js
+          grep -q 'V59' v54-stable-welcome.js
           grep -q 'buildWelcome' v54-stable-welcome.js
-          grep -q 'assets/efgc-logo.svg?v=57.0' v54-stable-welcome.js
+          grep -q 'assets/efgc-logo.svg?v=59.0' v54-stable-welcome.js
           grep -q 'A GENERATION FOR HIS GLORY' v54-stable-welcome.js
-          grep -q 'v54-stable-welcome.js?v=57.0' index.html
-          grep -q 'v54-stable-welcome.css?v=57.0' index.html
+          grep -q 'v54-stable-welcome.js?v=59.0' index.html
+          grep -q 'v54-stable-welcome.css?v=59.0' index.html
           grep -q 'id="forgotPasswordButton"' index.html
           grep -q 'id="plannerMenu"' index.html
           grep -q 'id="attendanceMenu"' index.html
@@ -91,8 +91,7 @@ jobs:
           trap 'kill $server_pid || true' EXIT
           sleep 2
           curl --fail --silent --show-error http://127.0.0.1:8080/index.html | grep -q 'EFGC YOUTH'
-          curl --fail --silent --show-error http://127.0.0.1:8080/v54-stable-welcome.js | grep -q 'V57'
-          curl --fail --silent --show-error http://127.0.0.1:8080/v54-stable-welcome.css | grep -q 'V57'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v54-stable-welcome.js | grep -q 'V59'
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'EMMANUEL FULL GOSPEL CHURCH'
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'Pass on the Baton'
           curl --fail --silent --show-error http://127.0.0.1:8080/v36-password-recovery.js | grep -q 'requestAdminPasswordReset'
@@ -106,17 +105,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
-
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: "."
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
