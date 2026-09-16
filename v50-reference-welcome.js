@@ -1,43 +1,41 @@
-/** V50 — apply the user-approved welcome composition while preserving auth flows. */
+/** V51 — selected logo-first welcome mockup, preserving the existing auth flow. */
 (() => {
   const $ = (s) => document.querySelector(s);
-  const logo = 'assets/efgc-logo-reference.webp?v=50.0';
+  const logo = 'assets/efgc-logo-reference.webp?v=51.0';
 
-  function openLogin(role='youth'){
+  function openLogin(role='youth') {
     const welcome = $('#mockWelcome');
     const card = $('#login .login-card');
-    if(!welcome || !card) return;
+    if (!welcome || !card) return;
     welcome.classList.add('hidden');
     card.classList.remove('mock-login-hidden');
     try { selectRole(role); } catch {}
-    card.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+    card.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
   }
 
-  function applyReferenceWelcome(){
+  function applySelectedMockup() {
     const welcome = $('#mockWelcome');
     const card = $('#login .login-card');
-    if(!welcome || !card || welcome.dataset.v50==='1') return;
-    welcome.dataset.v50='1';
-    welcome.className = 'v50-reference-welcome';
+    if (!welcome || !card || welcome.dataset.v51 === '1') return;
+    welcome.dataset.v51 = '1';
+    welcome.className = 'v51-selected-welcome';
     welcome.innerHTML = `
-      <div class="v50-welcome-inner">
-        <div class="v50-logo-shell"><img class="v50-logo" src="${logo}" alt="Emmanuel Full Gospel Church official logo" decoding="async" fetchpriority="high"></div>
-        <h1 class="v50-youth">YOUTH.</h1>
-        <p class="v50-tagline">BUILD • BELONG • BE A LIGHT</p>
-        <div class="v50-spacer" aria-hidden="true"></div>
-        <p class="v50-statement">Your faith.<br>Your people.<br>Your <em>purpose.</em></p>
-        <div class="v50-actions">
-          <button id="v50LoginButton" class="v50-login" type="button">Login</button>
-          <button id="v50CreateButton" class="v50-create" type="button">Create Account</button>
-        </div>
-        <p class="v50-generation">A GENERATION FOR HIS GLORY</p>
+      <div class="v51-welcome-inner">
+        <div class="v51-logo-stage"><img class="v51-logo" src="${logo}" alt="Emmanuel Full Gospel Church official logo" decoding="async" fetchpriority="high"></div>
+        <div class="v51-youth-wrap"><span class="v51-crown" aria-hidden="true">♛</span><h1 class="v51-youth">YOUTH</h1></div>
+        <p class="v51-tagline">BUILD <i>•</i> BELONG <i>•</i> BE A LIGHT</p>
+        <p class="v51-verse"><strong>Matthew 5:16</strong> (KJV)</p>
+        <div class="v51-spacer" aria-hidden="true"></div>
+        <p class="v51-light-line">LET YOUR <strong>LIGHT</strong> SHINE<br>BEFORE MEN…</p>
+        <div class="v51-actions"><button id="v51LoginButton" class="v51-login" type="button">Login</button><button id="v51CreateButton" class="v51-create" type="button">Create Account</button></div>
+        <p class="v51-generation">A GENERATION FOR HIS GLORY</p>
       </div>`;
-    $('#v50LoginButton')?.addEventListener('click',()=>openLogin('youth'));
-    $('#v50CreateButton')?.addEventListener('click',()=>openLogin('youth'));
-    if(location.hash.includes('access_token') || /type=recovery|code=/.test(location.search)) openLogin('admin');
+    $('#v51LoginButton')?.addEventListener('click', () => openLogin('youth'));
+    $('#v51CreateButton')?.addEventListener('click', () => openLogin('youth'));
+    if (location.hash.includes('access_token') || /type=recovery|code=/.test(location.search)) openLogin('admin');
   }
 
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(applyReferenceWelcome,0));
-  setTimeout(applyReferenceWelcome,250);
-  setTimeout(applyReferenceWelcome,900);
+  document.addEventListener('DOMContentLoaded', () => setTimeout(applySelectedMockup, 0));
+  setTimeout(applySelectedMockup, 250);
+  setTimeout(applySelectedMockup, 900);
 })();
