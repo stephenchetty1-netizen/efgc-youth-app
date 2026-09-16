@@ -1,4 +1,4 @@
-/** EFGC Youth v28 — Supabase Auth + REST adapter.
+/** EFGC Youth v34 — Supabase Auth + REST adapter.
  * Browser-safe only: project URL + publishable key. RLS remains authoritative.
  */
 (() => {
@@ -18,6 +18,7 @@
     catch { return null; }
   };
   const write = (v) => v ? localStorage.setItem(K, JSON.stringify(v)) : localStorage.removeItem(K);
+  const callbackUrl = () => `${location.origin}${location.pathname}`;
 
   async function req(url, options = {}) {
     const r = await fetch(url, options);
@@ -25,8 +26,8 @@
     const ct = r.headers.get('content-type') || '';
     try { body = ct.includes('json') ? await r.json() : await r.text(); } catch { body = null; }
     if (!r.ok) {
-      const msg = body?.msg || body?.message || body?.error_description || body?.error || (typeof body === 'string' && body) || `Request failed (${r.status})`;
-      const e = new Error(msg);
+      const message = body?.msg || body?.message || body?.error_description || body?.error || (typeof body === 'string' && body) || `Request failed (${r.status})`;
+      const e = new Error(message);
       e.status = r.status;
       throw e;
     }
@@ -69,25 +70,27 @@
   async function restoreCallback() {
     const url = new URL(location.href);
     const hash = new URLSearchParams(url.hash.replace(/^#/, ''));
+    const callbackError = hash.get('error_description') || hash.get('error');
+    if (callbackError) {
+      history.replaceState(null, '', location.pathname + location.search);
+      throw new Error(decodeURIComponent(callbackError.replace(/\+/g, ' ')));
+    }
+
     const access_token = hash.get('access_token');
     const refresh_token = hash.get('refresh_token');
     if (access_token) {
-      try {
-        const user = await req(`${A}/user`, { headers: H(access_token) });
-        const s = {
-          access_token,
-          refresh_token,
-          token_type: hash.get('token_type') || 'bearer',
-          expires_in: Number(hash.get('expires_in') || 3600),
-          expires_at: Number(hash.get('expires_at') || 0),
-          user,
-        };
-        write(s);
-        history.replaceState(null, '', location.pathname + location.search);
-        return s;
-      } catch (e) {
-        console.error('Auth callback restore failed', e);
-      }
+      const user = await req(`${A}/user`, { headers: H(access_token) });
+      const s = {
+        access_token,
+        refresh_token,
+        token_type: hash.get('token_type') || 'bearer',
+        expires_in: Number(hash.get('expires_in') || 3600),
+        expires_at: Number(hash.get('expires_at') || 0),
+        user,
+      };
+      write(s);
+      history.replaceState(null, '', location.pathname + location.search);
+      return s;
     }
 
     const token_hash = url.searchParams.get('token_hash');
@@ -122,15 +125,17 @@
     restoreCallback,
     refresh,
     normalizeZA,
+    callbackUrl,
     userId() { return read()?.user?.id || null; },
     accessToken() { return read()?.access_token || null; },
-    async requestEmailOtp(email) {
+    async requestEmailOtp(email, createUser = true) {
       email = String(email || '').trim().toLowerCase();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw new Error('Enter a valid email address.');
-      await req(`${A}/otp`, {
+      const redirectTo = callbackUrl();
+      await req(`${A}/otp?redirect_to=${encodeURIComponent(redirectTo)}`, {
         method: 'POST',
         headers: { ...H(null), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, create_user: true }),
+        body: JSON.stringify({ email, create_user: Boolean(createUser) }),
       });
       return email;
     },
