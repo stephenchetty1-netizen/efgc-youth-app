@@ -5,7 +5,8 @@
 
   const $ = (s) => document.querySelector(s);
   const setMessage = (text) => { const el = $('#loginMessage'); if (el) el.textContent = text; };
-  const callbackUrl = () => `${location.origin}${location.pathname}`;
+  const PRODUCTION_RECOVERY_URL = 'https://stephenchetty1-netizen.github.io/efgc-youth-app/';
+  const callbackUrl = () => location.hostname === 'stephenchetty1-netizen.github.io' ? `${location.origin}${location.pathname}` : PRODUCTION_RECOVERY_URL;
   const initialHash = new URLSearchParams(location.hash.replace(/^#/, ''));
   const initialQuery = new URL(location.href).searchParams;
   const arrivingFromRecovery = initialHash.get('type') === 'recovery' || initialQuery.get('type') === 'recovery';
