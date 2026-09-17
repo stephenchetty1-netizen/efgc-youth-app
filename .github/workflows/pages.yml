@@ -42,6 +42,7 @@ jobs:
           node --check v44-updates.js
           node --check v45-theme.js
           node --check v54-stable-welcome.js
+          node --check tests/visual-smoke.cjs
           test -f index.html
           test -f manifest.webmanifest
           test -f v43.css
@@ -102,6 +103,32 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'EMMANUEL FULL GOSPEL CHURCH'
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'Pass on the Baton'
           curl --fail --silent --show-error http://127.0.0.1:8080/v36-password-recovery.js | grep -q 'requestAdminPasswordReset'
+
+      - name: Install Playwright for responsive UI checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Run responsive welcome and Admin-login visual smoke tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8080 >/tmp/efgc-visual-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid || true' EXIT
+          sleep 2
+          node tests/visual-smoke.cjs
+
+      - name: Upload V61 responsive screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v61-responsive-screenshots
+          path: artifacts/v61-visual/
+          if-no-files-found: ignore
+          retention-days: 7
 
   deploy:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
