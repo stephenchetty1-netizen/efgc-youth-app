@@ -1,0 +1,37 @@
+name: Validate Youth Event RSVP
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-event-rsvp:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Validate event RSVP feature
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check v63-duty-ack.js
+          node --check v64-event-rsvp.js
+          test -f v63-duty-ack.css
+          test -f v64-event-rsvp.css
+          grep -q 'v63-duty-ack.js?v=63.0' index.html
+          grep -q 'v63-duty-ack.css?v=63.0' index.html
+          grep -q 'v64-event-rsvp.js?v=64.0' index.html
+          grep -q 'v64-event-rsvp.css?v=64.0' index.html
+          grep -q 'event_rsvps' v64-event-rsvp.js
+          grep -q 'Attending' v64-event-rsvp.js
+          grep -q 'Not Attending' v64-event-rsvp.js
+          grep -q 'resolution=merge-duplicates' v64-event-rsvp.js
+          grep -q 'staff-summary' v64-event-rsvp.js
