@@ -54,12 +54,14 @@ async function noOverflow(page,label) {
         assert(r.y+r.height<=size[1]+2,`${name}: primary action below viewport`);
       }
       await page.screenshot({path:`${out}/${name}-welcome.png`,fullPage:true});
+      if (name === '384x854') console.log('EFGC_REVIEW_WELCOME='+(await page.screenshot({type:'jpeg',quality:80,fullPage:true})).toString('base64'));
       await page.click('#v61Login'); await visible(page,'#loginEmail');
       assert(!await page.locator('#nameField').isVisible(),'Existing-member login must not ask for registration details');
       await page.click('.login-type[data-role="admin"]'); await visible(page,'#passwordField'); await visible(page,'#forgotPasswordButton');
       await page.click('#forgotPasswordButton'); assert.match(await page.locator('#loginMessage').innerText(),/email address first/i);
       await noOverflow(page,`${name} login`);
       await page.screenshot({path:`${out}/${name}-admin-login.png`,fullPage:true});
+      if (name === '384x854') console.log('EFGC_REVIEW_LOGIN='+(await page.screenshot({type:'jpeg',quality:80,fullPage:true})).toString('base64'));
       await page.click('.v61-back'); await page.click('#v61Create'); await visible(page,'#nameField'); await visible(page,'#youthSafeguardingFields');
       await page.click('.login-type[data-role="leader"]'); assert(!await page.locator('#youthSafeguardingFields').isVisible()); await visible(page,'#roleField');
       await noOverflow(page,`${name} registration`);
@@ -85,7 +87,8 @@ async function noOverflow(page,label) {
       await page.waitForFunction(()=>document.body.classList.contains('mock-authenticated'));
       for (const selector of ['.brand-logo','.hero-logo','.official-footer-logo']) {
         assert.match(await page.locator(selector).getAttribute('src'),/efgc-logo.svg\?v=62.0$/);
-        assert(await page.locator(selector).evaluate(img=>img.complete && img.naturalWidth>0),'Crest failed to load');
+        await page.locator(selector).evaluate(img=>img.decode());
+        assert(await page.locator(selector).evaluate(img=>img.naturalWidth>0),`${role} ${selector}: crest failed to load`);
       }
       await noOverflow(page,role+' home');
       await page.screenshot({path:`${out}/${role}-home.png`,fullPage:true});

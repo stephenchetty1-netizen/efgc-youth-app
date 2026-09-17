@@ -8,7 +8,7 @@
 
   function applyBrandAssets(){
     document.querySelectorAll('.brand-logo,.hero-logo,.official-footer-logo').forEach(img => {
-      img.src = logoAsset;
+      if (img.getAttribute('src') !== logoAsset) img.src = logoAsset;
       img.classList.remove('reference-logo');
       img.classList.add('official-logo');
       img.style.objectPosition = 'center center';
