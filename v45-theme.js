@@ -1,60 +1,27 @@
-/** EFGC Youth v45 — mockup-driven mobile theme using the user's supplied reference artwork. */
+/** EFGC Youth V61 — authenticated app theme only. Welcome/login rendering is owned by v54-stable-welcome.js. */
 (() => {
   const $ = (s) => document.querySelector(s);
   const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const logoAsset = 'assets/efgc-logo-reference.webp?v=49.1';
-  const heroAsset = 'assets/efgc-home-hero.webp?v=45';
+  const logoAsset = 'assets/efgc-logo.svg?v=61.0';
 
   function activeSession(){ try { return session || null; } catch { return null; } }
 
   function applyBrandAssets(){
     document.querySelectorAll('.brand-logo,.hero-logo,.official-footer-logo').forEach(img => {
       img.src = logoAsset;
-      img.classList.add('reference-logo');
+      img.classList.remove('reference-logo');
+      img.classList.add('official-logo');
+      img.style.objectPosition = 'center center';
     });
     const hero = $('.hero');
     if(hero){
-      hero.style.backgroundImage = 'linear-gradient(90deg,rgba(1,19,48,.88),rgba(1,19,48,.16)),url("assets/v49-youth-fellowship.webp")';
+      hero.style.backgroundImage = 'linear-gradient(90deg,rgba(1,19,48,.88),rgba(1,19,48,.16)),url("assets/v49-youth-fellowship.webp?v=61.0")';
       const home = $('#home');
       const heading = home?.querySelector('.v49-heading');
       if(home && heading && hero.parentElement !== home) heading.after(hero);
       hero.setAttribute('aria-label','You are a light — Matthew 5:16');
       hero.classList.add('mockup-hero');
     }
-  }
-
-  function ensureWelcome(){
-    const login = $('#login');
-    const card = login?.querySelector('.login-card');
-    if(!login || !card || $('#mockWelcome')) return;
-    const welcome = document.createElement('div');
-    welcome.id = 'mockWelcome';
-    welcome.className = 'mock-welcome';
-    welcome.innerHTML = `
-      <div class="welcome-brand"><img src="${logoAsset}" class="mock-welcome-logo" alt="Emmanuel Full Gospel Church logo"><div><strong>EFGC <span>YOUTH</span></strong><small>Emmanuel Full Gospel Church</small></div></div>
-      <div class="welcome-photo" role="img" aria-label="Illustration of youth gathering for worship"><span>BUILD • BELONG • BE A LIGHT</span></div>
-      <div class="welcome-content"><p class="welcome-eyebrow">A GENERATION FOR HIS GLORY</p>
-      <h1 class="v49-welcome-title">Find your people.<br><em>Grow in faith.</em></h1>
-      <p class="welcome-description">A place to belong, serve and shine together.</p>
-      <div class="mock-welcome-actions">
-        <button id="mockLoginButton" class="mock-primary" type="button">Log in <span aria-hidden="true">→</span></button>
-        <button id="mockCreateButton" class="mock-secondary" type="button">Create account</button>
-      </div><p class="welcome-scripture">“Let your light so shine before men”<br><span>Matthew 5:16 • KJV</span></p></div>`;
-    login.insertBefore(welcome, card);
-    card.classList.add('mock-login-card','mock-login-hidden');
-    const back = document.createElement('button');
-    back.type='button'; back.className='v49-back'; back.textContent='← Welcome';
-    back.addEventListener('click',()=>{card.classList.add('mock-login-hidden');welcome.classList.remove('hidden');$('#mockLoginButton')?.focus();});
-    card.prepend(back);
-    const openLogin = (role='youth') => {
-      welcome.classList.add('hidden');
-      card.classList.remove('mock-login-hidden');
-      try { selectRole(role); } catch {}
-      card.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
-    };
-    $('#mockLoginButton')?.addEventListener('click',()=>openLogin('youth'));
-    $('#mockCreateButton')?.addEventListener('click',()=>openLogin('youth'));
-    if(location.hash.includes('access_token') || /type=recovery|code=/.test(location.search)) openLogin('admin');
   }
 
   function icon(name){
@@ -109,6 +76,7 @@
     $('#mockWelcome')?.classList.toggle('hidden', signed);
     $('#mockBottomNav')?.classList.toggle('hidden', !signed);
     document.body.classList.toggle('mock-authenticated',signed);
+    applyBrandAssets();
     ensureHomeDashboard();
     ensureAdminDashboard();
   }
@@ -183,8 +151,7 @@
   }
 
   document.addEventListener('DOMContentLoaded',()=>{
-    applyBrandAssets(); ensureWelcome(); ensureBottomNav(); enhanceEventsTabs(); syncThemeShell();
+    applyBrandAssets(); ensureBottomNav(); enhanceEventsTabs(); syncThemeShell();
     setTimeout(async()=>{ applyBrandAssets(); syncThemeShell(); restyleLeaderCards(); await restyleEventCards(); },400);
   });
-  setTimeout(()=>{ applyBrandAssets(); ensureWelcome(); ensureBottomNav(); syncThemeShell(); },900);
 })();
