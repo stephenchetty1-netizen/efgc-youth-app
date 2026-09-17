@@ -67,6 +67,9 @@ jobs:
           grep -q 'member-auth' v60-no-email-auth.js
           grep -q 'action: .admin-login.' v60-no-email-auth.js
           grep -q 'action: .register.' v60-no-email-auth.js
+          grep -q 'admin-reset-member-password' v60-no-email-auth.js
+          grep -q 'member-password-reset' app.js
+          grep -q 'member-reset-modal' v60-no-email.css
           grep -q 'generateYearPlannerV44' v44-updates.js
           grep -q 'saveRosterWeekV44' v44-updates.js
           grep -q 'adminEventImage' v44-updates.js
@@ -96,7 +99,9 @@ jobs:
           sleep 2
           curl --fail --silent --show-error http://127.0.0.1:8080/index.html | grep -q 'EFGC YOUTH'
           curl --fail --silent --show-error http://127.0.0.1:8080/v60-auth-adapter.js | grep -q 'no-email'
-          curl --fail --silent --show-error http://127.0.0.1:8080/v60-no-email-auth.js | grep -q 'member-auth'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v60-no-email-auth.js | grep -q 'admin-reset-member-password'
+          curl --fail --silent --show-error http://127.0.0.1:8080/app.js | grep -q 'member-password-reset'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v60-no-email.css | grep -q 'member-reset-modal'
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'EMMANUEL FULL GOSPEL CHURCH'
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'Pass on the Baton'
 
