@@ -19,15 +19,15 @@ function selectRole(r) {
   document.querySelectorAll('.login-type').forEach((b) => b.classList.toggle('active', b.dataset.role === r));
   $('#loginTitle').textContent = r === 'leader' ? 'Leader Login / Application' : r === 'admin' ? 'Admin Login' : 'Youth Login';
   $('#loginHint').textContent = r === 'leader'
-    ? 'Existing leaders sign in with email. New Leader access requires Admin approval.'
+    ? 'Leaders use cellphone number and password. New Leader access requires Admin approval.'
     : r === 'admin'
-      ? 'Secure Admin sign-in uses your verified email. Admin rights cannot be created from this screen.'
-      : 'Existing youth sign in with email. New youth can complete profile setup after verification.';
+      ? 'Secure Admin sign-in uses your password. Admin rights cannot be created from this screen.'
+      : 'Youth use cellphone number and password. New youth can create a secure profile.';
   $('#youthSafeguardingFields').classList.toggle('hidden', r !== 'youth');
   $('#roleField').classList.toggle('hidden', r !== 'leader');
   $('#photoField').classList.toggle('hidden', r === 'admin');
   $('#dobField').classList.toggle('hidden', r === 'admin');
-  $('#emailField').classList.remove('hidden');
+  $('#emailField')?.classList.add('hidden');
 }
 
 document.addEventListener('click', (e) => {
@@ -100,7 +100,9 @@ function card(title, body, meta='') {
 
 function adminProfileCard(p){
   const pendingLeader = p.role === 'leader' && p.approval_status === 'pending';
-  const actions = pendingLeader ? `<div class="admin-actions"><button class="primary-login" type="button" onclick="adminSetLeaderApproval('${p.id}','approved')">Approve Leader</button><button class="ghost-login" type="button" onclick="adminSetLeaderApproval('${p.id}','rejected')">Reject</button></div>` : '';
+  const approvalActions = pendingLeader ? `<button class="primary-login" type="button" onclick="adminSetLeaderApproval('${p.id}','approved')">Approve Leader</button><button class="ghost-login" type="button" onclick="adminSetLeaderApproval('${p.id}','rejected')">Reject</button>` : '';
+  const resetAction = p.role !== 'admin' ? `<button class="ghost-login member-password-reset" type="button" data-user-id="${escapeHtml(p.id)}" data-user-name="${escapeHtml(p.full_name)}">Reset Password</button>` : '';
+  const actions = approvalActions || resetAction ? `<div class="admin-actions">${approvalActions}${resetAction}</div>` : '';
   return `<article class="card"><h3>${escapeHtml(p.full_name)}</h3><small>${escapeHtml(p.leader_role || '')}</small><p>${escapeHtml(`${p.role} • ${p.approval_status}`)}</p>${actions}</article>`;
 }
 
