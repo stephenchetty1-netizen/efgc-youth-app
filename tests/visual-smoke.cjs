@@ -74,7 +74,7 @@ async function noOverflow(page,label) {
       assert.equal(otp.length,1); assert.equal(otp[0].body.create_user,register);
       assert(await page.locator('#continueButton').isDisabled());
       await page.fill('#supabaseOtp','123456'); await page.click('#verifyOtpButton');
-      if (register) { await visible(page,'#nameField'); assert.match(await page.locator('#loginMessage').innerText(),/Complete your profile/); }
+      if (register) { await page.waitForFunction(()=>document.querySelector('#loginMessage').textContent.includes('Email verified. Complete your profile')); await visible(page,'#nameField'); }
       else { await visible(page,'#home'); await page.click('.userbar button'); await visible(page,'#mockWelcome'); assert(!await page.locator('.login-card').isVisible()); }
       assert.deepEqual(errors,[]); await page.close();
     }
