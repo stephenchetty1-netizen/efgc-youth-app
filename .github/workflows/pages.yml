@@ -55,12 +55,13 @@ jobs:
             grep -q "$asset" index.html || { echo "Missing reference to $asset"; exit 1; }
           done
           grep -q 'Pass on the Baton' assets/efgc-logo.svg
-          grep -q 'V59' v54-stable-welcome.js
+          grep -q 'V61' v54-stable-welcome.js
           grep -q 'buildWelcome' v54-stable-welcome.js
-          grep -q 'assets/efgc-logo.svg?v=59.0' v54-stable-welcome.js
+          grep -q 'assets/efgc-logo.svg?v=61.0' v54-stable-welcome.js
           grep -q 'A GENERATION FOR HIS GLORY' v54-stable-welcome.js
-          grep -q 'v54-stable-welcome.js?v=59.0' index.html
-          grep -q 'v54-stable-welcome.css?v=59.0' index.html
+          grep -q 'v54-stable-welcome.js?v=61.0' index.html
+          grep -q 'v54-stable-welcome.css?v=61.0' index.html
+          grep -q 'manifest.webmanifest?v=61.0' index.html
           grep -q 'id="forgotPasswordButton"' index.html
           grep -q 'id="plannerMenu"' index.html
           grep -q 'id="attendanceMenu"' index.html
@@ -73,6 +74,10 @@ jobs:
           grep -q 'saveOwnLeaderProfile' v44-updates.js
           grep -q 'mock-dashboard' v45-theme.css
           grep -q 'mock-attendance' v45-theme.css
+          if grep -q 'ensureWelcome' v45-theme.js; then
+            echo "v45-theme.js must not create a second welcome renderer."
+            exit 1
+          fi
           if grep -q 'onclick="requestAdminPasswordReset' index.html; then
             echo "Admin recovery must have exactly one JavaScript binding to avoid duplicate reset emails."
             exit 1
@@ -91,7 +96,7 @@ jobs:
           trap 'kill $server_pid || true' EXIT
           sleep 2
           curl --fail --silent --show-error http://127.0.0.1:8080/index.html | grep -q 'EFGC YOUTH'
-          curl --fail --silent --show-error http://127.0.0.1:8080/v54-stable-welcome.js | grep -q 'V59'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v54-stable-welcome.js | grep -q 'V61'
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'EMMANUEL FULL GOSPEL CHURCH'
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'Pass on the Baton'
           curl --fail --silent --show-error http://127.0.0.1:8080/v36-password-recovery.js | grep -q 'requestAdminPasswordReset'
