@@ -5,7 +5,7 @@
   <linearGradient id="blue" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0b86e8"/><stop offset=".5" stop-color="#0664b8"/><stop offset="1" stop-color="#023b7b"/></linearGradient>
   <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff36b"/><stop offset=".38" stop-color="#ffc329"/><stop offset="1" stop-color="#ef6a00"/></linearGradient>
   <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="0" dy="8" stdDeviation="6" flood-color="#001a35" flood-opacity=".55"/></filter>
-  <path id="arc" d="M64 190 A192 192 0 0 1 448 190"/>
+  <path id="arc" d="M64 230 A192 192 0 0 1 448 230"/>
 </defs>
 <g filter="url(#shadow)">
   <text fill="#fff" stroke="#043c78" stroke-width="4" paint-order="stroke" font-family="Arial,Helvetica,sans-serif" font-size="29" font-weight="900" letter-spacing=".35"><textPath href="#arc" startOffset="50%" text-anchor="middle">EMMANUEL FULL GOSPEL CHURCH</textPath></text>
