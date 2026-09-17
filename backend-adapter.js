@@ -2,9 +2,7 @@ window.EFGC_SUPABASE={url:'https://ktgdabqninofldpafklz.supabase.co',publishable
 (() => {
   const assets = [
     { type:'style', selector:'link[data-efgc-duty-v63]', src:'v63-duty-ack.css?v=63.0', data:'efgcDutyV63' },
-    { type:'script', selector:'script[data-efgc-duty-v63]', src:'v63-duty-ack.js?v=63.0', data:'efgcDutyV63' },
-    { type:'style', selector:'link[data-efgc-scripture-v68]', src:'v68-scripture-generator.css?v=68.0', data:'efgcScriptureV68' },
-    { type:'script', selector:'script[data-efgc-scripture-v68]', src:'v68-scripture-generator.js?v=68.0', data:'efgcScriptureV68' }
+    { type:'script', selector:'script[data-efgc-duty-v63]', src:'v63-duty-ack.js?v=63.0', data:'efgcDutyV63' }
   ];
   assets.forEach((asset) => {
     if (document.querySelector(asset.selector)) return;
