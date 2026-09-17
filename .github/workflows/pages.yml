@@ -3,6 +3,8 @@ name: Validate and deploy EFGC Youth App
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +13,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "efgc-youth-pages"
+  group: "efgc-youth-pages-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
@@ -40,6 +42,9 @@ jobs:
           node --check v44-updates.js
           node --check v45-theme.js
           node --check v54-stable-welcome.js
+          node --check tests/supabase-smoke.cjs
+          node --check tests/visual-smoke.cjs
+          node --test tests/auth-session.test.cjs
           test -f index.html
           test -f manifest.webmanifest
           test -f v43.css
@@ -50,17 +55,19 @@ jobs:
           test -f assets/v49-sunrise.webp
           test -f assets/v49-youth-fellowship.webp
           test -f assets/efgc-logo.svg
+          test -f assets/efgc-youth-welcome.jpg
           test -f assets/efgc-home-hero.webp
           for asset in backend-adapter.js auth-adapter.js app.js v22-live-data.js v23-photo-security.js v36-password-recovery.js v21-auth-ui.js v43-ministry-tools.js v44-updates.js v45-theme.js v54-stable-welcome.js v43.css v44.css v45-theme.css v54-stable-welcome.css assets/efgc-logo.svg; do
             grep -q "$asset" index.html || { echo "Missing reference to $asset"; exit 1; }
           done
           grep -q 'Pass on the Baton' assets/efgc-logo.svg
-          grep -q 'V59' v54-stable-welcome.js
+          grep -q 'V62' v54-stable-welcome.js
           grep -q 'buildWelcome' v54-stable-welcome.js
-          grep -q 'assets/efgc-logo.svg?v=59.0' v54-stable-welcome.js
-          grep -q 'A GENERATION FOR HIS GLORY' v54-stable-welcome.js
-          grep -q 'v54-stable-welcome.js?v=59.0' index.html
-          grep -q 'v54-stable-welcome.css?v=59.0' index.html
+          grep -q 'assets/efgc-logo.svg?v=62.0' v54-stable-welcome.js
+          grep -q 'A generation for His glory' v54-stable-welcome.js
+          grep -q 'v54-stable-welcome.js?v=62.0' index.html
+          grep -q 'v54-stable-welcome.css?v=62.0' index.html
+          grep -q 'manifest.webmanifest?v=62.0' index.html
           grep -q 'id="forgotPasswordButton"' index.html
           grep -q 'id="plannerMenu"' index.html
           grep -q 'id="attendanceMenu"' index.html
@@ -73,6 +80,10 @@ jobs:
           grep -q 'saveOwnLeaderProfile' v44-updates.js
           grep -q 'mock-dashboard' v45-theme.css
           grep -q 'mock-attendance' v45-theme.css
+          if grep -q 'ensureWelcome' v45-theme.js; then
+            echo "v45-theme.js must not create a second welcome renderer."
+            exit 1
+          fi
           if grep -q 'onclick="requestAdminPasswordReset' index.html; then
             echo "Admin recovery must have exactly one JavaScript binding to avoid duplicate reset emails."
             exit 1
@@ -91,12 +102,46 @@ jobs:
           trap 'kill $server_pid || true' EXIT
           sleep 2
           curl --fail --silent --show-error http://127.0.0.1:8080/index.html | grep -q 'EFGC YOUTH'
-          curl --fail --silent --show-error http://127.0.0.1:8080/v54-stable-welcome.js | grep -q 'V59'
-          curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'EMMANUEL FULL GOSPEL CHURCH'
-          curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg | grep -q 'Pass on the Baton'
+          curl --fail --silent --show-error http://127.0.0.1:8080/v54-stable-welcome.js | grep -q 'V62'
+          curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg -o /tmp/efgc-logo.svg
+          grep -q 'EMMANUEL FULL GOSPEL CHURCH' /tmp/efgc-logo.svg
+          grep -q 'Pass on the Baton' /tmp/efgc-logo.svg
           curl --fail --silent --show-error http://127.0.0.1:8080/v36-password-recovery.js | grep -q 'requestAdminPasswordReset'
 
+      - name: Check Supabase public connectivity without writing data
+        shell: bash
+        run: |
+          set -euo pipefail
+          node tests/supabase-smoke.cjs
+
+      - name: Install Playwright for responsive UI checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm install --no-save playwright@1.55.0
+          npx playwright install --with-deps chromium
+
+      - name: Run responsive welcome and Admin-login visual smoke tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8080 >/tmp/efgc-visual-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid || true' EXIT
+          sleep 2
+          node tests/visual-smoke.cjs
+
+      - name: Upload V62 responsive screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v62-responsive-screenshots
+          path: artifacts/v62-visual/
+          if-no-files-found: ignore
+          retention-days: 7
+
   deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: validate
     runs-on: ubuntu-latest
     environment:

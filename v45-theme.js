@@ -1,60 +1,27 @@
-/** EFGC Youth v45 — mockup-driven mobile theme using the user's supplied reference artwork. */
+/** EFGC Youth V61 — authenticated app theme only. Welcome/login rendering is owned by v54-stable-welcome.js. */
 (() => {
   const $ = (s) => document.querySelector(s);
   const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const logoAsset = 'assets/efgc-logo-reference.webp?v=49.1';
-  const heroAsset = 'assets/efgc-home-hero.webp?v=45';
+  const logoAsset = 'assets/efgc-logo.svg?v=62.0';
 
   function activeSession(){ try { return session || null; } catch { return null; } }
 
   function applyBrandAssets(){
     document.querySelectorAll('.brand-logo,.hero-logo,.official-footer-logo').forEach(img => {
-      img.src = logoAsset;
-      img.classList.add('reference-logo');
+      if (img.getAttribute('src') !== logoAsset) img.src = logoAsset;
+      img.classList.remove('reference-logo');
+      img.classList.add('official-logo');
+      img.style.objectPosition = 'center center';
     });
     const hero = $('.hero');
     if(hero){
-      hero.style.backgroundImage = 'linear-gradient(90deg,rgba(1,19,48,.88),rgba(1,19,48,.16)),url("assets/v49-youth-fellowship.webp")';
+      hero.style.backgroundImage = 'linear-gradient(90deg,rgba(1,19,48,.88),rgba(1,19,48,.16)),url("assets/v49-youth-fellowship.webp?v=62.0")';
       const home = $('#home');
       const heading = home?.querySelector('.v49-heading');
       if(home && heading && hero.parentElement !== home) heading.after(hero);
       hero.setAttribute('aria-label','You are a light — Matthew 5:16');
       hero.classList.add('mockup-hero');
     }
-  }
-
-  function ensureWelcome(){
-    const login = $('#login');
-    const card = login?.querySelector('.login-card');
-    if(!login || !card || $('#mockWelcome')) return;
-    const welcome = document.createElement('div');
-    welcome.id = 'mockWelcome';
-    welcome.className = 'mock-welcome';
-    welcome.innerHTML = `
-      <div class="welcome-brand"><img src="${logoAsset}" class="mock-welcome-logo" alt="Emmanuel Full Gospel Church logo"><div><strong>EFGC <span>YOUTH</span></strong><small>Emmanuel Full Gospel Church</small></div></div>
-      <div class="welcome-photo" role="img" aria-label="Illustration of youth gathering for worship"><span>BUILD • BELONG • BE A LIGHT</span></div>
-      <div class="welcome-content"><p class="welcome-eyebrow">A GENERATION FOR HIS GLORY</p>
-      <h1 class="v49-welcome-title">Find your people.<br><em>Grow in faith.</em></h1>
-      <p class="welcome-description">A place to belong, serve and shine together.</p>
-      <div class="mock-welcome-actions">
-        <button id="mockLoginButton" class="mock-primary" type="button">Log in <span aria-hidden="true">→</span></button>
-        <button id="mockCreateButton" class="mock-secondary" type="button">Create account</button>
-      </div><p class="welcome-scripture">“Let your light so shine before men”<br><span>Matthew 5:16 • KJV</span></p></div>`;
-    login.insertBefore(welcome, card);
-    card.classList.add('mock-login-card','mock-login-hidden');
-    const back = document.createElement('button');
-    back.type='button'; back.className='v49-back'; back.textContent='← Welcome';
-    back.addEventListener('click',()=>{card.classList.add('mock-login-hidden');welcome.classList.remove('hidden');$('#mockLoginButton')?.focus();});
-    card.prepend(back);
-    const openLogin = (role='youth') => {
-      welcome.classList.add('hidden');
-      card.classList.remove('mock-login-hidden');
-      try { selectRole(role); } catch {}
-      card.scrollIntoView({behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
-    };
-    $('#mockLoginButton')?.addEventListener('click',()=>openLogin('youth'));
-    $('#mockCreateButton')?.addEventListener('click',()=>openLogin('youth'));
-    if(location.hash.includes('access_token') || /type=recovery|code=/.test(location.search)) openLogin('admin');
   }
 
   function icon(name){
@@ -80,13 +47,13 @@
     if(!s) return [];
     const staff = s.role==='admin' || (s.role==='leader' && s.approval_status==='approved');
     if(s.role==='admin') return [
-      ['Manage Events','calendar','admin','adminEventTitle'],['Record Attendance','users','attendanceAdmin'],['Youth Register','list','admin','adminPanel'],['Safeguarding Contacts','shield','admin','adminPanel'],['Leader Management','users','leaders'],['Duty Roster','calendar','plannerRoster'],['Feedback','chat','news'],['Settings','gear','security']
+      ['Manage Events','calendar','admin','adminEventTitle'],['Record Attendance','users','attendanceAdmin'],['Accounts & Approvals','list','admin','adminPanel'],['Security & Access','shield','security'],['Leaders','users','leaders'],['Duty Roster','calendar','plannerRoster'],['News Feed','news','news'],['Settings','gear','security']
     ];
     if(staff) return [
-      ['News Feed','news','news'],['Events','calendar','events'],['Duty Roster','users','plannerRoster'],['Daily Scripture','book','scripture'],['Leaders','users','leaders'],['Profile','profile','profile'],['Feedback','chat','news'],['Contact','phone','leaders']
+      ['News Feed','news','news'],['Events','calendar','events'],['Duty Roster','users','plannerRoster'],['Daily Scripture','book','scripture'],['Leaders','users','leaders'],['Profile','profile','profile'],['Security','shield','security'],['Contact Leaders','phone','leaders']
     ];
     return [
-      ['News Feed','news','news'],['Events','calendar','events'],['My Attendance','chart','mine'],['Daily Scripture','book','scripture'],['Leaders','users','leaders'],['Profile','profile','profile'],['Feedback','chat','news'],['Contact','phone','leaders']
+      ['News Feed','news','news'],['Events','calendar','events'],['My Attendance','chart','mine'],['Daily Scripture','book','scripture'],['Leaders','users','leaders'],['Profile','profile','profile'],['Security','shield','security'],['Contact Leaders','phone','leaders']
     ];
   }
 
@@ -106,9 +73,10 @@
 
   function syncThemeShell(){
     const signed=Boolean(activeSession()?.uid);
-    $('#mockWelcome')?.classList.toggle('hidden', signed);
+    if (signed) $('#mockWelcome')?.classList.add('hidden');
     $('#mockBottomNav')?.classList.toggle('hidden', !signed);
     document.body.classList.toggle('mock-authenticated',signed);
+    applyBrandAssets();
     ensureHomeDashboard();
     ensureAdminDashboard();
   }
@@ -146,24 +114,22 @@
     const panel=$('#adminPanel'); if(!panel) return;
     let dash=$('#mockAdminDashboard');
     if(!dash){ dash=document.createElement('div'); dash.id='mockAdminDashboard'; dash.className='mock-admin-dashboard'; panel.prepend(dash); }
-    const tiles=[['Manage Events','calendar','admin','adminEventTitle'],['Record Attendance','users','attendanceAdmin'],['Youth Register','list','admin'],['Safeguarding Contacts','shield','admin'],['Leader Management','users','leaders'],['Duty Roster','calendar','plannerRoster'],['Feedback','chat','news'],['Settings','gear','security']];
+    const tiles=[['Manage Events','calendar','admin','adminEventTitle'],['Record Attendance','users','attendanceAdmin'],['Accounts & Approvals','list','admin'],['Security & Access','shield','security'],['Leaders','users','leaders'],['Duty Roster','calendar','plannerRoster'],['News Feed','news','news'],['Settings','gear','security']];
     dash.innerHTML=`<div class="mock-admin-title"><h2>Admin Centre</h2><span>${icon('gear')}</span></div><div class="mock-admin-grid">${tiles.map(([label,ico,tab,anchor])=>`<button type="button" data-mock-tab="${tab}" ${anchor?`data-mock-anchor="${anchor}"`:''}>${icon(ico)}<strong>${label}</strong></button>`).join('')}</div>`;
   }
 
   function restyleLeaderCards(){ document.querySelectorAll('#leaderList .leader-directory-card').forEach(card=>card.classList.add('mock-leader-row')); }
   async function restyleEventCards(){
     const cards=[...document.querySelectorAll('#eventList .event-card')];
-    try{
-      const events=await EFGCLive.events();
-      cards.forEach((card,i)=>{ card.classList.add('mock-event-row'); if(events[i]?.event_date) card.dataset.eventDate=events[i].event_date; });
-    }catch{ cards.forEach(card=>card.classList.add('mock-event-row')); }
+    cards.forEach(card=>card.classList.add('mock-event-row'));
     filterEventCards();
   }
+  document.addEventListener('efgc:events-rendered',restyleEventCards);
 
   function gotoTab(tab,anchor){
+    if (!activeSession()?.uid) return;
     try { showTab(tab); } catch {}
     document.querySelectorAll('#mockBottomNav button').forEach(b=>b.classList.toggle('active',b.dataset.mockTab===tab));
-    if(tab==='plannerRoster' && typeof window.renderPlannerRoster==='function') setTimeout(()=>window.renderPlannerRoster(),0);
     if(anchor) setTimeout(()=>document.getElementById(anchor)?.scrollIntoView({behavior:'smooth',block:'start'}),100);
   }
 
@@ -174,6 +140,8 @@
   });
 
   const previousRenderLive=window.renderLiveData;
+  const previousRenderShell=window.renderShell;
+  window.renderShell=function(...args){ const result=previousRenderShell.apply(this,args); syncThemeShell(); return result; };
   if(typeof previousRenderLive==='function'){
     window.renderLiveData=async function(){
       await previousRenderLive();
@@ -183,8 +151,7 @@
   }
 
   document.addEventListener('DOMContentLoaded',()=>{
-    applyBrandAssets(); ensureWelcome(); ensureBottomNav(); enhanceEventsTabs(); syncThemeShell();
+    applyBrandAssets(); ensureBottomNav(); enhanceEventsTabs(); syncThemeShell();
     setTimeout(async()=>{ applyBrandAssets(); syncThemeShell(); restyleLeaderCards(); await restyleEventCards(); },400);
   });
-  setTimeout(()=>{ applyBrandAssets(); ensureWelcome(); ensureBottomNav(); syncThemeShell(); },900);
 })();

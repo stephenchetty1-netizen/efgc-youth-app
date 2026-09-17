@@ -85,7 +85,8 @@
     try{
       const rows=await EFGCLive.events();
       if(!rows.length){ host.innerHTML='<article class="card"><h3>No events published yet</h3><p>Approved EFGC Youth events will appear here.</p></article>'; return; }
-      host.innerHTML=`<div class="event-feed">${rows.map(e=>{ const img=e.image_path?`<img class="event-cover" src="${esc(eventImageUrl(e.image_path))}" alt="${esc(e.title)} event image">`:''; const post=e.post_content?`<p class="event-post">${esc(e.post_content)}</p>`:''; const details=[e.theme,e.scripture].filter(Boolean).join(' • '); return `<article class="card event-card">${img}<div class="event-card-body"><span class="module-kicker">${esc(fmtEvent(e.event_date))}</span><h3>${esc(e.title)}</h3>${details?`<div class="planner-meta">${esc(details)}</div>`:''}${post}</div></article>`;}).join('')}</div>`;
+      host.innerHTML=`<div class="event-feed">${rows.map(e=>{ const img=e.image_path?`<img class="event-cover" src="${esc(eventImageUrl(e.image_path))}" alt="${esc(e.title)} event image">`:''; const post=e.post_content?`<p class="event-post">${esc(e.post_content)}</p>`:''; const details=[e.theme,e.scripture].filter(Boolean).join(' • '); return `<article class="card event-card" data-event-date="${esc(e.event_date)}">${img}<div class="event-card-body"><span class="module-kicker">${esc(fmtEvent(e.event_date))}</span><h3>${esc(e.title)}</h3>${details?`<div class="planner-meta">${esc(details)}</div>`:''}${post}</div></article>`;}).join('')}</div>`;
+      document.dispatchEvent(new CustomEvent('efgc:events-rendered'));
     }catch(e){ host.innerHTML=`<article class="card"><p>${esc(`Could not load events: ${e.message}`)}</p></article>`; }
   }
 
@@ -221,7 +222,7 @@
     window.renderLiveData=async function(){ await previousRender(); await afterRenderV44(); };
   }
 
-  document.addEventListener('click',e=>{ const tab=e.target.closest('[data-tab]')?.dataset.tab; if(tab==='plannerRoster') setTimeout(()=>renderPlannerRoster(),0); if(tab==='profile') setTimeout(()=>renderOwnProfileV44(),0); if(tab==='events') setTimeout(()=>renderEventsV44(),0); });
+  document.addEventListener('efgc:tab',e=>{ const tab=e.detail?.id; if(tab==='plannerRoster') setTimeout(()=>renderPlannerRoster(),0); if(tab==='profile') setTimeout(()=>renderOwnProfileV44(),0); if(tab==='events') setTimeout(()=>renderEventsV44(),0); });
   document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{ enhanceAdminEventForm(); if(currentSession()?.uid) afterRenderV44(); },250));
   setTimeout(()=>{ if(currentSession()?.uid) afterRenderV44(); },900);
 })();

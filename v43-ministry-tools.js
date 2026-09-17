@@ -273,9 +273,8 @@
     panel.prepend(box);
   }
 
-  document.addEventListener('click',(e)=>{
-    const tab=e.target.closest('[data-tab]')?.dataset.tab;
-    if(tab==='plannerRoster') setTimeout(renderPlannerRoster,0);
+  document.addEventListener('efgc:tab',(e)=>{
+    const tab=e.detail?.id;
     if(tab==='attendanceAdmin') setTimeout(()=>renderAttendanceAdmin(),0);
   });
 

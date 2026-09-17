@@ -58,10 +58,15 @@ document.addEventListener('change', (e) => {
 function showLogin(){ $('#login').classList.remove('hidden'); }
 function hideLogin(){ $('#login').classList.add('hidden'); }
 function showTab(id){
+  if (!session?.uid) return showLogin();
+  if (['admin','attendanceAdmin'].includes(id) && session.role !== 'admin') return;
+  if (id === 'plannerRoster' && !roleAllowed(session.role, session.approval_status)) return;
   document.querySelectorAll('main > section.tab').forEach(el => el.classList.add('hidden'));
   const target = document.getElementById(id);
   if (target) target.classList.remove('hidden');
   document.querySelectorAll('.menu-item').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  document.querySelectorAll('#mockBottomNav button').forEach(b => b.classList.toggle('active', b.dataset.mockTab === id));
+  document.dispatchEvent(new CustomEvent('efgc:tab', { detail: { id } }));
 }
 
 function roleAllowed(role, approval='approved') {
@@ -81,7 +86,7 @@ function renderShell(){
   const authenticated = Boolean(session?.uid);
   document.querySelectorAll('#mainMenu, .userbar').forEach(el => el.classList.toggle('hidden', !authenticated));
   if (!authenticated) {
-    document.querySelectorAll('#home,#events,#news,#scripture,#mine,#leaders,#profile,#security,#admin').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('main > section.tab:not(#login)').forEach(el => el.classList.add('hidden'));
     $('#currentUser').textContent = 'Not signed in';
     $('#adminMenu')?.classList.add('hidden');
     showLogin();
@@ -154,27 +159,35 @@ window.adminPublishNews = async () => {
 
 async function renderLiveData(){
   if (!session?.uid || !window.EFGCLive) return;
+  const renderSession = session;
   const errors=[];
   try {
     const events = await EFGCLive.events();
+    if (session !== renderSession) return;
     $('#eventList').innerHTML = events.length ? events.map(e => card(e.title, [e.theme,e.scripture].filter(Boolean).join(' • ') || 'EFGC Youth event', fmtDate(e.event_date))).join('') : card('No events published yet','Approved EFGC Youth events will appear here.');
   } catch(e){ errors.push(`Events: ${e.message}`); }
+  if (session !== renderSession) return;
 
   try {
     const news = await EFGCLive.news();
+    if (session !== renderSession) return;
     const html = news.length ? news.map(n => card('EFGC Youth Update', n.content, fmtDate(n.published_at))).join('') : card('Welcome to EFGC Youth','News and approved announcements will appear here.');
     $('#newsList').innerHTML = html;
     $('#homeNews').innerHTML = news.length ? news.slice(0,3).map(n => card('EFGC Youth Update', n.content, fmtDate(n.published_at))).join('') : card('Welcome to EFGC Youth','Build • Belong • Be a Light.');
   } catch(e){ errors.push(`News: ${e.message}`); }
+  if (session !== renderSession) return;
 
   try {
     const leaders = await EFGCLive.approvedLeaders();
+    if (session !== renderSession) return;
     $('#leaderList').innerHTML = `<h2>Approved Youth Leaders</h2>` + (leaders.length ? leaders.map(l => card(l.full_name, l.leader_role || 'EFGC Youth Leader', l.phone || '')).join('') : card('Leader directory','Approved leaders will appear here.'));
   } catch(e){ errors.push(`Leaders: ${e.message}`); }
+  if (session !== renderSession) return;
 
   if (session.role === 'youth') {
     try {
       const rows = await EFGCLive.myAttendance(session.uid);
+      if (session !== renderSession) return;
       const approved = rows.filter(r => r.events?.attendance_approved);
       const attended = approved.filter(r => r.status === 'present').length;
       $('#mineList').innerHTML = `<article class="card"><h3>${attended} / ${approved.length}</h3><p>Approved meetings attended / held</p></article>` + approved.map(r => card(r.events?.title || 'Youth meeting', r.status === 'present' ? 'Present' : 'Absent', fmtDate(r.events?.event_date))).join('');
@@ -182,28 +195,34 @@ async function renderLiveData(){
   } else {
     $('#mineList').innerHTML = card('Attendance','Personal youth attendance is shown only on Youth accounts.');
   }
+  if (session !== renderSession) return;
 
   if (roleAllowed(session.role, session.approval_status)) {
     try {
       const planner = await EFGCLive.planner();
+      if (session !== renderSession) return;
       $('#leaderYearPlanner').innerHTML = `<h2>Year Planner</h2>` + (planner.length ? planner.map(p => card(p.meeting_title || 'Youth meeting', [p.theme,p.scripture].filter(Boolean).join(' • ') || 'Planning item', p.week_start)).join('') : card('Year Planner','No published planner entries yet.'));
     } catch(e){
+      if (session !== renderSession) return;
       $('#leaderYearPlanner').innerHTML='';
       errors.push(`Planner: ${e.message}`);
     }
   } else {
     $('#leaderYearPlanner').innerHTML='';
   }
+  if (session !== renderSession) return;
 
   if (session.role === 'admin') {
     try {
       const profiles = await EFGCLive.adminProfiles();
+      if (session !== renderSession) return;
       const pending = profiles.filter(p => p.role === 'leader' && p.approval_status === 'pending').length;
       $('#adminPanel').innerHTML = `<h2>Admin Centre</h2><article class="card"><h3>${profiles.length} account${profiles.length===1?'':'s'}</h3><p>${pending} pending Leader application${pending===1?'':'s'}.</p></article>${adminTools()}<h2>Accounts</h2>` + profiles.slice(0,50).map(adminProfileCard).join('');
     } catch(e){ errors.push(`Admin: ${e.message}`); }
   } else {
     $('#adminPanel').innerHTML='';
   }
+  if (session !== renderSession) return;
 
   $('#profileCard').innerHTML = `<article class="card"><h2>${escapeHtml(session.name || 'EFGC Member')}</h2><p>Role: ${escapeHtml(session.role || '')}</p><p>Status: ${escapeHtml(session.approval_status || 'approved')}</p></article>`;
   if (errors.length) console.warn('EFGC live-data notices', errors);
