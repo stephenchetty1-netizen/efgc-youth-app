@@ -1,77 +1,40 @@
-/* V61 — single-source welcome/login layout and corrected official-logo alignment. */
-body:not(.mock-authenticated){margin:0!important;padding:0!important;min-height:100dvh!important;background:#01162f!important;overflow-x:hidden!important}
+/* V62 — the supplied artwork is displayed without stretching or recreating the crest. */
+body:not(.mock-authenticated){margin:0!important;padding:0!important;min-height:100svh;background:#01162f!important}
 body:not(.mock-authenticated)>header,body:not(.mock-authenticated)>footer{display:none!important}
-body:not(.mock-authenticated) main,body:not(.mock-authenticated) #login{width:100%!important;max-width:none!important;min-height:100dvh!important;margin:0!important;padding:0!important}
-
-#mockWelcome.v61-welcome{position:relative!important;width:100%!important;min-height:100dvh!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#01182f!important;color:#fff!important;isolation:isolate!important}
-#mockWelcome.v61-welcome.hidden{display:none!important}
-.v61-bg{position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,rgba(0,47,110,.10) 0%,rgba(1,31,72,.06) 30%,rgba(0,16,38,.24) 56%,rgba(0,10,27,.70) 84%,rgba(0,7,20,.94) 100%),url('assets/v49-youth-fellowship.webp?v=61.0') center 58%/cover no-repeat;filter:saturate(1.14) contrast(1.05) brightness(.95)}
-.v61-bg:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 50% 9%,rgba(111,202,255,.60),transparent 25%),radial-gradient(circle at 50% 26%,rgba(255,218,83,.16),transparent 30%),linear-gradient(180deg,rgba(0,92,202,.26),transparent 39%)}
-.v61-bg:after{content:"";position:absolute;left:0;right:0;top:0;height:55%;background:url('assets/v49-sunrise.webp?v=61.0') center 39%/cover no-repeat;opacity:.42;mix-blend-mode:screen;-webkit-mask-image:linear-gradient(to bottom,#000 0%,#000 42%,transparent 100%);mask-image:linear-gradient(to bottom,#000 0%,#000 42%,transparent 100%)}
-
-.v61-content{position:relative;z-index:2;display:grid;grid-template-rows:auto auto auto minmax(24px,1fr) auto auto;align-items:center;width:min(100%,760px);min-height:100dvh;margin:0 auto;padding:calc(14px + env(safe-area-inset-top)) clamp(18px,4vw,34px) calc(18px + env(safe-area-inset-bottom));text-align:center}
-.v61-brand{position:relative;width:100%;display:flex;align-items:flex-start;justify-content:center;min-height:clamp(226px,29dvh,318px)}
-.v61-logo-halo{position:relative;display:grid;place-items:center;width:min(72vw,320px);aspect-ratio:1/1;margin:0 auto;overflow:visible}
-.v61-logo-halo:before{content:"";position:absolute;inset:4%;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.98) 0%,rgba(233,249,255,.91) 28%,rgba(82,177,255,.36) 48%,rgba(255,212,69,.17) 59%,transparent 73%);filter:blur(3px);box-shadow:0 0 42px rgba(73,181,255,.68),0 0 94px rgba(255,208,65,.26)}
-.v61-logo-halo:after{content:"";position:absolute;inset:3%;border-radius:50%;border:2px solid rgba(255,220,99,.52);box-shadow:0 0 26px rgba(255,218,84,.40),inset 0 0 22px rgba(255,255,255,.30)}
-.v61-logo{position:relative;z-index:2;display:block;width:88%;height:88%;object-fit:contain;object-position:center center;filter:drop-shadow(0 12px 20px rgba(0,11,32,.42))}
-.v61-note{position:absolute;top:39%;font:700 clamp(10px,2.5vw,16px)/1.13 "Segoe Print","Comic Sans MS",cursive;color:#8ccfff;text-transform:uppercase;letter-spacing:.3px;text-shadow:0 0 10px rgba(36,157,255,.75);opacity:.96}
-.v61-note-left{left:2%;text-align:left;transform:rotate(-8deg)}
-.v61-note-right{right:2%;text-align:right;transform:rotate(8deg)}
-
-.v61-youth{position:relative;margin-top:-12px;z-index:3}
-.v61-crown{position:absolute;left:4%;top:-20px;font-size:clamp(29px,7vw,44px);line-height:1;color:#ffd53e;transform:rotate(-11deg);filter:drop-shadow(0 5px 7px rgba(0,0,0,.35)) drop-shadow(0 0 12px rgba(255,210,53,.46))}
-.v61-youth h1{margin:0;font-family:Impact,"Arial Black",system-ui,sans-serif;font-size:clamp(84px,22vw,138px);font-style:italic;font-weight:900;line-height:.82;letter-spacing:-4px;text-transform:uppercase;background:linear-gradient(180deg,#fff 0%,#a4e8ff 20%,#1ea7ff 48%,#0a73e4 67%,#eefdff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;-webkit-text-stroke:1px rgba(240,252,255,.60);filter:drop-shadow(0 0 14px rgba(24,158,255,.86)) drop-shadow(0 8px 12px rgba(0,11,33,.76))}
-.v61-brush-line{width:68%;height:5px;border-radius:60% 40% 50% 50%;margin:10px auto 8px;background:linear-gradient(90deg,transparent,#ffc82d 18%,#fff09a 50%,#ffb814 82%,transparent);box-shadow:0 0 10px rgba(255,194,28,.54);transform:skewX(-17deg)}
-.v61-youth p{margin:4px 0 0;font-size:clamp(10px,2.8vw,15px);font-weight:900;letter-spacing:3.3px;text-transform:uppercase;color:#fff;text-shadow:0 2px 9px rgba(0,8,25,.92)}
-.v61-youth p b{color:#ffd33d;margin:0 5px}
-
-.v61-verse{margin-top:18px;text-shadow:0 3px 15px rgba(0,7,22,.92)}
-.v61-verse p{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:clamp(26px,6.6vw,40px);font-style:italic;font-weight:700;line-height:1.04;color:#fff}
-.v61-verse strong{display:block;margin-top:8px;font-family:Georgia,"Times New Roman",serif;font-size:clamp(15px,3.8vw,21px);font-style:italic;color:#ffd24a;text-shadow:0 2px 10px rgba(0,0,0,.58)}
-.v61-spacer{min-height:24px}
-.v61-actions{display:grid;width:100%;gap:12px;align-self:end}
-.v61-actions button{position:relative;width:100%;min-height:56px;border-radius:999px;padding:14px 25px;font:800 17px/1 system-ui,-apple-system,"Segoe UI",sans-serif;cursor:pointer;transition:transform .15s ease,filter .15s ease,box-shadow .15s ease}
-.v61-actions button span{position:absolute;right:22px;top:50%;transform:translateY(-52%);font-size:27px;font-weight:300}
-.v61-login{border:1px solid #83dcff;background:linear-gradient(180deg,#19baff 0%,#0788ff 54%,#0572ee 100%);color:#fff;box-shadow:0 14px 32px rgba(0,107,255,.36),inset 0 1px 0 rgba(255,255,255,.38)}
-.v61-create{border:1.6px solid rgba(255,255,255,.97);background:rgba(1,20,45,.73);color:#fff;box-shadow:0 12px 26px rgba(0,6,19,.34),inset 0 1px 0 rgba(255,255,255,.09);backdrop-filter:blur(10px)}
+body:not(.mock-authenticated) main,body:not(.mock-authenticated) #login{width:100%!important;max-width:none!important;min-height:100svh;margin:0!important;padding:0!important}
+#mockWelcome.v61-welcome{position:relative!important;display:grid;place-items:center;width:100%!important;max-width:none!important;min-height:100svh;margin:0!important;padding:0!important;isolation:isolate;background:#02132d;color:#fff}
+#mockWelcome.v61-welcome::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#001026d9,#01396675,#001026d9),url('assets/efgc-youth-welcome.jpg?v=62.0') center 40%/cover;filter:blur(20px);clip-path:inset(0)}
+#mockWelcome.v61-welcome.hidden,.mock-login-hidden{display:none!important}
+.welcome-artwork{position:relative;width:min(100%,56.25svh);min-width:min(100%,360px);margin:auto;isolation:isolate}
+.welcome-image{display:block!important;width:100%!important;max-width:none!important;height:auto!important;aspect-ratio:9/16;object-fit:contain;border:0!important;border-radius:0!important}
+.v61-actions{position:absolute;left:11%;right:11%;top:75%;display:grid;gap:8px;padding:0 3%;background:linear-gradient(180deg,#03162d,#021024);border-radius:30px}
+.v61-actions button{position:relative;width:100%;min-height:48px;padding:12px 34px 12px 18px;border-radius:999px;font:750 clamp(1rem,2.5vw,1.2rem)/1.2 system-ui,sans-serif;cursor:pointer;transition:filter .15s ease,transform .15s ease;white-space:normal}
+.v61-actions button span{position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:1.6rem;font-weight:400}
+.v61-login{border:2px solid #81dfff;background:linear-gradient(180deg,#12b8ff,#0068ff);color:white;box-shadow:0 4px 24px #0876ff66}
+.v61-create{border:2px solid #e5eef9;background:#021124;color:white}
+.v61-actions button:hover{filter:brightness(1.12)}
 .v61-actions button:active{transform:scale(.985)}
-.v61-generation{align-self:end;margin:18px 0 0!important;font-size:clamp(10px,2.6vw,13px)!important;font-weight:900!important;letter-spacing:4px!important;text-transform:uppercase!important;color:#fff!important;text-shadow:0 2px 9px rgba(0,7,22,.95)!important}
-.v61-generation:after{content:"";display:block;width:116px;height:3px;margin:11px auto 0;border-radius:999px;background:linear-gradient(90deg,transparent,#ffd13d,transparent);box-shadow:0 0 9px rgba(255,201,44,.50)}
-
-body:not(.mock-authenticated) #login .login-card{width:min(94vw,520px)!important;max-width:520px!important;margin:18px auto!important;border-radius:26px!important;box-shadow:0 30px 80px rgba(0,17,45,.34)!important}
-.v61-back{width:auto!important;margin:0 0 10px!important}
-
-/* Authenticated app branding: one official SVG, centered and never cropped. */
-.mock-authenticated header{background:#fff!important;border-bottom:1px solid #d9e5ef!important;box-shadow:0 2px 12px rgba(6,39,76,.10)!important}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #e4b837;outline-offset:3px}
+.visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+body:not(.mock-authenticated) #login .login-card{width:min(calc(100% - 32px),520px)!important;max-width:520px!important;margin:24px auto!important;padding:24px!important;border:1px solid #7acaff44!important;border-radius:24px!important;background:#fff!important;box-shadow:0 24px 80px #0005!important;box-sizing:border-box}
+.login-brand-logo{display:block;width:88px!important;height:88px!important;object-fit:contain;margin:4px auto 18px!important}
+.v61-back{display:block;width:auto!important;margin:0 0 12px!important;font-size:.875rem!important}
+#login .login-card label{font-size:1rem;line-height:1.5}
+#login .login-card input{font-size:1rem;min-height:46px;max-width:100%;box-sizing:border-box}
+#login .login-card h2{font-size:1.6rem;line-height:1.2;margin:18px 0 10px}
+#loginHint,#loginMessage{font-size:1rem;line-height:1.5;overflow-wrap:anywhere}
+#login .login-switch{display:flex;flex-wrap:wrap;gap:6px}
+#login .login-type{flex:1;min-height:44px;font-size:.875rem}
+.login-mode-switch{display:block;width:100%;margin-top:12px;border:0;background:transparent;color:#075fb5;font:600 1rem/1.4 system-ui;min-height:44px;cursor:pointer}
+#login button:disabled{cursor:wait;opacity:.7}
+body.mock-authenticated header{background:#fff!important;border-bottom:1px solid #d9e5ef!important;box-shadow:0 2px 12px #06274c19!important}
 .mock-authenticated header .brand{display:flex!important;justify-content:center!important;align-items:center!important;gap:12px!important;width:100%!important;max-width:720px!important;margin:0 auto!important;text-align:left!important;color:#0b2742!important}
-.brand-logo.official-logo{display:block!important;width:62px!important;height:62px!important;flex:0 0 62px!important;object-fit:contain!important;object-position:center center!important;border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important;overflow:visible!important}
-.mock-authenticated header .brand b{color:#0b2742!important;font-size:18px!important;line-height:1.05!important}
-.mock-authenticated header .brand span{color:#526a82!important;font-size:9px!important;letter-spacing:1.6px!important;margin-top:4px!important}
-.official-footer-logo.official-logo{display:block!important;width:102px!important;height:102px!important;object-fit:contain!important;object-position:center center!important;border:0!important;border-radius:0!important;box-shadow:none!important;margin:0 auto 12px!important;overflow:visible!important}
-.hero-logo.official-logo{display:block!important;object-fit:contain!important;object-position:center center!important;border:0!important;border-radius:0!important;overflow:visible!important}
+.brand-logo.official-logo{display:block!important;width:64px!important;height:64px!important;flex:0 0 64px!important;object-fit:contain!important;object-position:center!important;border:0!important;border-radius:0!important;box-shadow:none!important;margin:0!important}
+.mock-authenticated header .brand b{color:#0b2742!important;font-size:1.125rem!important;line-height:1.2!important}
+.mock-authenticated header .brand span{color:#526a82!important;font-size:.75rem!important;letter-spacing:1px!important;margin-top:4px!important}
+.official-footer-logo.official-logo{display:block!important;width:104px!important;height:104px!important;object-fit:contain!important;object-position:center!important;border:0!important;border-radius:0!important;box-shadow:none!important;margin:0 auto 12px!important}
+.hero-logo.official-logo{display:block!important;object-fit:contain!important;object-position:center!important;border:0!important;border-radius:0!important}
 footer{text-align:center!important}
 footer .footer-mark{margin-left:auto!important;margin-right:auto!important;text-align:center!important}
-
-@media(max-width:430px){
- .v61-content{grid-template-rows:auto auto auto minmax(18px,1fr) auto auto;padding:calc(10px + env(safe-area-inset-top)) 17px calc(14px + env(safe-area-inset-bottom))}
- .v61-brand{min-height:clamp(205px,27dvh,265px)}
- .v61-logo-halo{width:min(68vw,276px)}
- .v61-note{font-size:9px;top:40%}.v61-note-left{left:0}.v61-note-right{right:0}
- .v61-youth{margin-top:-8px}.v61-youth h1{font-size:clamp(76px,22vw,104px)}.v61-crown{font-size:30px;top:-18px}
- .v61-youth p{font-size:9.6px;letter-spacing:2.6px}.v61-verse{margin-top:14px}.v61-verse p{font-size:27px}.v61-verse strong{font-size:15px}
- .v61-actions button{min-height:53px;font-size:16px}.v61-generation{margin-top:15px!important;letter-spacing:3.1px!important}
- .brand-logo.official-logo{width:54px!important;height:54px!important;flex-basis:54px!important}
- .mock-authenticated header .brand b{font-size:16px!important}
-}
-@media(max-height:760px) and (max-width:430px){
- .v61-content{padding-top:6px;grid-template-rows:auto auto auto minmax(8px,1fr) auto auto}
- .v61-brand{min-height:176px}.v61-logo-halo{width:min(54vw,210px)}.v61-note{font-size:7.8px}.v61-youth{margin-top:-7px}.v61-youth h1{font-size:66px}.v61-youth p{letter-spacing:1.9px}.v61-verse{margin-top:9px}.v61-verse p{font-size:21px}.v61-actions{gap:8px}.v61-actions button{min-height:46px;font-size:14px}.v61-generation{margin-top:10px!important}
-}
-@media(min-width:700px){
- #mockWelcome.v61-welcome{width:100%!important;max-width:none!important;margin:0!important;box-shadow:none!important}
- body:not(.mock-authenticated){background:#01162f!important}
- .v61-content{min-height:100dvh;width:min(100%,760px)}
- .v61-brand{min-height:300px}.v61-logo-halo{width:320px}
-}
+@media(max-width:360px){.v61-actions{left:7%;right:7%;padding:0 5%;gap:6px}.v61-actions button{min-height:44px;font-size:1rem;padding-top:9px;padding-bottom:9px}.mock-authenticated header .brand span{letter-spacing:0}.brand-logo.official-logo{width:54px!important;height:54px!important;flex-basis:54px!important}}
 @media(prefers-reduced-motion:reduce){.v61-actions button{transition:none}}

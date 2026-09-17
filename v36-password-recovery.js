@@ -61,6 +61,10 @@
     injectRecoveryUi();
     try { selectRole('admin'); } catch {}
     try { showLogin(); } catch {}
+    window.EFGCWelcome?.openLogin('admin', 'login', false);
+    $('#mockWelcome')?.classList.add('hidden');
+    $('#login .login-card')?.classList.remove('mock-login-hidden');
+    $('#passwordField')?.classList.add('hidden');
     document.querySelectorAll('#mainMenu,.userbar').forEach((el) => el.classList.add('hidden'));
     $('#passwordRecoveryControls')?.classList.add('hidden');
     $('#passwordResetPanel')?.classList.remove('hidden');
@@ -87,6 +91,7 @@
   };
 
   window.requestAdminPasswordReset = async () => {
+    if ($('#forgotPasswordButton')?.disabled) return;
     const email = String($('#loginEmail')?.value || '').trim().toLowerCase();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       setMessage('Enter the Admin email address first.');
@@ -106,6 +111,7 @@
         method: 'POST',
         headers: { apikey: c.publishableKey, 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
+        signal: AbortSignal.timeout(20000),
       });
       const body = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(body?.error_description || body?.msg || body?.message || 'Password recovery could not be started.');
@@ -152,6 +158,9 @@
     try { renderShell(); } catch {}
     syncRecoveryUi();
     if ($('#loginPassword')) $('#loginPassword').value = '';
+    document.querySelectorAll('#newAdminPassword,#confirmAdminPassword,#adminSessionNewPassword,#adminSessionConfirmPassword').forEach(el => { el.value = ''; });
+    window.EFGCWelcome?.openLogin('admin', 'login', false);
+    window.EFGCLogin?.syncRoleUi();
     setMessage(successText);
   }
 

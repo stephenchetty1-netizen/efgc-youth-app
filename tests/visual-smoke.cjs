@@ -1,93 +1,118 @@
+// CI-only browser regression checks. All auth/data requests use synthetic fixtures.
 const { chromium } = require('playwright');
 const fs = require('fs');
-
+const assert = require('node:assert/strict');
 const BASE = process.env.EFGC_TEST_URL || 'http://127.0.0.1:8080/index.html';
-const sizes = [
-  { name: 'android-360x800', width: 360, height: 800 },
-  { name: 'android-384x854', width: 384, height: 854 },
-  { name: 'samsung-412x915', width: 412, height: 915 },
-  { name: 'tablet-768x1024', width: 768, height: 1024 },
-  { name: 'desktop-1440x1000', width: 1440, height: 1000 },
-];
-
-function assert(condition, message) {
-  if (!condition) throw new Error(message);
+const out = 'artifacts/v62-visual';
+const sizes = [[360,800],[384,854],[412,915],[768,1024],[1440,1000]];
+const user = { id:'00000000-0000-4000-8000-000000000062', email:'fixture@example.test' };
+const auth = { access_token:'synthetic-test-token', refresh_token:'synthetic-refresh-token', user };
+const profile = role => ({ id:user.id, full_name:'Test Member', phone:'+27710000000', birthday:'2005-01-01', face_photo_path:'fixture/photo.jpg', role, approval_status:'approved' });
+const events = [{id:1,title:'Past fixture meeting',event_date:new Date(Date.now()-86400000).toISOString(),attendance_approved:true},{id:2,title:'Upcoming fixture meeting',event_date:new Date(Date.now()+86400000).toISOString(),attendance_approved:false}];
+async function mockedPage(browser, size, opts = {}) {
+  const page = await browser.newPage({viewport:{width:size[0],height:size[1]}});
+  const errors = [], requests = [];
+  page.on('pageerror', error => errors.push(error.message));
+  let saved = opts.newUser ? null : profile(opts.role || 'youth');
+  await page.route('https://*.supabase.co/**', async route => {
+    const req=route.request(), url=new URL(req.url()); requests.push({path:url.pathname,method:req.method(),body:req.postDataJSON()});
+    let body = [];
+    if (url.pathname.endsWith('/user')) body=user;
+    else if (url.pathname.endsWith('/token') || url.pathname.endsWith('/verify')) body=auth;
+    else if (url.pathname.endsWith('/otp') || url.pathname.endsWith('/recover') || url.pathname.endsWith('/logout')) body={};
+    else if (url.pathname.includes('/storage/')) body={signedURL:'/object/sign/member-photos/fixture.jpg'};
+    else if (url.pathname.endsWith('/profiles')) {
+      if (req.method()==='POST') saved={...(saved || profile(opts.role || 'youth')), ...req.postDataJSON()};
+      body = saved ? [saved] : [];
+    } else if (url.pathname.endsWith('/safeguarding_contacts')) body=[{youth_id:user.id}];
+    else if (url.pathname.endsWith('/events')) body=events;
+    await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});
+  });
+  if (opts.signedIn) await page.addInitScript(value => localStorage.setItem('efgcSupabaseAuth',JSON.stringify(value)),auth);
+  return { page,errors,requests };
 }
-
-(async () => {
-  fs.mkdirSync('artifacts/v61-visual', { recursive: true });
-  const browser = await chromium.launch({ headless: true });
+async function visible(page,selector) { await page.locator(selector).waitFor({state:'visible'}); }
+async function noOverflow(page,label) {
+  const dims=await page.evaluate(()=>({view:innerWidth,doc:document.documentElement.scrollWidth}));
+  assert(dims.doc<=dims.view+2,`${label}: horizontal overflow ${JSON.stringify(dims)}`);
+}
+(async()=>{
+  fs.mkdirSync(out,{recursive:true});
+  const browser=await chromium.launch({headless:true});
   try {
     for (const size of sizes) {
-      const page = await browser.newPage({ viewport: { width: size.width, height: size.height }, deviceScaleFactor: 1 });
-      await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForSelector('#mockWelcome.v61-welcome', { state: 'visible', timeout: 10000 });
-      await page.waitForTimeout(1200);
-
-      const welcome = await page.evaluate(() => {
-        const el = document.querySelector('#mockWelcome.v61-welcome');
-        const logo = document.querySelector('.v61-logo');
-        const login = document.querySelector('#v61Login');
-        if (!el || !logo || !login) return null;
-        const er = el.getBoundingClientRect();
-        const lr = logo.getBoundingClientRect();
-        return {
-          viewportWidth: window.innerWidth,
-          viewportHeight: window.innerHeight,
-          scrollWidth: document.documentElement.scrollWidth,
-          welcomeWidth: er.width,
-          welcomeLeft: er.left,
-          welcomeRight: er.right,
-          logoNaturalWidth: logo.naturalWidth,
-          logoNaturalHeight: logo.naturalHeight,
-          logoLeft: lr.left,
-          logoRight: lr.right,
-          logoTop: lr.top,
-          loginVisible: !!(login.offsetWidth || login.offsetHeight || login.getClientRects().length),
-        };
-      });
-
-      assert(welcome, `${size.name}: welcome screen did not render`);
-      assert(welcome.scrollWidth <= welcome.viewportWidth + 2, `${size.name}: horizontal overflow ${welcome.scrollWidth}px > ${welcome.viewportWidth}px`);
-      assert(welcome.welcomeWidth >= welcome.viewportWidth * 0.97, `${size.name}: welcome is still a narrow poster (${welcome.welcomeWidth}px of ${welcome.viewportWidth}px)`);
-      assert(welcome.welcomeLeft >= -2 && welcome.welcomeRight <= welcome.viewportWidth + 2, `${size.name}: welcome is clipped outside viewport`);
-      assert(welcome.logoNaturalWidth > 0 && welcome.logoNaturalHeight > 0, `${size.name}: official logo did not load`);
-      assert(welcome.logoLeft >= -2 && welcome.logoRight <= welcome.viewportWidth + 2, `${size.name}: official logo is horizontally clipped`);
-      assert(welcome.logoTop >= -2, `${size.name}: official logo is vertically clipped at top`);
-      assert(welcome.loginVisible, `${size.name}: Login button is not visible`);
-
-      await page.screenshot({ path: `artifacts/v61-visual/${size.name}-welcome.png`, fullPage: true });
-
-      await page.click('#v61Login');
-      await page.waitForSelector('#login .login-card:not(.mock-login-hidden)', { state: 'visible', timeout: 5000 });
-      const loginLayout = await page.evaluate(() => ({
-        viewportWidth: window.innerWidth,
-        scrollWidth: document.documentElement.scrollWidth,
-        welcomeHidden: document.querySelector('#mockWelcome')?.classList.contains('hidden') || false,
-      }));
-      assert(loginLayout.scrollWidth <= loginLayout.viewportWidth + 2, `${size.name}: login form has horizontal overflow`);
-      assert(loginLayout.welcomeHidden, `${size.name}: welcome screen remained visible over login form`);
-
-      await page.click('.login-type[data-role="admin"]');
-      await page.waitForTimeout(100);
-      const adminUi = await page.evaluate(() => {
-        const password = document.querySelector('#passwordField');
-        const recovery = document.querySelector('#forgotPasswordButton');
-        return {
-          passwordVisible: password ? !password.classList.contains('hidden') : false,
-          forgotVisible: recovery ? !!(recovery.offsetWidth || recovery.offsetHeight || recovery.getClientRects().length) : false,
-        };
-      });
-      assert(adminUi.passwordVisible, `${size.name}: Admin password field did not appear`);
-      assert(adminUi.forgotVisible, `${size.name}: Forgot password control is not available for Admin`);
-      await page.screenshot({ path: `artifacts/v61-visual/${size.name}-admin-login.png`, fullPage: true });
-      await page.close();
+      const {page,errors}=await mockedPage(browser,size);
+      const name=size.join('x');
+      await page.goto(BASE); await visible(page,'#mockWelcome');
+      await page.locator('.welcome-image').evaluate(img=>img.decode());
+      await noOverflow(page,name);
+      const asset=await page.locator('.welcome-image').evaluate(img=>({w:img.naturalWidth,h:img.naturalHeight}));
+      assert.deepEqual(asset,{w:864,h:1536},'Supplied artwork must load unchanged');
+      for (const id of ['v61Login','v61Create']) {
+        const r=await page.locator('#'+id).boundingBox();
+        assert(r.height>=44,`${name}: touch target too small`);
+        assert(r.y+r.height<=size[1]+2,`${name}: primary action below viewport`);
+      }
+      await page.screenshot({path:`${out}/${name}-welcome.png`,fullPage:true});
+      await page.click('#v61Login'); await visible(page,'#loginEmail');
+      assert(!await page.locator('#nameField').isVisible(),'Existing-member login must not ask for registration details');
+      await page.click('.login-type[data-role="admin"]'); await visible(page,'#passwordField'); await visible(page,'#forgotPasswordButton');
+      await page.click('#forgotPasswordButton'); assert.match(await page.locator('#loginMessage').innerText(),/email address first/i);
+      await noOverflow(page,`${name} login`);
+      await page.screenshot({path:`${out}/${name}-admin-login.png`,fullPage:true});
+      await page.click('.v61-back'); await page.click('#v61Create'); await visible(page,'#nameField'); await visible(page,'#youthSafeguardingFields');
+      await page.click('.login-type[data-role="leader"]'); assert(!await page.locator('#youthSafeguardingFields').isVisible()); await visible(page,'#roleField');
+      await noOverflow(page,`${name} registration`);
+      assert.deepEqual(errors,[],`${name}: runtime errors`); await page.close();
     }
-    console.log(`V61 visual smoke passed at ${sizes.length} viewport sizes.`);
-  } finally {
-    await browser.close();
-  }
-})().catch((error) => {
-  console.error(error.stack || error);
-  process.exit(1);
-});
+    // Sign-in and sign-up send different create_user flags; duplicate submits are blocked.
+    for (const register of [false,true]) {
+      const {page,requests,errors}=await mockedPage(browser,[384,854],{newUser:register});
+      await page.goto(BASE); await page.click(register?'#v61Create':'#v61Login');
+      await page.fill('#loginEmail',user.email); await page.click('#continueButton'); await visible(page,'#supabaseOtp');
+      const otp=requests.filter(r=>r.path.endsWith('/otp'));
+      assert.equal(otp.length,1); assert.equal(otp[0].body.create_user,register);
+      assert(await page.locator('#continueButton').isDisabled());
+      await page.fill('#supabaseOtp','123456'); await page.click('#verifyOtpButton');
+      if (register) { await visible(page,'#nameField'); assert.match(await page.locator('#loginMessage').innerText(),/Complete your profile/); }
+      else { await visible(page,'#home'); await page.click('.userbar button'); await visible(page,'#mockWelcome'); assert(!await page.locator('.login-card').isVisible()); }
+      assert.deepEqual(errors,[]); await page.close();
+    }
+    // Restored roles, dashboard navigation, event filtering, and logout.
+    for (const role of ['youth','leader','admin']) {
+      const {page,errors}=await mockedPage(browser,[412,915],{signedIn:true,role});
+      await page.goto(BASE); await visible(page,'#home');
+      await page.waitForFunction(()=>document.body.classList.contains('mock-authenticated'));
+      for (const selector of ['.brand-logo','.hero-logo','.official-footer-logo']) {
+        assert.match(await page.locator(selector).getAttribute('src'),/efgc-logo.svg\?v=62.0$/);
+        assert(await page.locator(selector).evaluate(img=>img.complete && img.naturalWidth>0),'Crest failed to load');
+      }
+      await noOverflow(page,role+' home');
+      await page.screenshot({path:`${out}/${role}-home.png`,fullPage:true});
+      if (role==='admin') {
+        await page.locator('#mockHomeDashboard').getByRole('button',{name:'Record Attendance',exact:true}).click();
+        await visible(page,'#attendanceEventSelect');
+      } else if (role==='leader') {
+        await page.locator('#mockHomeDashboard').getByRole('button',{name:'Duty Roster',exact:true}).click();
+        await visible(page,'#plannerRosterHost .module-heading');
+      }
+      await page.locator('#mockBottomNav').getByRole('button',{name:'Events',exact:true}).click();
+      await visible(page,'#mockEventTabs');
+      await page.getByRole('heading',{name:'Upcoming fixture meeting'}).waitFor({state:'visible'});
+      assert(!await page.getByRole('heading',{name:'Past fixture meeting'}).isVisible());
+      await page.locator('#mockEventTabs').getByRole('button',{name:'Past',exact:true}).click();
+      await page.getByRole('heading',{name:'Past fixture meeting'}).waitFor({state:'visible'});
+      await page.click('.userbar button'); await visible(page,'#mockWelcome');
+      assert(!await page.locator('#attendanceAdmin').isVisible()); assert(!await page.locator('#plannerRoster').isVisible());
+      assert.equal(await page.locator('#adminPanel').innerText(),'');
+      assert.deepEqual(errors,[],role+' runtime errors'); await page.close();
+    }
+    // Real callback shape, synthetic token: recovery must show the form, never hide behind artwork.
+    const {page,errors}=await mockedPage(browser,[384,854],{role:'admin'});
+    await page.goto(BASE+'#access_token=synthetic-test-token&refresh_token=synthetic-refresh-token&type=recovery');
+    await visible(page,'#passwordResetPanel'); assert(!await page.locator('#mockWelcome').isVisible());
+    await page.screenshot({path:`${out}/password-recovery.png`,fullPage:true});
+    assert.deepEqual(errors,[]); await page.close();
+    console.log('V62 regression checks passed: 5 responsive sizes, login/register separation, OTP cooldown, role navigation, event filters, logout, and recovery. All auth mutations used synthetic fixtures.');
+  } finally { await browser.close(); }
+})().catch(error=>{ console.error(error.stack||error);process.exitCode=1; });

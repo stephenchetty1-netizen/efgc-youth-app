@@ -58,10 +58,15 @@ document.addEventListener('change', (e) => {
 function showLogin(){ $('#login').classList.remove('hidden'); }
 function hideLogin(){ $('#login').classList.add('hidden'); }
 function showTab(id){
+  if (!session?.uid) return showLogin();
+  if (['admin','attendanceAdmin'].includes(id) && session.role !== 'admin') return;
+  if (id === 'plannerRoster' && !roleAllowed(session.role, session.approval_status)) return;
   document.querySelectorAll('main > section.tab').forEach(el => el.classList.add('hidden'));
   const target = document.getElementById(id);
   if (target) target.classList.remove('hidden');
   document.querySelectorAll('.menu-item').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  document.querySelectorAll('#mockBottomNav button').forEach(b => b.classList.toggle('active', b.dataset.mockTab === id));
+  document.dispatchEvent(new CustomEvent('efgc:tab', { detail: { id } }));
 }
 
 function roleAllowed(role, approval='approved') {
@@ -81,7 +86,7 @@ function renderShell(){
   const authenticated = Boolean(session?.uid);
   document.querySelectorAll('#mainMenu, .userbar').forEach(el => el.classList.toggle('hidden', !authenticated));
   if (!authenticated) {
-    document.querySelectorAll('#home,#events,#news,#scripture,#mine,#leaders,#profile,#security,#admin').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('main > section.tab:not(#login)').forEach(el => el.classList.add('hidden'));
     $('#currentUser').textContent = 'Not signed in';
     $('#adminMenu')?.classList.add('hidden');
     showLogin();

@@ -1,107 +1,77 @@
-/** V61 — single-source EFGC Youth welcome screen and official-logo enforcement. */
+/** V62 — supplied artwork, one welcome owner, and separate sign-in/registration. */
 (() => {
   const $ = (s) => document.querySelector(s);
-  const OFFICIAL_LOGO = 'assets/efgc-logo.svg?v=61.0';
-
-  function currentSession() { try { return typeof session !== 'undefined' ? session : null; } catch { return null; } }
-
+  const OFFICIAL_LOGO = 'assets/efgc-logo.svg?v=62.0';
+  const currentSession = () => typeof session !== 'undefined' ? session : null;
   function fixBrandLogos() {
-    document.querySelectorAll('.brand-logo,.hero-logo,.official-footer-logo').forEach((img) => {
-      img.setAttribute('src', OFFICIAL_LOGO);
+    document.querySelectorAll('.brand-logo,.hero-logo,.official-footer-logo,.login-brand-logo').forEach((img) => {
+      if (img.getAttribute('src') !== OFFICIAL_LOGO) img.setAttribute('src', OFFICIAL_LOGO);
       img.classList.remove('reference-logo');
       img.classList.add('official-logo');
-      img.style.objectPosition = 'center center';
     });
   }
-
-  function openLogin(role = 'youth') {
-    const welcome = $('#mockWelcome');
+  function openLogin(role = 'youth', mode = 'login', focus = true) {
     const card = $('#login .login-card');
     if (!card) return;
-    welcome?.classList.add('hidden');
+    $('#login')?.classList.remove('hidden');
+    $('#mockWelcome')?.classList.add('hidden');
     card.classList.remove('mock-login-hidden');
-    try { selectRole(role); } catch {}
-    requestAnimationFrame(() => card.scrollIntoView({ block: 'start', behavior: 'auto' }));
+    window.EFGCLogin?.setMode(mode);
+    selectRole(role);
+    if (focus) requestAnimationFrame(() => {
+      card.scrollIntoView({ block: 'start', behavior: 'auto' });
+      $('#loginEmail')?.focus({ preventScroll: true });
+    });
   }
-
   function showWelcome() {
-    const welcome = $('#mockWelcome');
-    const card = $('#login .login-card');
-    if (!welcome || !card) return;
-    card.classList.add('mock-login-hidden');
-    welcome.classList.remove('hidden');
+    if (window.EFGCPasswordRecovery?.isActive()) return;
+    $('#login .login-card')?.classList.add('mock-login-hidden');
+    $('#mockWelcome')?.classList.remove('hidden');
+    $('#v61Login')?.focus({ preventScroll: true });
     window.scrollTo({ top: 0, behavior: 'auto' });
   }
-
   function buildWelcome() {
     fixBrandLogos();
     const login = $('#login');
     const card = $('#login .login-card');
-    if (!login || !card) return false;
-
-    let welcome = $('#mockWelcome');
-    if (!welcome) {
-      welcome = document.createElement('div');
+    if (!login || !card) return;
+    if (!$('#mockWelcome')) {
+      const welcome = document.createElement('div');
       welcome.id = 'mockWelcome';
+      welcome.className = 'v61-welcome';
+      welcome.innerHTML = `
+        <div class="welcome-artwork">
+          <img class="welcome-image" src="assets/efgc-youth-welcome.jpg?v=62.0" width="864" height="1536" fetchpriority="high" alt="EFGC Youth. Build, belong, be a light. Let your light shine before men — Matthew 5:16. A generation for His glory.">
+          <h1 class="visually-hidden">EFGC Youth</h1>
+          <div class="v61-actions">
+            <button id="v61Login" type="button" class="v61-login">Login <span aria-hidden="true">→</span></button>
+            <button id="v61Create" type="button" class="v61-create">Create Account <span aria-hidden="true">→</span></button>
+          </div>
+        </div>`;
       login.insertBefore(welcome, card);
+      $('#v61Login').addEventListener('click', () => openLogin('youth', 'login'));
+      $('#v61Create').addEventListener('click', () => openLogin('youth', 'register'));
+      card.classList.add('mock-login-card', 'mock-login-hidden');
+      const back = document.createElement('button');
+      back.type = 'button';
+      back.className = 'v61-back ghost-login';
+      back.textContent = '← Back to Welcome';
+      back.addEventListener('click', showWelcome);
+      card.prepend(back);
     }
-
-    welcome.className = 'v61-welcome';
-    welcome.dataset.v61 = '1';
-    welcome.innerHTML = `
-      <div class="v61-bg" aria-hidden="true"></div>
-      <div class="v61-content">
-        <section class="v61-brand" aria-label="Emmanuel Full Gospel Church Youth">
-          <span class="v61-note v61-note-left">BUILD<br>BELONG<br>BE A LIGHT</span>
-          <div class="v61-logo-halo"><img src="${OFFICIAL_LOGO}" class="v61-logo" alt="Emmanuel Full Gospel Church — God with us — Pass on the Baton — Est 1943" fetchpriority="high"></div>
-          <span class="v61-note v61-note-right">GOD<br>WITH<br>US</span>
-        </section>
-        <section class="v61-youth"><span class="v61-crown" aria-hidden="true">♛</span><h1>YOUTH</h1><div class="v61-brush-line"></div><p>BUILD <b>•</b> BELONG <b>•</b> BE A LIGHT</p></section>
-        <section class="v61-verse"><p>Let your light shine<br>before men...</p><strong>Matthew 5:16 (KJV)</strong></section>
-        <div class="v61-spacer"></div>
-        <div class="v61-actions"><button id="v61Login" type="button" class="v61-login">Login <span>→</span></button><button id="v61Create" type="button" class="v61-create">Create Account <span>→</span></button></div>
-        <p class="v61-generation">A GENERATION FOR HIS GLORY</p>
-      </div>`;
-
-    card.classList.add('mock-login-card','mock-login-hidden');
-    card.querySelectorAll('.v49-back,.v57-back,.v61-back').forEach((el) => el.remove());
-    const back = document.createElement('button');
-    back.type = 'button';
-    back.className = 'v61-back ghost-login';
-    back.textContent = '← Back to Welcome';
-    back.addEventListener('click', showWelcome);
-    card.prepend(back);
-
-    $('#v61Login')?.addEventListener('click', () => openLogin('youth'));
-    $('#v61Create')?.addEventListener('click', () => openLogin('youth'));
-
-    const recovery = location.hash.includes('access_token') || /type=recovery|code=/.test(location.search);
-    const signedIn = Boolean(currentSession()?.uid);
-    if (recovery) {
-      openLogin('admin');
-    } else if (!signedIn) {
-      login.classList.remove('hidden');
-      welcome.classList.remove('hidden');
-      card.classList.add('mock-login-hidden');
-    } else {
-      welcome.classList.add('hidden');
+    if (window.EFGCPasswordRecovery?.isActive()) {
+      openLogin('admin', 'login', false);
+      window.EFGCPasswordRecovery.showForm();
+    } else if (currentSession()?.uid) {
+      $('#mockWelcome').classList.add('hidden');
     }
-    return true;
   }
-
-  function boot() {
+  window.EFGCWelcome = { openLogin, showWelcome };
+  document.addEventListener('efgc:auth-form', (event) => {
     buildWelcome();
-    setTimeout(fixBrandLogos, 200);
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', boot, { once: true });
-  } else {
-    boot();
-  }
-
-  window.addEventListener('pageshow', () => {
-    fixBrandLogos();
-    if (!currentSession()?.uid) buildWelcome();
+    openLogin(event.detail?.role || 'youth', event.detail?.mode || 'login', false);
   });
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildWelcome, { once: true });
+  else buildWelcome();
+  window.addEventListener('pageshow', fixBrandLogos);
 })();
