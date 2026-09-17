@@ -44,6 +44,7 @@ jobs:
           node --check v54-stable-welcome.js
           node --check tests/supabase-smoke.cjs
           node --check tests/visual-smoke.cjs
+          node --test tests/auth-session.test.cjs
           test -f index.html
           test -f manifest.webmanifest
           test -f v43.css

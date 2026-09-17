@@ -25,7 +25,7 @@ async function mockedPage(browser, size, opts = {}) {
       if (req.method()==='POST') saved={...(saved || profile(opts.role || 'youth')), ...req.postDataJSON()};
       body = saved ? [saved] : [];
     } else if (url.pathname.endsWith('/safeguarding_contacts')) body=[{youth_id:user.id}];
-    else if (url.pathname.endsWith('/events')) body=events;
+    else if (url.pathname.endsWith('/events')) { if (opts.holdEvents) await opts.holdEvents; body=events; }
     await route.fulfill({status:200,contentType:'application/json',body:JSON.stringify(body)});
   });
   if (opts.signedIn) await page.addInitScript(value => localStorage.setItem('efgcSupabaseAuth',JSON.stringify(value)),auth);
@@ -113,6 +113,19 @@ async function noOverflow(page,label) {
       assert.equal(await page.locator('#adminPanel').innerText(),'');
       assert.deepEqual(errors,[],role+' runtime errors'); await page.close();
     }
+    // Signing out while the initial dashboard loads must keep account data cleared.
+    let releaseEvents;
+    const heldEvents = new Promise(resolve => { releaseEvents = resolve; });
+    const delayed = await mockedPage(browser,[384,854],{signedIn:true,role:'admin',holdEvents:heldEvents});
+    await delayed.page.goto(BASE); await visible(delayed.page,'.userbar button');
+    await delayed.page.click('.userbar button'); await visible(delayed.page,'#mockWelcome');
+    releaseEvents();
+    await delayed.page.waitForTimeout(1200);
+    assert(await delayed.page.locator('#mockWelcome').isVisible(),'A stale request must not reopen the account');
+    assert.equal(await delayed.page.locator('#adminPanel').innerHTML(),'');
+    assert.equal(await delayed.page.locator('#eventList').innerHTML(),'');
+    assert.deepEqual(delayed.errors,[],'Logout during loading must not cause runtime errors');
+    await delayed.page.close();
     // Real callback shape, synthetic token: recovery must show the form, never hide behind artwork.
     const {page,errors}=await mockedPage(browser,[384,854],{role:'admin'});
     await page.goto(BASE+'#access_token=synthetic-test-token&refresh_token=synthetic-refresh-token&type=recovery');

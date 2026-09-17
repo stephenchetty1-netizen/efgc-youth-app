@@ -33,13 +33,14 @@
     if (refreshInFlight) return refreshInFlight;
     const s = read(); if (!s?.refresh_token) return null;
     const version = sessionVersion;
+    const stillCurrent = () => version === sessionVersion && read()?.user?.id === s.user?.id && read()?.refresh_token === s.refresh_token;
     refreshInFlight = (async () => {
       try {
         const data = await req(`${A}/token?grant_type=refresh_token`, { method:'POST', headers:{...H(null),'Content-Type':'application/json'}, body:JSON.stringify({refresh_token:s.refresh_token}) });
-        if (version !== sessionVersion) return null;
+        if (!stillCurrent()) return null;
         write(data); return data;
       } catch (e) {
-        if ([400,401,403].includes(e.status) && version === sessionVersion) write(null);
+        if ([400,401,403].includes(e.status) && stillCurrent()) write(null);
         throw e;
       } finally { refreshInFlight = null; }
     })();
@@ -47,12 +48,26 @@
   }
   async function authed(url, options={}) {
     let s=read(); if(!s?.access_token) throw new Error('Authentication required');
+    const userId = s.user?.id;
+    const assertCurrent = () => {
+      if (!userId || read()?.user?.id !== userId) throw new Error('Your session changed. Sign in again.');
+    };
+    assertCurrent();
     try {
       const result = await req(url,{...options,headers:{...H(s.access_token),...(options.headers||{})}});
-      if (read()?.user?.id !== s.user?.id) throw new Error('Your session changed. Sign in again.');
+      assertCurrent();
       return result;
     }
-    catch(e){ if(e.status!==401||!s.refresh_token) throw e; s=await refresh(); if(!s?.access_token) throw e; return req(url,{...options,headers:{...H(s.access_token),...(options.headers||{})}}); }
+    catch(e){
+      assertCurrent();
+      if(e.status!==401||!s.refresh_token) throw e;
+      s=await refresh();
+      assertCurrent();
+      if(!s?.access_token || s.user?.id !== userId) throw e;
+      const result = await req(url,{...options,headers:{...H(s.access_token),...(options.headers||{})}});
+      assertCurrent();
+      return result;
+    }
   }
   function normalizeZA(phone){ const d=String(phone||'').replace(/[^\d+]/g,''); if(d.startsWith('+'))return d;if(d.startsWith('0'))return `+27${d.slice(1)}`;if(d.startsWith('27'))return `+${d}`;return d; }
 
