@@ -1,0 +1,38 @@
+name: Validate Leader Duty Panel
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "v63-duty-ack.js"
+      - "v63-duty-ack.css"
+      - "backend-adapter.js"
+      - ".github/workflows/duty-panel-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-duty-panel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - name: Validate duty acknowledgement feature
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check v63-duty-ack.js
+          node --check backend-adapter.js
+          test -f v63-duty-ack.css
+          grep -q 'Ready' v63-duty-ack.js
+          grep -q 'Not Ready' v63-duty-ack.js
+          grep -q 'request_duty_swap' v63-duty-ack.js
+          grep -q 'respond_to_duty_swap' v63-duty-ack.js
+          grep -q 'v63-duty-ack.js?v=63.0' backend-adapter.js
+          grep -q 'v63-duty-ack.css?v=63.0' backend-adapter.js
