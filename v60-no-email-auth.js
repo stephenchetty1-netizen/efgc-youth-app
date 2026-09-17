@@ -72,9 +72,12 @@
 
   async function authBridge(payload) {
     const c = window.EFGC_SUPABASE;
+    const headers = { apikey: c.publishableKey, 'Content-Type': 'application/json' };
+    const token = window.EFGCAuth?.accessToken?.();
+    if (token) headers.Authorization = `Bearer ${token}`;
     const r = await fetch(`${c.url}/functions/v1/member-auth`, {
       method: 'POST',
-      headers: { apikey: c.publishableKey, 'Content-Type': 'application/json' },
+      headers,
       body: JSON.stringify(payload),
     });
     const body = await r.json().catch(() => ({}));
@@ -248,11 +251,64 @@
     } catch (e) { say(`Password could not be changed: ${e.message}`); }
   };
 
+  function ensureMemberResetModal() {
+    if ($('#memberPasswordResetModal')) return $('#memberPasswordResetModal');
+    const modal = document.createElement('div');
+    modal.id = 'memberPasswordResetModal';
+    modal.className = 'member-reset-modal hidden';
+    modal.innerHTML = '<div class="member-reset-card" role="dialog" aria-modal="true" aria-labelledby="memberResetTitle"><button class="member-reset-close" type="button" aria-label="Close password reset">×</button><small>ADMIN ONLY</small><h3 id="memberResetTitle">Reset Member Password</h3><p id="memberResetName"></p><label>Temporary password<input id="memberResetPassword" type="password" autocomplete="new-password" placeholder="At least 10 characters"></label><label>Confirm temporary password<input id="memberResetPasswordConfirm" type="password" autocomplete="new-password" placeholder="Re-enter password"></label><button id="memberResetSave" class="primary-login" type="button">Save Temporary Password</button><p id="memberResetMessage" class="login-message"></p><small>Share the temporary password directly with the member and ask them to change it after signing in.</small></div>';
+    document.body.appendChild(modal);
+    modal.querySelector('.member-reset-close')?.addEventListener('click', () => modal.classList.add('hidden'));
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.classList.add('hidden'); });
+    $('#memberResetSave')?.addEventListener('click', saveMemberPasswordReset);
+    return modal;
+  }
+
+  function openMemberPasswordReset(button) {
+    if (session?.role !== 'admin') return;
+    const modal = ensureMemberResetModal();
+    modal.dataset.userId = button.dataset.userId || '';
+    $('#memberResetName').textContent = `Account: ${button.dataset.userName || 'EFGC Member'}`;
+    $('#memberResetPassword').value = '';
+    $('#memberResetPasswordConfirm').value = '';
+    $('#memberResetMessage').textContent = '';
+    modal.classList.remove('hidden');
+    setTimeout(() => $('#memberResetPassword')?.focus(), 0);
+  }
+
+  async function saveMemberPasswordReset() {
+    const modal = $('#memberPasswordResetModal');
+    const userId = modal?.dataset.userId || '';
+    const p = $('#memberResetPassword')?.value || '';
+    const q = $('#memberResetPasswordConfirm')?.value || '';
+    const out = $('#memberResetMessage');
+    const button = $('#memberResetSave');
+    const say = (t) => { if (out) out.textContent = t; };
+    if (p.length < 10) return say('Use a temporary password with at least 10 characters.');
+    if (p !== q) return say('The two password entries do not match.');
+    if (!userId) return say('Choose a member account first.');
+    if (button) button.disabled = true;
+    try {
+      say('Resetting password securely…');
+      const result = await authBridge({ action: 'admin-reset-member-password', userId, newPassword: p });
+      say(`${result.member?.full_name || 'Member'} password reset successfully.`);
+      $('#memberResetPassword').value = '';
+      $('#memberResetPasswordConfirm').value = '';
+      setAdminMessage?.('Member password reset completed successfully.');
+    } catch (e) {
+      say(`Password reset failed: ${e.message}`);
+    } finally {
+      if (button) button.disabled = false;
+    }
+  }
+
   const adminPanel = $('#adminPanel');
   if (adminPanel) new MutationObserver(() => setTimeout(injectAdminPasswordCard, 0)).observe(adminPanel, { childList: true });
   document.addEventListener('click', (e) => {
     if (e.target.closest('.login-type')) setTimeout(syncUi, 0);
     if (e.target.closest('[data-tab="admin"]')) setTimeout(injectAdminPasswordCard, 50);
+    const reset = e.target.closest('.member-password-reset');
+    if (reset) openMemberPasswordReset(reset);
   });
 
   async function boot() {
