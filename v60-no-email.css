@@ -32,6 +32,56 @@
 .login-card .hidden { display:none !important; }
 #loginHint { line-height:1.5; }
 #v60AdminPasswordCard { margin-bottom:18px; }
+
+.member-reset-modal {
+  position:fixed;
+  inset:0;
+  z-index:10000;
+  display:grid;
+  place-items:center;
+  padding:20px;
+  background:rgba(3,16,38,.72);
+  backdrop-filter:blur(8px);
+}
+.member-reset-modal.hidden { display:none !important; }
+.member-reset-card {
+  position:relative;
+  width:min(100%, 460px);
+  max-height:calc(100vh - 40px);
+  overflow:auto;
+  border-radius:24px;
+  padding:26px;
+  background:#fff;
+  box-shadow:0 24px 80px rgba(0,0,0,.3);
+}
+.member-reset-card > small:first-child {
+  display:inline-block;
+  margin-bottom:6px;
+  font-weight:900;
+  letter-spacing:.12em;
+  color:#0866ff;
+}
+.member-reset-card h3 { margin-top:4px; }
+.member-reset-card label { display:block; margin-top:14px; }
+.member-reset-card input { width:100%; }
+.member-reset-card .primary-login { width:100%; margin-top:18px; }
+.member-reset-close {
+  position:absolute;
+  top:12px;
+  right:14px;
+  width:38px;
+  height:38px;
+  border:0;
+  border-radius:50%;
+  background:rgba(7,33,79,.08);
+  font-size:24px;
+  line-height:1;
+  cursor:pointer;
+}
+.admin-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+
 @media (max-width:520px) {
   .no-email-mode-switch button { padding:10px 6px; font-size:.9rem; }
+  .member-reset-modal { padding:12px; align-items:end; }
+  .member-reset-card { width:100%; border-radius:24px 24px 12px 12px; padding:24px 18px; }
 }
