@@ -62,8 +62,8 @@ jobs:
           grep -q 'v60-auth-adapter.js?v=60.0' index.html
           grep -q 'v60-no-email-auth.js?v=60.0' index.html
           grep -q 'v60-no-email.css?v=60.0' index.html
-          grep -q 'v61-smoke-login.js?v=61.0' index.html
-          grep -q 'v61-smoke-login.css?v=61.0' index.html
+          grep -q 'v61-smoke-login.js?v=61.1' index.html
+          grep -q 'v61-smoke-login.css?v=61.1' index.html
           grep -q 'SMOKE TEST LOGIN' v61-smoke-login.js
           grep -q "params.get('smoke') !== '1'" v61-smoke-login.js
           grep -q 'member-auth' v61-smoke-login.js
