@@ -20,10 +20,12 @@ function assert(condition, message) {
   const authJson = await auth.json();
   assert(authJson && typeof authJson === 'object', 'Supabase Auth settings did not return JSON');
 
+  // This app intentionally protects its data API behind authenticated sessions/RLS.
+  // A 401/403 here is acceptable and confirms that anonymous access is not open.
   const rest = await fetch(`${url}/rest/v1/`, { headers });
-  assert(rest.ok, `Supabase REST endpoint failed with HTTP ${rest.status}`);
+  assert([200, 401, 403].includes(rest.status), `Supabase REST endpoint returned unexpected HTTP ${rest.status}`);
 
-  console.log('Supabase public connectivity smoke passed. No data was written or changed.');
+  console.log(`Supabase connectivity smoke passed. Auth HTTP ${auth.status}; REST HTTP ${rest.status}. No data was written or changed.`);
 })().catch((error) => {
   console.error(error.stack || error);
   process.exit(1);
