@@ -73,7 +73,7 @@
 
   function syncThemeShell(){
     const signed=Boolean(activeSession()?.uid);
-    $('#mockWelcome')?.classList.toggle('hidden', signed);
+    if (signed) $('#mockWelcome')?.classList.add('hidden');
     $('#mockBottomNav')?.classList.toggle('hidden', !signed);
     document.body.classList.toggle('mock-authenticated',signed);
     applyBrandAssets();

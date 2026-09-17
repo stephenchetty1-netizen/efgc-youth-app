@@ -46,6 +46,7 @@ async function noOverflow(page,label) {
       await page.goto(BASE); await visible(page,'#mockWelcome');
       await page.locator('.welcome-image').evaluate(img=>img.decode());
       await noOverflow(page,name);
+      assert(await page.evaluate(()=>document.documentElement.scrollHeight<=innerHeight+2),`${name}: welcome leaves unintended blank space`);
       const asset=await page.locator('.welcome-image').evaluate(img=>({w:img.naturalWidth,h:img.naturalHeight}));
       assert.deepEqual(asset,{w:864,h:1536},'Supplied artwork must load unchanged');
       for (const id of ['v61Login','v61Create']) {
@@ -56,6 +57,8 @@ async function noOverflow(page,label) {
       await page.screenshot({path:`${out}/${name}-welcome.png`,fullPage:true});
       if (name === '384x854') console.log('EFGC_REVIEW_WELCOME='+(await page.screenshot({type:'jpeg',quality:80,fullPage:true})).toString('base64'));
       await page.click('#v61Login'); await visible(page,'#loginEmail');
+      await page.waitForTimeout(1100); // Allow the legacy startup callbacks to finish.
+      assert(!await page.locator('#mockWelcome').isVisible(),`${name}: delayed startup reopened welcome over login`);
       assert(!await page.locator('#nameField').isVisible(),'Existing-member login must not ask for registration details');
       await page.click('.login-type[data-role="admin"]'); await visible(page,'#passwordField'); await visible(page,'#forgotPasswordButton');
       await page.click('#forgotPasswordButton'); assert.match(await page.locator('#loginMessage').innerText(),/email address first/i);

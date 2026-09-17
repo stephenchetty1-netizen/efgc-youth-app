@@ -2,7 +2,7 @@
 body:not(.mock-authenticated){margin:0!important;padding:0!important;min-height:100svh;background:#01162f!important}
 body:not(.mock-authenticated)>header,body:not(.mock-authenticated)>footer{display:none!important}
 body:not(.mock-authenticated) main,body:not(.mock-authenticated) #login{width:100%!important;max-width:none!important;min-height:100svh;margin:0!important;padding:0!important}
-#mockWelcome.v61-welcome{position:relative!important;display:grid;place-items:center;width:100%!important;max-width:none!important;min-height:100svh;margin:0!important;padding:0!important;isolation:isolate;background:#02132d;color:#fff}
+#mockWelcome.v61-welcome{position:relative!important;display:grid;grid-template:1fr / minmax(0,1fr);place-items:center;overflow:hidden!important;width:100%!important;max-width:none!important;min-height:100svh;margin:0!important;padding:0!important;isolation:isolate;background:#02132d;color:#fff}
 #mockWelcome.v61-welcome::before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(90deg,#001026d9,#01396675,#001026d9),url('assets/efgc-youth-welcome.jpg?v=62.0') center 40%/cover;filter:blur(20px);clip-path:inset(0)}
 #mockWelcome.v61-welcome.hidden,.mock-login-hidden{display:none!important}
 .welcome-artwork{position:relative;width:min(100%,56.25svh);min-width:min(100%,360px);margin:auto;isolation:isolate}
