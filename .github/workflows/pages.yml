@@ -3,6 +3,8 @@ name: Validate and deploy EFGC Youth App
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +13,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "efgc-youth-pages"
+  group: "efgc-youth-pages-${{ github.ref }}"
   cancel-in-progress: true
 
 jobs:
@@ -102,6 +104,7 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:8080/v36-password-recovery.js | grep -q 'requestAdminPasswordReset'
 
   deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: validate
     runs-on: ubuntu-latest
     environment:
