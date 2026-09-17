@@ -21,13 +21,13 @@ function assert(condition, message) {
     for (const size of sizes) {
       const page = await browser.newPage({ viewport: { width: size.width, height: size.height }, deviceScaleFactor: 1 });
       await page.goto(BASE, { waitUntil: 'domcontentloaded', timeout: 30000 });
-      await page.waitForSelector('#mockWelcome.v57-welcome', { state: 'visible', timeout: 10000 });
+      await page.waitForSelector('#mockWelcome.v61-welcome', { state: 'visible', timeout: 10000 });
       await page.waitForTimeout(1200);
 
       const welcome = await page.evaluate(() => {
-        const el = document.querySelector('#mockWelcome.v57-welcome');
-        const logo = document.querySelector('.v57-logo');
-        const login = document.querySelector('#v57Login');
+        const el = document.querySelector('#mockWelcome.v61-welcome');
+        const logo = document.querySelector('.v61-logo');
+        const login = document.querySelector('#v61Login');
         if (!el || !logo || !login) return null;
         const er = el.getBoundingClientRect();
         const lr = logo.getBoundingClientRect();
@@ -58,7 +58,7 @@ function assert(condition, message) {
 
       await page.screenshot({ path: `artifacts/v61-visual/${size.name}-welcome.png`, fullPage: true });
 
-      await page.click('#v57Login');
+      await page.click('#v61Login');
       await page.waitForSelector('#login .login-card:not(.mock-login-hidden)', { state: 'visible', timeout: 5000 });
       const loginLayout = await page.evaluate(() => ({
         viewportWidth: window.innerWidth,
