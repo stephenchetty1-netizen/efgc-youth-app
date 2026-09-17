@@ -1,0 +1,37 @@
+/* EFGC Youth V60 — no-email authentication polish */
+#emailField,
+#passwordRecoveryControls,
+#passwordResetPanel,
+#supabaseOtpBox { display:none !important; }
+
+.no-email-mode-switch {
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  padding:5px;
+  margin:14px 0 18px;
+  border-radius:16px;
+  background:rgba(7,33,79,.08);
+  border:1px solid rgba(8,102,255,.14);
+}
+.no-email-mode-switch button {
+  border:0;
+  border-radius:12px;
+  padding:11px 10px;
+  font-weight:800;
+  background:transparent;
+  color:#17345f;
+  cursor:pointer;
+}
+.no-email-mode-switch button.active {
+  background:#0866ff;
+  color:white;
+  box-shadow:0 8px 20px rgba(8,102,255,.22);
+}
+.login-card #passwordField:not(.hidden) { display:block; }
+.login-card .hidden { display:none !important; }
+#loginHint { line-height:1.5; }
+#v60AdminPasswordCard { margin-bottom:18px; }
+@media (max-width:520px) {
+  .no-email-mode-switch button { padding:10px 6px; font-size:.9rem; }
+}
