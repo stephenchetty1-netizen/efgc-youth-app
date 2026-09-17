@@ -1,0 +1,46 @@
+/* V68 — EFGC Daily Scripture Generator */
+.scripture-generator-v68{display:grid;gap:18px}
+.scripture-generator-heading{padding:8px 2px}
+.scripture-kicker{display:block;color:#0b66cf;font-size:12px;font-weight:900;letter-spacing:1.7px}
+.scripture-generator-heading h2{margin:7px 0 5px;font:800 clamp(30px,6vw,46px)/1.08 Georgia,serif;color:#071e48;letter-spacing:-1px}
+.scripture-generator-heading p{margin:0;max-width:760px;color:#50657f}
+.scripture-generator-layout{display:grid;gap:18px}
+.scripture-preview-panel,.scripture-controls-panel{min-width:0}
+.scripture-canvas-shell{position:relative;overflow:hidden;border-radius:26px;background:#031a39;box-shadow:0 18px 46px #062c631f;border:1px solid #bed9f7}
+#scripturePosterCanvas{display:block;width:100%;height:auto;aspect-ratio:4/5;background:#052650}
+.scripture-render-status{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);max-width:85%;padding:8px 13px;border-radius:999px;background:#001b3edb;color:#fff;font-size:12px;line-height:1.2;text-align:center;box-shadow:0 5px 18px #00152f66}
+.scripture-render-status:empty{display:none}
+.scripture-controls-panel{display:grid;gap:14px;align-content:start}
+.scripture-control-card{display:grid;gap:12px;padding:17px;border:1px solid #d9e8f8;border-radius:20px;background:#fff;box-shadow:0 10px 28px #075acb0e}
+.scripture-control-card label,.scripture-control-card>strong{color:#102c53;font-size:15px}
+.scripture-control-card select{width:100%;min-height:50px;border:1px solid #b9d0eb;background:#fafdff;color:#102c53;padding:0 12px}
+.scripture-inline-actions,.scripture-action-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.scripture-action-grid{grid-template-columns:1fr}
+.scripture-primary,.scripture-secondary{min-height:48px;border-radius:14px;padding:10px 14px;font:800 14px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif}
+.scripture-primary{border:1px solid #178cff;background:linear-gradient(145deg,#149eff,#075be7);color:#fff;box-shadow:0 7px 16px #0764e526}
+.scripture-secondary{border:1px solid #a9c8ec;background:#f5faff;color:#0b57b1}
+.scripture-theme-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.scripture-theme{min-width:0;border:1px solid #cfe0f4;background:#f9fcff;border-radius:15px;padding:6px;color:#173858;font:800 12px/1.25 system-ui,-apple-system,"Segoe UI",sans-serif;display:grid;gap:6px;text-align:left}
+.scripture-theme-thumb{display:block;width:100%;aspect-ratio:1.45/1;border-radius:10px;background-position:center;background-size:cover;box-shadow:inset 0 0 0 1px #ffffff44}
+.scripture-theme.active{border:2px solid #0874f5;background:#eaf4ff;color:#075ccc;box-shadow:0 0 0 3px #0b77ff12}
+.scripture-action-message{min-height:20px;margin:0;color:#41617d;font-size:13px}
+.scripture-safety-note{text-align:center;color:#57708e;font-size:11px;letter-spacing:.5px}
+.scripture-home-v68{padding:0!important;overflow:hidden;background-image:linear-gradient(90deg,#031b42f5 0%,#052d62c9 58%,#052d6250),var(--scripture-bg)!important;background-size:cover!important;background-position:center!important;border-left:0!important;min-height:260px;display:flex;align-items:flex-end}
+.scripture-home-overlay{padding:23px;width:100%;background:linear-gradient(transparent,#011b3cba)}
+.scripture-home-v68 small{letter-spacing:1.2px;font-weight:850}
+.scripture-home-v68 h3{font-size:25px;margin:7px 0}
+.scripture-home-v68 p{max-width:760px;margin:0 0 16px;font:600 18px/1.55 Georgia,serif}
+.scripture-open-button{min-height:44px;border:1px solid #ffe29a;border-radius:999px;background:#ffd266;color:#15345c;padding:9px 15px;font-weight:900}
+@media(min-width:800px){
+  .scripture-generator-layout{grid-template-columns:minmax(0,1.08fr) minmax(300px,.92fr);align-items:start}
+  .scripture-preview-panel{position:sticky;top:18px}
+  .scripture-action-grid{grid-template-columns:1.15fr .85fr .85fr}
+}
+@media(max-width:520px){
+  .scripture-theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .scripture-inline-actions{grid-template-columns:1fr}
+  .scripture-generator-heading p{font-size:14px}
+}
+@media(prefers-reduced-motion:reduce){
+  .scripture-generator-v68 *{scroll-behavior:auto!important;transition:none!important}
+}
