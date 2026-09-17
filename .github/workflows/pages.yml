@@ -72,11 +72,13 @@ jobs:
           grep -q 'v60-no-email.css?v=60.0' index.html
           grep -q 'v62-notifications.js?v=62.0' index.html
           grep -q 'v62-notifications.css?v=62.0' index.html
-          grep -q 'v68-scripture-generator.js?v=68.1' index.html
-          grep -q 'v68-scripture-generator.css?v=68.1' index.html
+          grep -q 'v68-scripture-generator.js?v=69.0' index.html
+          grep -q 'v68-scripture-generator.css?v=69.0' index.html
           grep -q 'Daily Scripture Generator' v68-scripture-generator.js
           grep -q 'scripturePosterCanvas' v68-scripture-generator.js
           grep -q 'Download Image' v68-scripture-generator.js
+          grep -q 'THEME_SPECS' v68-scripture-generator.js
+          grep -q 'Official EFGC logo' v68-scripture-generator.js
           grep -q 'notification-sw.js?v=62.0' v62-notifications.js
           grep -q 'news_posts' v62-notifications.js
           grep -q 'events?select=' v62-notifications.js
