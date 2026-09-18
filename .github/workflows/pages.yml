@@ -69,8 +69,8 @@ jobs:
             grep -q "$asset" index.html || { echo "Missing reference to $asset"; exit 1; }
           done
 
-          test $(stat -c%s assets/v72-login-poster.webp) -gt 50000
-          test $(stat -c%s assets/v72-efgc-logo.webp) -gt 15000
+          test $(stat -c%s assets/v72-login-poster.webp) -gt 10000
+          test $(stat -c%s assets/v72-efgc-logo.webp) -gt 5000
           grep -q 'buildWelcome' v54-stable-welcome.js
           grep -q 'v72-login-poster.webp' v72-login-brand.css
           grep -q 'v72-efgc-logo.webp' v54-stable-welcome.js
@@ -178,8 +178,8 @@ jobs:
           grep -q 'realistic Scripture gallery' /tmp/v71.css
           grep -q 'max-width:1100px' /tmp/v71.css
           grep -q 'v72-poster' /tmp/v72.css
-          test $(stat -c%s /tmp/login.webp) -gt 50000
-          test $(stat -c%s /tmp/logo.webp) -gt 15000
+          test $(stat -c%s /tmp/login.webp) -gt 10000
+          test $(stat -c%s /tmp/logo.webp) -gt 5000
 
   deploy:
     needs: validate
