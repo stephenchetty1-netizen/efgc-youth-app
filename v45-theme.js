@@ -25,6 +25,7 @@
   }
 
   function ensureWelcome(){
+    if(window.EFGC_V73_ACTIVE) return;
     const login = $('#login');
     const card = login?.querySelector('.login-card');
     if(!login || !card || $('#mockWelcome')) return;
