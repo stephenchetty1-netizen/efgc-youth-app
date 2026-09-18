@@ -1,8 +1,8 @@
 /** V70 — Gen-Z EFGC Youth welcome screen with official-logo enforcement. */
 (() => {
-  if (window.EFGC_V73_ACTIVE) return;
+  if (window.EFGC_V74_ACTIVE) return;
   const $ = (s) => document.querySelector(s);
-  const OFFICIAL_LOGO = 'assets/efgc-logo.svg?v=70.0';
+  const OFFICIAL_LOGO = 'assets/v74-efgc-logo.png?v=74.0';
 
   function currentSession() { try { return typeof session !== 'undefined' ? session : null; } catch { return null; } }
   function fixBrandLogos() {
@@ -54,7 +54,7 @@
 
 /** V61 — automated EFGC birthday wish poster enhancer for News Feed. */
 (() => {
-  const LOGO = 'assets/efgc-logo.svg?v=60.0';
+  const LOGO = 'assets/v74-efgc-logo.png?v=74.0';
   const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
 
   function installBirthdayStyles() {
