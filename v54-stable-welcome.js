@@ -1,5 +1,6 @@
 /** V70 — Gen-Z EFGC Youth welcome screen with official-logo enforcement. */
 (() => {
+  if (window.EFGC_V73_ACTIVE) return;
   const $ = (s) => document.querySelector(s);
   const OFFICIAL_LOGO = 'assets/efgc-logo.svg?v=70.0';
 
