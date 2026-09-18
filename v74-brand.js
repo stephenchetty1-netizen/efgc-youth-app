@@ -4,8 +4,8 @@
   window.EFGC_V74_ACTIVE = true;
 
   const $ = (s) => document.querySelector(s);
-  const LOGIN_ART = 'assets/v76-login-poster.webp?v=78.0';
-  const LOGO = 'assets/v76-efgc-logo.png?v=76.0';
+  const LOGIN_ART = 'assets/v76-login-poster.webp?v=79.0';
+  const LOGO = 'assets/v76-efgc-logo.png?v=79.0';
 
   function sessionActive() {
     try {
@@ -20,6 +20,35 @@
       img.classList.add('v74-official-logo');
       img.alt = 'Emmanuel Full Gospel Church official logo';
     });
+  }
+
+  function syncWelcomeViewport() {
+    const welcome = $('#v74Welcome');
+    const frame = welcome?.querySelector('.v74-poster-frame');
+    const art = welcome?.querySelector('.v74-login-art');
+    if (!welcome || !frame || !art || sessionActive()) return;
+
+    const vv = window.visualViewport;
+    const width = Math.max(1, Math.round(vv?.width || window.innerWidth || document.documentElement.clientWidth || 360));
+    const height = Math.max(1, Math.round(vv?.height || window.innerHeight || document.documentElement.clientHeight || 640));
+
+    // Force the welcome artwork to the exact visible mobile viewport.
+    // This avoids Android custom-tab/browser viewport quirks that left a large
+    // navy block beneath the original 9:16 frame.
+    for (const [prop,value] of [
+      ['position','fixed'],['left','0px'],['top','0px'],['right','auto'],['bottom','auto'],
+      ['width',width+'px'],['height',height+'px'],['min-height','0px'],['max-height','none'],
+      ['overflow','hidden'],['display','block'],['z-index','30']
+    ]) welcome.style.setProperty(prop,value,'important');
+
+    for (const [prop,value] of [
+      ['position','absolute'],['inset','0px'],['width','100%'],['height','100%'],
+      ['max-width','none'],['aspect-ratio','auto'],['overflow','hidden']
+    ]) frame.style.setProperty(prop,value,'important');
+
+    for (const [prop,value] of [
+      ['width','100%'],['height','100%'],['object-fit','cover'],['object-position','center center']
+    ]) art.style.setProperty(prop,value,'important');
   }
 
   function ensureWelcome() {
@@ -48,6 +77,7 @@
     }
 
     welcome.classList.remove('hidden');
+    syncWelcomeViewport();
     card.classList.add('mock-login-hidden');
     card.classList.remove('v74-card-visible');
     card.style.removeProperty('display');
@@ -146,6 +176,9 @@
     observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
 
     window.addEventListener('pageshow',reconcile);
+    window.addEventListener('resize',syncWelcomeViewport,{passive:true});
+    window.visualViewport?.addEventListener('resize',syncWelcomeViewport,{passive:true});
+    window.visualViewport?.addEventListener('scroll',syncWelcomeViewport,{passive:true});
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded',boot,{once:true});
