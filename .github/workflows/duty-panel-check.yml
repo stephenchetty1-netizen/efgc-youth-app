@@ -34,5 +34,5 @@ jobs:
           grep -q 'Not Ready' v63-duty-ack.js
           grep -q 'request_duty_swap' v63-duty-ack.js
           grep -q 'respond_to_duty_swap' v63-duty-ack.js
-          grep -q 'v63-duty-ack.js?v=63.0' backend-adapter.js
-          grep -q 'v63-duty-ack.css?v=63.0' backend-adapter.js
+          grep -q 'v63-duty-ack.js?v=63.0' index.html
+          grep -q 'v63-duty-ack.css?v=63.0' index.html

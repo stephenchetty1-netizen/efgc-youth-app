@@ -85,13 +85,16 @@
     try{
       const rows=await EFGCLive.events();
       if(!rows.length){ host.innerHTML='<article class="card"><h3>No events published yet</h3><p>Approved EFGC Youth events will appear here.</p></article>'; return; }
-      host.innerHTML=`<div class="event-feed">${rows.map(e=>{ const img=e.image_path?`<img class="event-cover" src="${esc(eventImageUrl(e.image_path))}" alt="${esc(e.title)} event image">`:''; const post=e.post_content?`<p class="event-post">${esc(e.post_content)}</p>`:''; const details=[e.theme,e.scripture].filter(Boolean).join(' • '); return `<article class="card event-card">${img}<div class="event-card-body"><span class="module-kicker">${esc(fmtEvent(e.event_date))}</span><h3>${esc(e.title)}</h3>${details?`<div class="planner-meta">${esc(details)}</div>`:''}${post}</div></article>`;}).join('')}</div>`;
+      host.innerHTML=`<div class="event-feed">${rows.map(e=>{ const img=e.image_path?`<img class="event-cover" src="${esc(eventImageUrl(e.image_path))}" alt="${esc(e.title)} event image">`:''; const post=e.post_content?`<p class="event-post">${esc(e.post_content)}</p>`:''; const details=[e.theme,e.scripture].filter(Boolean).join(' • '); return `<article class="card event-card" data-event-id="${esc(e.id)}" data-event-date="${esc(e.event_date)}">${img}<div class="event-card-body"><span class="module-kicker">${esc(fmtEvent(e.event_date))}</span><h3>${esc(e.title)}</h3>${details?`<div class="planner-meta">${esc(details)}</div>`:''}${post}</div></article>`;}).join('')}</div>`;
+      document.dispatchEvent(new CustomEvent('efgc:events-rendered'));
     }catch(e){ host.innerHTML=`<article class="card"><p>${esc(`Could not load events: ${e.message}`)}</p></article>`; }
   }
 
   async function syncOwnProfile(){
-    if(!currentSession()?.uid) return null;
-    const p=await EFGCAuth.getMyProfile(); if(!p) return null;
+    const memberId = currentSession()?.uid;
+    if(!memberId) return null;
+    const p=await EFGCAuth.getMyProfile();
+    if(!p || p.id !== memberId || currentSession()?.uid !== memberId) return null;
     try{
       session.name=p.full_name; session.phone=p.phone||''; session.role=p.role; session.approval_status=p.approval_status||'approved';
       localStorage.setItem('efgcYouthSession',JSON.stringify(session));
@@ -104,9 +107,15 @@
     const host=$('#profileCard'); if(!host||!currentSession()?.uid) return;
     try{
       const p=await syncOwnProfile(); if(!p) return;
-      const email=EFGCAuth.session()?.user?.email||'';
+      if (currentSession()?.uid !== p.id) return;
+      const youth = p.role === 'youth';
+      const admin = p.role === 'admin';
+      const approved = p.approval_status === 'approved';
+      const roleTitle = youth ? 'Youth Member' : admin ? 'Admin' : 'Youth Leader';
+      const status = youth ? 'Youth Member' : admin ? 'Admin' : approved ? 'Approved Leader'
+        : p.approval_status === 'rejected' ? 'Leader application not approved' : 'Leader application pending';
       const initials=(p.full_name||'EFGC').split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase();
-      host.innerHTML=`<article class="card leader-self-card"><div class="leader-profile-top"><div class="profile-photo-wrap"><div class="profile-photo-placeholder">${esc(initials)}</div><img id="ownProfilePhoto" class="profile-photo" alt="${esc(p.full_name)} profile photo"></div><div><span class="module-kicker">EFGC Youth Leadership</span><h2>${esc(p.full_name)}</h2><p><strong>${esc(p.leader_role|| (p.role==='admin'?'Main Youth Leader':'Youth Leader'))}</strong></p><p>${esc(email)}</p>${p.phone?`<p>${esc(p.phone)}</p>`:''}<span class="status-pill confirmed">${p.role==='admin'?'Admin + Main Leader':'Approved Leader'}</span></div></div><hr><h3>Update my leader profile</h3><div class="control-grid"><label>Display name<input id="ownProfileName" value="${esc(p.full_name||'')}"></label><label>Leadership role<input id="ownProfileRole" value="${esc(p.leader_role||'Main Youth Leader')}"></label><label>Contact number<input id="ownProfilePhone" value="${esc(p.phone||'')}"></label><label>Profile picture<input id="ownProfileFile" type="file" accept="image/jpeg,image/png,image/webp"></label></div><div class="inline-actions"><button class="mini-button primary" type="button" onclick="saveOwnLeaderProfile()">Save Profile</button></div><div id="ownProfileMessage" class="toast-line"></div></article>`;
+      host.innerHTML=`<article class="card leader-self-card"><div class="leader-profile-top"><div class="profile-photo-wrap"><div class="profile-photo-placeholder">${esc(initials)}</div><img id="ownProfilePhoto" class="profile-photo" alt="${esc(p.full_name)} profile photo"></div><div><span class="module-kicker">${youth ? 'EFGC Youth' : 'EFGC Youth Leadership'}</span><h2>${esc(p.full_name)}</h2><p><strong>${esc(youth ? roleTitle : p.leader_role || roleTitle)}</strong></p>${p.phone?`<p>${esc(p.phone)}</p>`:''}<span class="status-pill ${approved ? 'confirmed' : 'pending'}">${esc(status)}</span></div></div><hr><h3>Update my profile</h3><div class="control-grid"><label>Display name<input id="ownProfileName" value="${esc(p.full_name||'')}"></label>${youth ? '' : `<label>Leadership role<input id="ownProfileRole" value="${esc(p.leader_role||roleTitle)}"></label>`}<label>Contact number<input id="ownProfilePhone" value="${esc(p.phone||'')}"></label><label>Profile picture<input id="ownProfileFile" type="file" accept="image/jpeg,image/png,image/webp"></label></div><div class="inline-actions"><button class="mini-button primary" type="button" onclick="saveOwnLeaderProfile()">Save Profile</button></div><div id="ownProfileMessage" class="toast-line"></div></article>`;
       if(p.face_photo_path) loadPrivatePhoto($('#ownProfilePhoto'),p.face_photo_path);
     }catch(e){ host.innerHTML=`<article class="card"><p>${esc(`Profile could not load: ${e.message}`)}</p></article>`; }
   }
@@ -119,10 +128,10 @@
       setText('#ownProfileMessage','Saving profile…');
       let face_photo_path=p.face_photo_path||null;
       if(file){ EFGCPhotoSecurity.validate(file); face_photo_path=await EFGCPhotoSecurity.upload(file); }
-      await EFGCAuth.upsertProfile({full_name:name,phone:EFGCAuth.normalizeZA(phone),leader_role:role||'Main Youth Leader',face_photo_path});
-      setText('#ownProfileMessage','Leader profile saved.','ok');
+      await EFGCAuth.upsertProfile({full_name:name,phone:EFGCAuth.normalizeZA(phone),...(p.role === 'youth' ? {} : {leader_role:role||'Youth Leader'}),face_photo_path});
       await renderLiveData();
       await renderOwnProfileV44();
+      setText('#ownProfileMessage','Profile saved.','ok');
     }catch(e){ setText('#ownProfileMessage',`Could not save profile: ${e.message}`,'error'); }
   };
 
@@ -221,7 +230,7 @@
     window.renderLiveData=async function(){ await previousRender(); await afterRenderV44(); };
   }
 
-  document.addEventListener('click',e=>{ const tab=e.target.closest('[data-tab]')?.dataset.tab; if(tab==='plannerRoster') setTimeout(()=>renderPlannerRoster(),0); if(tab==='profile') setTimeout(()=>renderOwnProfileV44(),0); if(tab==='events') setTimeout(()=>renderEventsV44(),0); });
+  document.addEventListener('efgc:tab-changed', e=>{ const tab=e.detail.tab; if(tab==='plannerRoster') renderPlannerRoster(); if(tab==='profile') renderOwnProfileV44(); if(tab==='events') renderEventsV44(); });
   document.addEventListener('DOMContentLoaded',()=>setTimeout(()=>{ enhanceAdminEventForm(); if(currentSession()?.uid) afterRenderV44(); },250));
   setTimeout(()=>{ if(currentSession()?.uid) afterRenderV44(); },900);
 })();

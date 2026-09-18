@@ -76,6 +76,7 @@
           <button id="v66CompleteReset" type="button" class="primary-login">Set New Password</button>
         </div>
         <p id="v66ResetMessage" class="login-message" aria-live="polite"></p>
+        <p>If you cannot receive a code, ask an EFGC Admin to reset your password.</p>
         <small class="v66-security-note">For security, the app does not reveal whether a cellphone number is registered.</small>
       </div>`;
     document.body.appendChild(modal);
@@ -186,6 +187,7 @@
     if (d.password.length < 10) throw new Error('Use a password with at least 10 characters.');
     if (!d.dob) throw new Error('Date of birth is required.');
     if (!$('#loginPhoto')?.files?.length) throw new Error('A face photo is required for first-time registration.');
+    EFGCPhotoSecurity.validate($('#loginPhoto').files[0]);
     if (d.role === 'youth' && (!$('#parentName')?.value.trim() || !$('#parentPhone')?.value.trim() || !$('#emergencyName')?.value.trim() || !$('#emergencyPhone')?.value.trim())) {
       throw new Error('Parent/guardian and emergency contact details are required.');
     }

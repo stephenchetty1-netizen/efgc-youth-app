@@ -3,8 +3,9 @@
   const POLL_MS = 15000;
   let timer = null;
   let busy = false;
-  let observer = null;
+  let refreshPending = false;
   let profile = null;
+  const saving = new Set();
 
   const $ = (s) => document.querySelector(s);
   const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -19,11 +20,6 @@
     if (!signedIn()) { profile = null; return null; }
     try { profile = await EFGCAuth.getMyProfile(); } catch { profile = null; }
     return profile;
-  }
-
-  async function loadEvents(){
-    const rows = await EFGCAuth.rest('events?select=id,title,event_date&order=event_date.asc');
-    return Array.isArray(rows) ? rows : [];
   }
 
   async function loadOwnResponses(){
@@ -72,6 +68,10 @@
 
   async function saveResponse(eventId, response, panel){
     if (!isYouth() || !['attending','not_attending'].includes(response)) return;
+    const memberId = uid();
+    const saveKey = `${memberId}:${eventId}`;
+    if (saving.has(saveKey)) return;
+    saving.add(saveKey);
     const message = panel?.querySelector('.event-rsvp-message');
     const buttons = [...(panel?.querySelectorAll('.event-rsvp-btn') || [])];
     buttons.forEach(b => b.disabled = true);
@@ -81,8 +81,10 @@
       await EFGCAuth.rest('event_rsvps?on_conflict=event_id,youth_id', {
         method:'POST',
         headers:{'Content-Type':'application/json', Prefer:'resolution=merge-duplicates,return=representation'},
-        body:JSON.stringify({event_id:Number(eventId), youth_id:uid(), response, responded_at:now, updated_at:now})
+        body:JSON.stringify({event_id:Number(eventId), youth_id:memberId, response, responded_at:now, updated_at:now})
       });
+      if (uid() !== memberId) return;
+      panel.dataset.rsvpState = JSON.stringify(['youth', response]);
       if (message) message.textContent = response === 'attending' ? 'Thank you — you are marked as attending.' : 'Thank you — you are marked as not attending.';
       buttons.forEach(b => {
         const active = b.dataset.response === response;
@@ -94,6 +96,7 @@
     } catch (e) {
       if (message) message.textContent = `Could not save your response: ${e?.message || 'Please try again.'}`;
     } finally {
+      saving.delete(saveKey);
       buttons.forEach(b => b.disabled = false);
     }
   }
@@ -107,17 +110,16 @@
   }
 
   async function enhanceEvents(){
-    if (busy || !signedIn() || !window.EFGCAuth?.rest) return;
+    if (document.hidden || !signedIn() || !window.EFGCAuth?.rest || $('#events')?.classList.contains('hidden')) return;
+    if (busy) { refreshPending = true; return; }
     const host = $('#eventList');
-    if (!host) return;
+    const cards = [...(host?.querySelectorAll('.event-card[data-event-id]') || [])];
+    if (!cards.length) return;
+    const memberId = uid();
     busy = true;
     try {
       if (!profile || profile.id !== uid()) await loadProfile();
       if (!profile) return;
-
-      const events = await loadEvents();
-      const cards = [...host.querySelectorAll('.event-card')];
-      if (!cards.length || !events.length) return;
 
       let ownMap = new Map();
       let staffResponses = [];
@@ -127,36 +129,36 @@
       } else if (isStaff()) {
         staffResponses = await loadStaffResponses();
       } else return;
-
-      cards.forEach((card, index) => {
-        const event = events[index];
-        if (!event) return;
-        card.dataset.eventId = String(event.id);
-        card.querySelector('.event-rsvp-panel')?.remove();
+      if (memberId !== uid()) return;
+      cards.forEach(card => {
+        const event = {id:card.dataset.eventId};
+        if (!card.isConnected || saving.has(`${memberId}:${event.id}`)) return;
+        const current = ownMap.get(Number(event.id)) || null;
+        const responses = staffResponses.filter(r => Number(r.event_id) === Number(event.id));
+        const signature = JSON.stringify(isYouth() ? ['youth', current] : ['staff', responses.length, responses.filter(r=>r.response==='attending').length]);
+        const existing = card.querySelector('.event-rsvp-panel');
+        if (existing?.dataset.rsvpState === signature) return;
+        existing?.remove();
         const body = card.querySelector('.event-card-body') || card;
-        body.insertAdjacentHTML('beforeend', isYouth() ? youthPanel(event, ownMap.get(Number(event.id)) || null) : staffPanel(event.id, staffResponses));
+        body.insertAdjacentHTML('beforeend', isYouth() ? youthPanel(event, current) : staffPanel(event.id, staffResponses));
+        card.querySelector('.event-rsvp-panel').dataset.rsvpState = signature;
       });
       if (isYouth()) bindYouthPanels();
     } catch (e) {
       if (e?.status !== 401) console.warn('Event RSVP panel could not load:', e?.message || e);
     } finally {
       busy = false;
+      if (refreshPending) { refreshPending = false; enhanceEvents(); }
     }
   }
 
-  function watchEvents(){
-    const host = $('#eventList');
-    if (!host || observer) return;
-    observer = new MutationObserver(() => { clearTimeout(watchEvents.t); watchEvents.t = setTimeout(enhanceEvents, 250); });
-    observer.observe(host, {childList:true, subtree:true});
-  }
-
   function boot(){
-    watchEvents();
     setTimeout(enhanceEvents, 1800);
     timer = setInterval(enhanceEvents, POLL_MS);
     document.addEventListener('visibilitychange', () => { if (!document.hidden) enhanceEvents(); });
     window.addEventListener('focus', enhanceEvents);
+    document.addEventListener('efgc:tab-changed', e => { if(e.detail.tab==='events') enhanceEvents(); });
+    document.addEventListener('efgc:events-rendered', enhanceEvents);
     window.addEventListener('storage', (e) => {
       if (e.key === 'efgcYouthSession' || e.key === 'efgcSupabaseAuth') { profile = null; setTimeout(enhanceEvents, 500); }
     });
