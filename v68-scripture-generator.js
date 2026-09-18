@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  const VERSION = '71.0';
-  const LOGO_SRC = 'assets/efgc-logo.svg?v=71.0';
+  const VERSION = '74.0';
+  const LOGO_SRC = 'assets/v74-efgc-logo.png?v=74.0';
   const VERSES = [
     { ref:'Matthew 5:16', text:'Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven.' },
     { ref:'Philippians 4:13', text:'I can do all things through Christ which strengtheneth me.' },
@@ -31,21 +31,18 @@
   ];
 
   const THEMES = [
-    { id:'bible-sunlight', label:'Bible & Light', image:'https://unsplash.com/photos/MszZIWTVOi8/download?force=true&w=1080', accent:'#ffd45e', tagline:'HIS WORD • OUR LIGHT' },
-    { id:'bible-table', label:'Open Bible', image:'https://unsplash.com/photos/SZaxKdLwz6o/download?force=true&w=1080', accent:'#ffd45e', tagline:'WORD • TRUTH • LIFE' },
-    { id:'bible-hand', label:'Bible Devotion', image:'https://unsplash.com/photos/eCE40LwVDss/download?force=true&w=1080', accent:'#8be9ff', tagline:'READ • RECEIVE • LIVE' },
-    { id:'bible-rest', label:'Bible Sunrise', image:'https://unsplash.com/photos/VbcEb-Fkuzs/download?force=true&w=1080', accent:'#ffd45e', tagline:'MORNING BY HIS WORD' },
-    { id:'bible-pages', label:'Scripture Pages', image:'https://unsplash.com/photos/qhnVF1K3lnk/download?force=true&w=1080', accent:'#8be9ff', tagline:'SCRIPTURE • WISDOM • GRACE' },
-    { id:'john316', label:'John 3:16 Bible', image:'https://unsplash.com/photos/sqyQNuOUl8g/download?force=true&w=1080', accent:'#ffd45e', tagline:'FOR GOD SO LOVED' },
-    { id:'bible-coffee', label:'Quiet Time', image:'https://unsplash.com/photos/wB9AJS9t-4k/download?force=true&w=1080', accent:'#ffd45e', tagline:'BE STILL • KNOW GOD' },
-    { id:'church-cross', label:'Church Cross', image:'https://unsplash.com/photos/kClQjGxyOug/download?force=true&w=1080', accent:'#ffd45e', tagline:'CHRIST OUR HOPE' },
-    { id:'stained-cross', label:'Cross & Light', image:'https://unsplash.com/photos/cRVnk9Sn2cA/download?force=true&w=1080', accent:'#8be9ff', tagline:'JESUS • LIGHT OF THE WORLD' },
-    { id:'sanctuary', label:'Sanctuary', image:'https://unsplash.com/photos/lqgJkQkYva4/download?force=true&w=1080', accent:'#ffd45e', tagline:'GATHER • GROW • GO' },
-    { id:'sunset-cross', label:'Sunset Cross', image:'https://unsplash.com/photos/vQlLGQRiqGQ/download?force=true&w=1080', accent:'#ffd45e', tagline:'FAITH OVER FEAR' },
-    { id:'worship-cross', label:'Worship & Cross', image:'https://unsplash.com/photos/fExQb1KkoWg/download?force=true&w=1080', accent:'#8be9ff', tagline:'WORSHIP • PRAISE • GLORY' },
-    { id:'worship-gathering', label:'Faith Gathering', image:'https://unsplash.com/photos/ATo5DI0csYY/download?force=true&w=1080', accent:'#ffd45e', tagline:'ONE BODY • ONE FAITH' },
-    { id:'cathedral', label:'Cathedral', image:'https://unsplash.com/photos/GxbFfu6yRN0/download?force=true&w=1080', accent:'#8be9ff', tagline:'HOLY • WORTHY • TRUE' },
-    { id:'prayer', label:'Prayer', image:'https://unsplash.com/photos/7bD80m1hzBA/download?force=true&w=1080', accent:'#ffd45e', tagline:'PRAY • TRUST • BELIEVE' }
+    { id:'bible-light', label:'Bible & Light', image:'assets/scripture-v74/bible-light.jpg?v=74.0', accent:'#ffd45e', tagline:'HIS WORD • OUR LIGHT' },
+    { id:'open-bible', label:'Open Bible', image:'assets/scripture-v74/open-bible.jpg?v=74.0', accent:'#ffd45e', tagline:'WORD • TRUTH • LIFE' },
+    { id:'bible-devotion', label:'Bible Devotion', image:'assets/scripture-v74/bible-devotion.jpg?v=74.0', accent:'#8be9ff', tagline:'READ • RECEIVE • LIVE' },
+    { id:'bible-sunrise', label:'Bible Sunrise', image:'assets/scripture-v74/bible-sunrise.jpg?v=74.0', accent:'#ffd45e', tagline:'MORNING BY HIS WORD' },
+    { id:'scripture-pages', label:'Scripture Pages', image:'assets/scripture-v74/scripture-pages.jpg?v=74.0', accent:'#8be9ff', tagline:'SCRIPTURE • WISDOM • GRACE' },
+    { id:'quiet-time', label:'Quiet Time', image:'assets/scripture-v74/quiet-time.jpg?v=74.0', accent:'#ffd45e', tagline:'BE STILL • KNOW GOD' },
+    { id:'blue-cross', label:'Cross & Light', image:'assets/scripture-v74/blue-cross.jpg?v=74.0', accent:'#8be9ff', tagline:'JESUS • LIGHT OF THE WORLD' },
+    { id:'sunrise-cross', label:'Sunrise Cross', image:'assets/scripture-v74/sunrise-cross.jpg?v=74.0', accent:'#ffd45e', tagline:'FAITH OVER FEAR' },
+    { id:'bible-community', label:'Bible Community', image:'assets/scripture-v74/bible-community.jpg?v=74.0', accent:'#8be9ff', tagline:'ONE BODY • ONE FAITH' },
+    { id:'prayer-bible', label:'Prayer & Bible', image:'assets/scripture-v74/prayer-bible.jpg?v=74.0', accent:'#ffd45e', tagline:'PRAY • TRUST • BELIEVE' },
+    { id:'youth-worship', label:'Youth Worship', image:'assets/scripture-v74/youth-worship.jpg?v=74.0', accent:'#8be9ff', tagline:'WORSHIP • PRAISE • GLORY' },
+    { id:'sunrise-faith', label:'Sunrise Faith', image:'assets/scripture-v74/sunrise-faith.jpg?v=74.0', accent:'#ffd45e', tagline:'HOPE • FAITH • JESUS' }
   ];
 
   const state = { verseIndex: 0, themeIndex: 0, busy: false, imageCache: new Map() };
@@ -240,7 +237,7 @@
       ctx.fillRect(0,0,W,H);
 
       try {
-        const logo = await loadImage(window.EFGC_BRAND_LOGO || LOGO_SRC);
+        const logo = await loadImage(LOGO_SRC);
         ctx.save();
         ctx.shadowColor = 'rgba(255,220,112,.55)';
         ctx.shadowBlur = 30;
@@ -389,7 +386,24 @@
   }
 
   function canvasToBlob(canvas) {
-    return new Promise((resolve) => canvas.toBlob(resolve, 'image/png', 0.95));
+    return new Promise((resolve, reject) => {
+      try { canvas.toBlob((blob) => resolve(blob), 'image/png', 0.95); }
+      catch (err) { reject(err); }
+    });
+  }
+
+  async function waitForPosterReady() {
+    let guard = 0;
+    while (state.busy && guard < 80) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      guard++;
+    }
+    if (!state.busy) await renderPoster();
+    guard = 0;
+    while (state.busy && guard < 80) {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      guard++;
+    }
   }
 
   function message(text) {
@@ -400,7 +414,11 @@
   async function downloadPoster() {
     const canvas = el('scripturePosterCanvas');
     if (!canvas) return;
-    const blob = await canvasToBlob(canvas);
+    message('Preparing image…');
+    try { await waitForPosterReady(); } catch (_) {}
+    let blob = null;
+    try { blob = await canvasToBlob(canvas); } catch (_) {}
+
     if (!blob) return message('Could not prepare the image.');
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -416,6 +434,8 @@
   async function sharePoster() {
     const canvas = el('scripturePosterCanvas');
     if (!canvas) return;
+    message('Preparing image…');
+    try { await waitForPosterReady(); } catch (_) {}
     const verse = currentVerse();
     const shareText = `${verse.ref} — “${verse.text}”\n\nEFGC Youth • Daily Scripture`;
     try {
