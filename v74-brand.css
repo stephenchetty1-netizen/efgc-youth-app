@@ -115,9 +115,9 @@ body.v74-form-open .login-card textarea{
 .v74-back{margin-bottom:12px!important}
 
 .v74-official-logo,
-.brand-logo[src*="v74-efgc-logo"],
-.hero-logo[src*="v74-efgc-logo"],
-.official-footer-logo[src*="v74-efgc-logo"]{
+.brand-logo[src*="v76-efgc-logo"],
+.hero-logo[src*="v76-efgc-logo"],
+.official-footer-logo[src*="v76-efgc-logo"]{
   object-fit:contain!important;
   object-position:center!important;
   background:transparent!important;
@@ -125,16 +125,16 @@ body.v74-form-open .login-card textarea{
   border-radius:50%!important;
   filter:drop-shadow(0 0 7px rgba(66,193,255,.28)) drop-shadow(0 5px 12px rgba(0,15,40,.22))!important;
 }
-.mock-authenticated .brand-logo[src*="v74-efgc-logo"]{
+.mock-authenticated .brand-logo[src*="v76-efgc-logo"]{
   width:62px!important;
   height:62px!important;
   flex:0 0 62px!important;
 }
-.mock-authenticated .hero-logo[src*="v74-efgc-logo"]{
+.mock-authenticated .hero-logo[src*="v76-efgc-logo"]{
   width:132px!important;
   height:132px!important;
 }
-.official-footer-logo[src*="v74-efgc-logo"]{
+.official-footer-logo[src*="v76-efgc-logo"]{
   width:110px!important;
   height:110px!important;
 }
