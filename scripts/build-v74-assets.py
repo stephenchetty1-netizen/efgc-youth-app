@@ -10,8 +10,7 @@ ASSETS = ROOT / "assets"
 SRC = ROOT / "assets-src" / "v74"
 SCRIPTURE = ASSETS / "scripture-v74"
 LOGIN_OUT = ASSETS / "v74-login-poster.webp"
-LOGO_OUT = ASSETS / "v74-efgc-logo.png"
-LOGO_SOURCE = SRC / "logo-exact.webp"
+LOGO_OUT = ASSETS / "v74-efgc-logo.webp"
 
 TILE_NAMES = [
     "bible-light.jpg",
@@ -54,13 +53,9 @@ def build_login() -> None:
         raise RuntimeError(f"Exact login poster missing or undersized: {LOGIN_OUT}")
 
 def build_logo() -> None:
-    if not valid_image(LOGO_SOURCE, 300, 300):
-        raise RuntimeError(f"Exact EFGC logo source missing or invalid: {LOGO_SOURCE}")
-    with Image.open(LOGO_SOURCE) as src:
-        im = ImageOps.contain(src.convert("RGBA"), (640, 640), method=Image.Resampling.LANCZOS)
-        canvas = Image.new("RGBA", (640, 640), (0, 0, 0, 0))
-        canvas.alpha_composite(im, ((640 - im.width) // 2, (640 - im.height) // 2))
-        canvas.save(LOGO_OUT, "PNG", optimize=True)
+    # Preserve the exact historical EFGC logo file byte-for-byte.
+    if not LOGO_OUT.exists() or LOGO_OUT.stat().st_size < 5000:
+        raise RuntimeError(f"Exact EFGC logo asset missing or undersized: {LOGO_OUT}")
 
 def _variant(source: Image.Image, index: int) -> Image.Image:
     # Deterministic high-resolution crops/grades. These are same-origin fallbacks
@@ -119,9 +114,6 @@ def verify() -> None:
         if not path.exists() or path.stat().st_size < 5000:
             raise RuntimeError(f"Missing or undersized asset: {path}")
 
-    with Image.open(LOGO_OUT) as im:
-        if im.size != (640, 640):
-            raise RuntimeError(f"Bad logo output size: {im.size}")
 
     for path in (SCRIPTURE / n for n in TILE_NAMES):
         with Image.open(path) as im:
