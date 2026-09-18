@@ -1,6 +1,7 @@
 /** EFGC Youth V74 — isolated, functional login artwork controller. */
 (() => {
   'use strict';
+  window.EFGC_V74_ACTIVE = true;
 
   const $ = (s) => document.querySelector(s);
   const LOGIN_ART = 'assets/v74-login-poster.webp?v=74.0';
