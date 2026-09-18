@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import base64
 import io
+import urllib.request
 from pathlib import Path
 
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
@@ -31,6 +32,24 @@ TILE_NAMES = [
     "church-light.jpg",
     "prayer-hands.jpg",
     "cross-sky.jpg",
+]
+
+SCRIPTURE_REMOTE_SOURCES = [
+    "https://images.pexels.com/photos/28896476/pexels-photo-28896476.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/34923397/pexels-photo-34923397.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/29179297/pexels-photo-29179297.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/267559/pexels-photo-267559.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/5199806/pexels-photo-5199806.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/2356140/pexels-photo-2356140.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/133699/pexels-photo-133699.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/6284489/pexels-photo-6284489.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/935944/pexels-photo-935944.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/34328516/pexels-photo-34328516.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/15689008/pexels-photo-15689008.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/15689010/pexels-photo-15689010.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/8942891/pexels-photo-8942891.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/34612224/pexels-photo-34612224.jpeg?auto=compress&cs=tinysrgb&w=1400",
+    "https://images.pexels.com/photos/7780806/pexels-photo-7780806.jpeg?auto=compress&cs=tinysrgb&w=1400",
 ]
 
 FALLBACK_SOURCES = [
@@ -112,28 +131,64 @@ def _variant(source: Image.Image, index: int) -> Image.Image:
         im = im.filter(ImageFilter.GaussianBlur(radius=0.35))
     return im
 
+def _download_photo(url: str) -> Image.Image:
+    request = urllib.request.Request(
+        url,
+        headers={"User-Agent": "Mozilla/5.0 EFGC-Youth-App/78"},
+    )
+    with urllib.request.urlopen(request, timeout=35) as response:
+        raw = response.read()
+    if len(raw) < 15000:
+        raise RuntimeError("Downloaded photo is unexpectedly small.")
+    with Image.open(io.BytesIO(raw)) as src:
+        return ImageOps.exif_transpose(src).convert("RGB")
+
+def _portrait_photo(source: Image.Image) -> Image.Image:
+    im = ImageOps.fit(
+        source,
+        (1080, 1350),
+        method=Image.Resampling.LANCZOS,
+        centering=(0.5, 0.5),
+    )
+    im = ImageEnhance.Contrast(im).enhance(1.06)
+    im = ImageEnhance.Color(im).enhance(1.04)
+    return im
+
 def build_scripture_tiles() -> None:
-    sources = []
+    SCRIPTURE.mkdir(parents=True, exist_ok=True)
+
+    fallbacks = []
     for path in FALLBACK_SOURCES:
         if valid_image(path, 400, 400):
-            sources.append(Image.open(path).convert("RGB"))
-    if not sources:
-        raise RuntimeError("No local Scripture background sources are available.")
+            fallbacks.append(Image.open(path).convert("RGB"))
+    if not fallbacks:
+        raise RuntimeError("No local Scripture fallback sources are available.")
 
-    SCRIPTURE.mkdir(parents=True, exist_ok=True)
     try:
         for idx, name in enumerate(TILE_NAMES):
-            source = sources[idx % len(sources)]
-            tile = _variant(source, idx)
-            tile.save(
-                SCRIPTURE / name,
-                "JPEG",
-                quality=91,
-                optimize=True,
-                progressive=True,
-            )
+            try:
+                remote = _download_photo(SCRIPTURE_REMOTE_SOURCES[idx])
+                try:
+                    tile = _portrait_photo(remote)
+                finally:
+                    remote.close()
+                print(f"Downloaded unique Scripture photo {idx + 1}/{len(TILE_NAMES)}")
+            except Exception as exc:
+                print(f"Remote Scripture photo {idx + 1} failed: {exc}; using local fallback.")
+                tile = _variant(fallbacks[idx % len(fallbacks)], idx)
+
+            try:
+                tile.save(
+                    SCRIPTURE / name,
+                    "JPEG",
+                    quality=90,
+                    optimize=True,
+                    progressive=True,
+                )
+            finally:
+                tile.close()
     finally:
-        for source in sources:
+        for source in fallbacks:
             source.close()
 
 def verify() -> None:
