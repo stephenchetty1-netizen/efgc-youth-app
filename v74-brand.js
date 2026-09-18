@@ -4,8 +4,8 @@
   window.EFGC_V74_ACTIVE = true;
 
   const $ = (s) => document.querySelector(s);
-  const LOGIN_ART = 'assets/v76-login-poster.webp?v=79.0';
-  const LOGO = 'assets/v76-efgc-logo.png?v=79.0';
+  const LOGIN_ART = 'assets/v76-login-poster.webp?v=80.0';
+  const LOGO = 'assets/v76-efgc-logo.png?v=80.0';
 
   function sessionActive() {
     try {
@@ -26,29 +26,63 @@
     const welcome = $('#v74Welcome');
     const frame = welcome?.querySelector('.v74-poster-frame');
     const art = welcome?.querySelector('.v74-login-art');
-    if (!welcome || !frame || !art || sessionActive()) return;
+    const loginButton = $('#v74LoginButton');
+    const createButton = $('#v74CreateButton');
+    if (!welcome || !frame || !art || !loginButton || !createButton || sessionActive()) return;
 
     const vv = window.visualViewport;
     const width = Math.max(1, Math.round(vv?.width || window.innerWidth || document.documentElement.clientWidth || 360));
     const height = Math.max(1, Math.round(vv?.height || window.innerHeight || document.documentElement.clientHeight || 640));
 
-    // Force the welcome artwork to the exact visible mobile viewport.
-    // This avoids Android custom-tab/browser viewport quirks that left a large
-    // navy block beneath the original 9:16 frame.
     for (const [prop,value] of [
       ['position','fixed'],['left','0px'],['top','0px'],['right','auto'],['bottom','auto'],
       ['width',width+'px'],['height',height+'px'],['min-height','0px'],['max-height','none'],
-      ['overflow','hidden'],['display','block'],['z-index','30']
+      ['overflow','hidden'],['display','block'],['z-index','30'],['pointer-events','auto']
     ]) welcome.style.setProperty(prop,value,'important');
 
     for (const [prop,value] of [
       ['position','absolute'],['inset','0px'],['width','100%'],['height','100%'],
-      ['max-width','none'],['aspect-ratio','auto'],['overflow','hidden']
+      ['max-width','none'],['aspect-ratio','auto'],['overflow','hidden'],['pointer-events','auto']
     ]) frame.style.setProperty(prop,value,'important');
 
     for (const [prop,value] of [
-      ['width','100%'],['height','100%'],['object-fit','cover'],['object-position','center center']
+      ['width','100%'],['height','100%'],['object-fit','cover'],['object-position','center center'],
+      ['pointer-events','none']
     ]) art.style.setProperty(prop,value,'important');
+
+    const placeHitbox = (button, rect) => {
+      const iw = art.naturalWidth || 1080;
+      const ih = art.naturalHeight || 1920;
+      const scale = Math.max(width / iw, height / ih);
+      const renderedW = iw * scale;
+      const renderedH = ih * scale;
+      const offsetX = (width - renderedW) / 2;
+      const offsetY = (height - renderedH) / 2;
+
+      const left = offsetX + rect.x * iw * scale;
+      const top = offsetY + rect.y * ih * scale;
+      const boxWidth = rect.w * iw * scale;
+      const boxHeight = rect.h * ih * scale;
+
+      for (const [prop,value] of [
+        ['position','absolute'],
+        ['left',Math.round(left)+'px'],
+        ['top',Math.round(top)+'px'],
+        ['right','auto'],
+        ['bottom','auto'],
+        ['width',Math.round(boxWidth)+'px'],
+        ['height',Math.round(boxHeight)+'px'],
+        ['display','block'],
+        ['z-index','80'],
+        ['pointer-events','auto'],
+        ['touch-action','manipulation']
+      ]) button.style.setProperty(prop,value,'important');
+    };
+
+    // Map the original poster's visible Login/Create Account buttons into the
+    // cropped/covered mobile viewport so taps stay exactly over the artwork.
+    placeHitbox(loginButton,  { x:0.142, y:0.748, w:0.716, h:0.066 });
+    placeHitbox(createButton, { x:0.142, y:0.821, w:0.716, h:0.064 });
   }
 
   function ensureWelcome() {
@@ -72,12 +106,22 @@
           <button id="v74CreateButton" class="v74-art-button v74-create-button" type="button" aria-label="Create an EFGC Youth account">Create Account</button>
         </div>`;
       login.insertBefore(welcome, card);
-      $('#v74LoginButton')?.addEventListener('click', () => openForm('signin'));
-      $('#v74CreateButton')?.addEventListener('click', () => openForm('register'));
+      $('#v74LoginButton')?.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        openForm('signin');
+      });
+      $('#v74CreateButton')?.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        openForm('register');
+      });
     }
 
     welcome.classList.remove('hidden');
-    syncWelcomeViewport();
+    if (welcome.querySelector('.v74-login-art')?.complete) syncWelcomeViewport();
+    else welcome.querySelector('.v74-login-art')?.addEventListener('load',syncWelcomeViewport,{once:true});
+    requestAnimationFrame(syncWelcomeViewport);
     card.classList.add('mock-login-hidden');
     card.classList.remove('v74-card-visible');
     card.style.removeProperty('display');
@@ -174,6 +218,14 @@
       },40);
     });
     observer.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['class']});
+
+    document.addEventListener('click',(event) => {
+      const button = event.target.closest?.('#v74LoginButton,#v74CreateButton');
+      if (!button) return;
+      event.preventDefault();
+      event.stopPropagation();
+      openForm(button.id === 'v74CreateButton' ? 'register' : 'signin');
+    },true);
 
     window.addEventListener('pageshow',reconcile);
     window.addEventListener('resize',syncWelcomeViewport,{passive:true});
