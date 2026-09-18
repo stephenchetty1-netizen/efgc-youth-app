@@ -2,7 +2,7 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const logoAsset = 'assets/efgc-logo-reference.webp?v=49.1';
+  const logoAsset = 'assets/efgc-logo.svg?v=70.0';
   const heroAsset = 'assets/efgc-home-hero.webp?v=45';
 
   function activeSession(){ try { return session || null; } catch { return null; } }
@@ -10,7 +10,8 @@
   function applyBrandAssets(){
     document.querySelectorAll('.brand-logo,.hero-logo,.official-footer-logo').forEach(img => {
       img.src = logoAsset;
-      img.classList.add('reference-logo');
+      img.classList.remove('reference-logo');
+      img.classList.add('official-logo');
     });
     const hero = $('.hero');
     if(hero){
