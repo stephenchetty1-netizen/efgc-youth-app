@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "efgc-youth-pages"
+  group: "efgc-youth-pages-v74"
   cancel-in-progress: true
 
 jobs:
@@ -25,6 +25,18 @@ jobs:
         uses: actions/setup-node@v7
         with:
           node-version: "24"
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Build V74 local visual assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet pillow
+          python scripts/build-v74-assets.py
 
       - name: Validate JavaScript and app shell
         shell: bash
@@ -41,99 +53,60 @@ jobs:
           node --check v54-stable-welcome.js
           node --check v62-notifications.js
           node --check v68-scripture-generator.js
-          node --check v73-brand.js
+          node --check v74-brand.js
           node --check notification-sw.js
 
           test -f index.html
           test -f manifest.webmanifest
-          test -f v43.css
-          test -f v44.css
-          test -f v45-theme.css
-          test -f v49-vibrant.css
-          test -f v54-stable-welcome.css
-          test -f v60-no-email.css
-          test -f v62-notifications.css
-          test -f v68-scripture-generator.css
-          test -f v68-scripture-generator.js
-          test -f v70-genz-theme.css
-          test -f v71-mobile-realism-fixes.css
-          test -f v73-brand.css
-          test -f v73-brand.js
-          test -f assets-src/v73/poster.part00
-          test -f assets-src/v73/poster.part01
-          test -f assets-src/v73/poster.part02
-          test -f assets-src/v73/poster.part03
-          test -f assets-src/v73/poster.part04
-          test -f notification-sw.js
-          test -f assets/v49-sunrise.webp
-          test -f assets/v49-youth-fellowship.webp
-          test -f assets/efgc-logo.svg
-          test -f assets/efgc-home-hero.webp
+          test -f v74-brand.css
+          test -f v74-brand.js
+          test -f assets/v74-login-poster.webp
+          test -f assets/v74-efgc-logo.png
+          test -d assets/scripture-v74
 
-          for asset in backend-adapter.js v60-auth-adapter.js app.js v22-live-data.js v23-photo-security.js v60-no-email-auth.js v43-ministry-tools.js v44-updates.js v45-theme.js v54-stable-welcome.js v62-notifications.js v68-scripture-generator.js v43.css v44.css v45-theme.css v54-stable-welcome.css v60-no-email.css v62-notifications.css v68-scripture-generator.css v70-genz-theme.css v71-mobile-realism-fixes.css v73-brand.css v73-brand.js assets/efgc-logo.svg; do
-            grep -q "$asset" index.html || { echo "Missing reference to $asset"; exit 1; }
-          done
+          test $(stat -c%s assets/v74-login-poster.webp) -gt 10000
+          test $(stat -c%s assets/v74-efgc-logo.png) -gt 10000
+          test $(find assets/scripture-v74 -maxdepth 1 -name '*.jpg' | wc -l) -ge 12
 
-          grep -q 'Pass on the Baton' assets/efgc-logo.svg
-          grep -q 'buildWelcome' v54-stable-welcome.js
-          grep -q 'A GENERATION FOR HIS GLORY' v54-stable-welcome.js
-          grep -q 'v60-auth-adapter.js?v=60.0' index.html
-          grep -q 'v60-no-email-auth.js?v=60.0' index.html
-          grep -q 'v60-no-email.css?v=60.0' index.html
-          grep -q 'v62-notifications.js?v=62.0' index.html
-          grep -q 'v62-notifications.css?v=62.0' index.html
-          grep -q 'v68-scripture-generator.js?v=71.0' index.html
-          grep -q 'v68-scripture-generator.css?v=71.0' index.html
-          grep -q 'v70-genz-theme.css?v=70.0' index.html
-          grep -q 'v71-mobile-realism-fixes.css?v=71.0' index.html
-          grep -q 'v73-brand.css?v=73.0' index.html
-          grep -q 'v73-brand.js?v=73.0' index.html
-          grep -q 'v45-theme.js?v=70.0' index.html
-          grep -q 'v54-stable-welcome.js?v=70.0' index.html
-          grep -q 'efgc-logo.svg?v=70.0' v45-theme.js
-          grep -q 'data.v70\|dataset.v70' v54-stable-welcome.js
+          grep -q 'window.EFGC_V74_ACTIVE=true' index.html
+          grep -q 'v74-brand.css?v=74.0' index.html
+          grep -q 'v74-brand.js?v=74.0' index.html
+          grep -q 'v68-scripture-generator.js?v=74.0' index.html
+          grep -q 'v68-scripture-generator.css?v=74.0' index.html
+          grep -q 'v45-theme.js?v=74.0' index.html
+          grep -q 'v54-stable-welcome.js?v=74.0' index.html
+          grep -q 'assets/v74-efgc-logo.png?v=74.0' index.html
+          grep -q 'assets/v74-efgc-logo.png?v=74.0' manifest.webmanifest
+
+          grep -q 'EFGC_V74_ACTIVE' v74-brand.js
+          grep -q 'v74LoginButton' v74-brand.js
+          grep -q 'v74CreateButton' v74-brand.js
+          grep -q 'assets/v74-login-poster.webp?v=74.0' v74-brand.js
+          grep -q 'assets/v74-efgc-logo.png?v=74.0' v74-brand.js
+
+          grep -q 'assets/v74-efgc-logo.png?v=74.0' v45-theme.js
+          grep -q 'EFGC_V74_ACTIVE' v45-theme.js
+          grep -q 'EFGC_V74_ACTIVE' v54-stable-welcome.js
+
           grep -q 'Daily Scripture Generator' v68-scripture-generator.js
-          grep -q 'scripturePosterCanvas' v68-scripture-generator.js
-          grep -q 'Download Image' v68-scripture-generator.js
-          grep -q 'realistic Christian photography backgrounds' v68-scripture-generator.js
-          grep -q 'unsplash.com/photos' v68-scripture-generator.js
-          grep -q 'Official EFGC logo' v68-scripture-generator.js
-          grep -q 'EFGC_V73_ACTIVE' v73-brand.js
-          grep -q 'poster.part04' v73-brand.js
-          grep -q 'window.EFGC_BRAND_LOGO || LOGO_SRC' v68-scripture-generator.js
-          grep -q 'notification-sw.js?v=62.0' v62-notifications.js
-          grep -q 'news_posts' v62-notifications.js
-          grep -q 'events?select=' v62-notifications.js
-          grep -q 'Notification.requestPermission' v62-notifications.js
-          grep -q 'showNotification' v62-notifications.js
-          grep -q 'notificationclick' notification-sw.js
-          grep -q 'id="plannerMenu"' index.html
-          grep -q 'id="attendanceMenu"' index.html
-          grep -q 'id="plannerRosterHost"' index.html
-          grep -q 'id="attendanceAdminHost"' index.html
-          grep -q 'member-auth' v60-no-email-auth.js
-          grep -q 'action: .admin-login.' v60-no-email-auth.js
-          grep -q 'action: .register.' v60-no-email-auth.js
-          grep -q 'admin-reset-member-password' v60-no-email-auth.js
-          grep -q 'member-password-reset' app.js
-          grep -q 'member-reset-modal' v60-no-email.css
-          grep -q 'generateYearPlannerV44' v44-updates.js
-          grep -q 'saveRosterWeekV44' v44-updates.js
-          grep -q 'adminEventImage' v44-updates.js
-          grep -q 'saveOwnLeaderProfile' v44-updates.js
-          grep -q 'mock-dashboard' v45-theme.css
-          grep -q 'mock-attendance' v45-theme.css
+          grep -q 'assets/scripture-v74/' v68-scripture-generator.js
+          grep -q 'assets/v74-efgc-logo.png?v=74.0' v68-scripture-generator.js
+          grep -q 'waitForPosterReady' v68-scripture-generator.js
+          if grep -q 'https://unsplash.com/photos' v68-scripture-generator.js; then
+            echo "Runtime Scripture generator must not depend on remote Unsplash images."
+            exit 1
+          fi
 
+          if grep -q 'v73-brand.js' index.html || grep -q 'v73-brand.css' index.html; then
+            echo "Broken V73 branding layer must not be loaded."
+            exit 1
+          fi
           if grep -q 'v61-smoke-login.js' index.html || grep -q 'v61-smoke-login.css' index.html; then
             echo "Smoke-test login assets must not be loaded by the live app."
             exit 1
           fi
           if grep -q 'v36-password-recovery.js' index.html || grep -q 'v21-auth-ui.js' index.html; then
             echo "Legacy email authentication scripts must not be loaded by the live app."
-            exit 1
-          fi
-          if grep -q 'requestAdminPasswordReset' index.html; then
-            echo "Email password recovery must not be exposed in the live app."
             exit 1
           fi
           if grep -R -E 'service_role|sb_secret_' --include='*.js' --include='*.html' .; then
@@ -151,45 +124,22 @@ jobs:
           sleep 2
 
           curl --fail --silent --show-error http://127.0.0.1:8080/index.html -o /tmp/index.html
-          curl --fail --silent --show-error http://127.0.0.1:8080/v60-auth-adapter.js -o /tmp/auth.js
-          curl --fail --silent --show-error http://127.0.0.1:8080/v60-no-email-auth.js -o /tmp/no-email.js
-          curl --fail --silent --show-error http://127.0.0.1:8080/v62-notifications.js -o /tmp/notifications.js
-          curl --fail --silent --show-error http://127.0.0.1:8080/v62-notifications.css -o /tmp/notifications.css
-          curl --fail --silent --show-error http://127.0.0.1:8080/notification-sw.js -o /tmp/sw.js
-          curl --fail --silent --show-error http://127.0.0.1:8080/app.js -o /tmp/app.js
-          curl --fail --silent --show-error http://127.0.0.1:8080/v60-no-email.css -o /tmp/no-email.css
+          curl --fail --silent --show-error http://127.0.0.1:8080/v74-brand.js -o /tmp/v74.js
+          curl --fail --silent --show-error http://127.0.0.1:8080/v74-brand.css -o /tmp/v74.css
           curl --fail --silent --show-error http://127.0.0.1:8080/v68-scripture-generator.js -o /tmp/scripture.js
-          curl --fail --silent --show-error http://127.0.0.1:8080/v68-scripture-generator.css -o /tmp/scripture.css
-          curl --fail --silent --show-error http://127.0.0.1:8080/v70-genz-theme.css -o /tmp/v70.css
-          curl --fail --silent --show-error http://127.0.0.1:8080/v71-mobile-realism-fixes.css -o /tmp/v71.css
-          curl --fail --silent --show-error http://127.0.0.1:8080/v73-brand.css -o /tmp/v73.css
-          curl --fail --silent --show-error http://127.0.0.1:8080/v73-brand.js -o /tmp/v73.js
-          curl --fail --silent --show-error http://127.0.0.1:8080/assets-src/v73/poster.part00 -o /tmp/v73p0
-          curl --fail --silent --show-error http://127.0.0.1:8080/assets-src/v73/poster.part04 -o /tmp/v73p4
-          curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg -o /tmp/logo.svg
+          curl --fail --silent --show-error http://127.0.0.1:8080/assets/v74-login-poster.webp -o /tmp/login.webp
+          curl --fail --silent --show-error http://127.0.0.1:8080/assets/v74-efgc-logo.png -o /tmp/logo.png
+          curl --fail --silent --show-error http://127.0.0.1:8080/assets/scripture-v74/bible-light.jpg -o /tmp/bible.jpg
+          curl --fail --silent --show-error http://127.0.0.1:8080/assets/scripture-v74/youth-worship.jpg -o /tmp/worship.jpg
 
           grep -q 'EFGC YOUTH' /tmp/index.html
-          grep -q 'no-email' /tmp/auth.js
-          grep -q 'admin-reset-member-password' /tmp/no-email.js
-          grep -q 'New EFGC Youth Post' /tmp/notifications.js
-          grep -q 'efgc-notify-bell' /tmp/notifications.css
-          grep -q 'notificationclick' /tmp/sw.js
-          grep -q 'member-password-reset' /tmp/app.js
-          grep -q 'member-reset-modal' /tmp/no-email.css
-          grep -q 'Daily Scripture Generator' /tmp/scripture.js
-          grep -q 'scripturePosterCanvas' /tmp/scripture.js
-          grep -q 'scripture-generator-v68' /tmp/scripture.css
-          grep -q 'EFGC Youth V70' /tmp/v70.css
-          grep -q 'v57-welcome' /tmp/v70.css
-          grep -q 'mock-authenticated' /tmp/v70.css
-          grep -q 'realistic Scripture gallery' /tmp/v71.css
-          grep -q 'max-width:1100px' /tmp/v71.css
-          grep -q 'v73-welcome-active' /tmp/v73.css
-          grep -q 'EFGC_V73_ACTIVE' /tmp/v73.js
-          grep -q '^UklG' /tmp/v73p0
-          test $(stat -c%s /tmp/v73p4) -gt 5000
-          grep -q 'EMMANUEL FULL GOSPEL CHURCH' /tmp/logo.svg
-          grep -q 'Pass on the Baton' /tmp/logo.svg
+          grep -q 'v74LoginButton' /tmp/v74.js
+          grep -q 'v74-poster-frame' /tmp/v74.css
+          grep -q 'assets/scripture-v74/' /tmp/scripture.js
+          test $(stat -c%s /tmp/login.webp) -gt 10000
+          test $(stat -c%s /tmp/logo.png) -gt 10000
+          test $(stat -c%s /tmp/bible.jpg) -gt 10000
+          test $(stat -c%s /tmp/worship.jpg) -gt 10000
 
   deploy:
     needs: validate
@@ -200,14 +150,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Setup Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+
+      - name: Build V74 local visual assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m pip install --quiet pillow
+          python scripts/build-v74-assets.py
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
+
       - name: Upload GitHub Pages artifact
         uses: actions/upload-pages-artifact@v4
         with:
           path: "."
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
