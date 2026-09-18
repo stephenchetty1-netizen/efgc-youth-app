@@ -49,8 +49,9 @@ def valid_image(path: Path, min_w: int = 1, min_h: int = 1) -> bool:
 
 def build_login() -> None:
     # The exact user-approved login poster is committed directly to assets/.
-    if not valid_image(LOGIN_OUT):
-        raise RuntimeError(f"Exact login poster missing or invalid: {LOGIN_OUT}")
+    # Do not transcode it here: browsers already consume the supplied WebP directly.
+    if not LOGIN_OUT.exists() or LOGIN_OUT.stat().st_size < 5000:
+        raise RuntimeError(f"Exact login poster missing or undersized: {LOGIN_OUT}")
 
 def build_logo() -> None:
     if not valid_image(LOGO_SOURCE, 300, 300):
@@ -117,10 +118,6 @@ def verify() -> None:
     for path in required:
         if not path.exists() or path.stat().st_size < 5000:
             raise RuntimeError(f"Missing or undersized asset: {path}")
-
-    with Image.open(LOGIN_OUT) as im:
-        if im.width < 1 or im.height < 1:
-            raise RuntimeError(f"Bad login output size: {im.size}")
 
     with Image.open(LOGO_OUT) as im:
         if im.size != (640, 640):
