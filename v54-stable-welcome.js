@@ -2,7 +2,7 @@
 (() => {
   if (window.EFGC_V74_ACTIVE) return;
   const $ = (s) => document.querySelector(s);
-  const OFFICIAL_LOGO = 'assets/v74-efgc-logo.webp?v=75.0';
+  const OFFICIAL_LOGO = 'assets/v76-efgc-logo.png?v=76.0';
 
   function currentSession() { try { return typeof session !== 'undefined' ? session : null; } catch { return null; } }
   function fixBrandLogos() {
@@ -54,7 +54,7 @@
 
 /** V61 — automated EFGC birthday wish poster enhancer for News Feed. */
 (() => {
-  const LOGO = 'assets/v74-efgc-logo.webp?v=75.0';
+  const LOGO = 'assets/v76-efgc-logo.png?v=76.0';
   const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
 
   function installBirthdayStyles() {
