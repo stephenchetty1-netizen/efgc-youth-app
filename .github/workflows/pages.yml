@@ -101,7 +101,7 @@ jobs:
           grep -q 'canvasToBlob' v68-scripture-generator.js
           grep -q 'nextPaint' v68-scripture-generator.js
           grep -q "label:'Generation of Faith'" v68-scripture-generator.js
-          if grep -q 'v76-login-poster.webp' scripts/build-v74-assets.py; then
+          if grep -A 6 '^FALLBACK_SOURCES' scripts/build-v74-assets.py | grep -q 'login-poster'; then
             echo "Login poster must never be a Scripture background source."
             exit 1
           fi
