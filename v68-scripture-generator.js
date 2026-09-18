@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  const VERSION = '74.0';
-  const LOGO_SRC = 'assets/v76-efgc-logo.png?v=76.0';
+  const VERSION = '77.0';
+  const LOGO_SRC = 'assets/v76-efgc-logo.png?v=77.0';
   const VERSES = [
     { ref:'Matthew 5:16', text:'Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven.' },
     { ref:'Philippians 4:13', text:'I can do all things through Christ which strengtheneth me.' },
@@ -31,18 +31,21 @@
   ];
 
   const THEMES = [
-    { id:'bible-light', label:'Bible & Light', image:'assets/scripture-v74/bible-light.jpg?v=74.0', accent:'#ffd45e', tagline:'HIS WORD • OUR LIGHT' },
-    { id:'open-bible', label:'Open Bible', image:'assets/scripture-v74/open-bible.jpg?v=74.0', accent:'#ffd45e', tagline:'WORD • TRUTH • LIFE' },
-    { id:'bible-devotion', label:'Bible Devotion', image:'assets/scripture-v74/bible-devotion.jpg?v=74.0', accent:'#8be9ff', tagline:'READ • RECEIVE • LIVE' },
-    { id:'bible-sunrise', label:'Bible Sunrise', image:'assets/scripture-v74/bible-sunrise.jpg?v=74.0', accent:'#ffd45e', tagline:'MORNING BY HIS WORD' },
-    { id:'scripture-pages', label:'Scripture Pages', image:'assets/scripture-v74/scripture-pages.jpg?v=74.0', accent:'#8be9ff', tagline:'SCRIPTURE • WISDOM • GRACE' },
-    { id:'quiet-time', label:'Quiet Time', image:'assets/scripture-v74/quiet-time.jpg?v=74.0', accent:'#ffd45e', tagline:'BE STILL • KNOW GOD' },
-    { id:'blue-cross', label:'Cross & Light', image:'assets/scripture-v74/blue-cross.jpg?v=74.0', accent:'#8be9ff', tagline:'JESUS • LIGHT OF THE WORLD' },
-    { id:'sunrise-cross', label:'Sunrise Cross', image:'assets/scripture-v74/sunrise-cross.jpg?v=74.0', accent:'#ffd45e', tagline:'FAITH OVER FEAR' },
-    { id:'bible-community', label:'Bible Community', image:'assets/scripture-v74/bible-community.jpg?v=74.0', accent:'#8be9ff', tagline:'ONE BODY • ONE FAITH' },
-    { id:'prayer-bible', label:'Prayer & Bible', image:'assets/scripture-v74/prayer-bible.jpg?v=74.0', accent:'#ffd45e', tagline:'PRAY • TRUST • BELIEVE' },
-    { id:'youth-worship', label:'Youth Worship', image:'assets/scripture-v74/youth-worship.jpg?v=74.0', accent:'#8be9ff', tagline:'WORSHIP • PRAISE • GLORY' },
-    { id:'sunrise-faith', label:'Sunrise Faith', image:'assets/scripture-v74/sunrise-faith.jpg?v=74.0', accent:'#ffd45e', tagline:'HOPE • FAITH • JESUS' }
+    { id:'youth-fellowship', label:'Youth Fellowship', image:'assets/scripture-v74/bible-light.jpg?v=77.0', accent:'#8be9ff', tagline:'BUILD • BELONG • BE A LIGHT' },
+    { id:'mountain-cross', label:'Mountain Cross', image:'assets/scripture-v74/open-bible.jpg?v=77.0', accent:'#ffd45e', tagline:'FAITH • HOPE • JESUS' },
+    { id:'youth-community', label:'Youth Community', image:'assets/scripture-v74/bible-devotion.jpg?v=77.0', accent:'#8be9ff', tagline:'TOGETHER • IN CHRIST' },
+    { id:'worship-night', label:'Worship Night', image:'assets/scripture-v74/bible-sunrise.jpg?v=77.0', accent:'#ffd45e', tagline:'WORSHIP • PRAISE • GLORY' },
+    { id:'sunrise-faith', label:'Sunrise Faith', image:'assets/scripture-v74/scripture-pages.jpg?v=77.0', accent:'#ffd45e', tagline:'NEW MERCIES • NEW DAY' },
+    { id:'faith-together', label:'Faith Together', image:'assets/scripture-v74/quiet-time.jpg?v=77.0', accent:'#8be9ff', tagline:'ONE BODY • ONE FAITH' },
+    { id:'praise-gathering', label:'Praise Gathering', image:'assets/scripture-v74/blue-cross.jpg?v=77.0', accent:'#8be9ff', tagline:'PRAISE • PRAY • GROW' },
+    { id:'cross-at-dawn', label:'Cross at Dawn', image:'assets/scripture-v74/sunrise-cross.jpg?v=77.0', accent:'#ffd45e', tagline:'FAITH OVER FEAR' },
+    { id:'christian-community', label:'Christian Community', image:'assets/scripture-v74/bible-community.jpg?v=77.0', accent:'#8be9ff', tagline:'LOVE • SERVE • REACH' },
+    { id:'youth-worship', label:'Youth Worship', image:'assets/scripture-v74/prayer-bible.jpg?v=77.0', accent:'#ffd45e', tagline:'JESUS • CENTRE • ALWAYS' },
+    { id:'hope-mountain', label:'Hope on the Mountain', image:'assets/scripture-v74/youth-worship.jpg?v=77.0', accent:'#8be9ff', tagline:'HOPE • FAITH • JESUS' },
+    { id:'united-faith', label:'United in Faith', image:'assets/scripture-v74/sunrise-faith.jpg?v=77.0', accent:'#ffd45e', tagline:'STRONGER • TOGETHER' },
+    { id:'fellowship-light', label:'Fellowship & Light', image:'assets/scripture-v74/church-light.jpg?v=77.0', accent:'#8be9ff', tagline:'SHINE • TOGETHER' },
+    { id:'light-cross', label:'Light of the Cross', image:'assets/scripture-v74/prayer-hands.jpg?v=77.0', accent:'#ffd45e', tagline:'JESUS • OUR LIGHT' },
+    { id:'generation-faith', label:'Generation of Faith', image:'assets/scripture-v74/cross-sky.jpg?v=77.0', accent:'#8be9ff', tagline:'A GENERATION FOR HIS GLORY' }
   ];
 
   const state = { verseIndex: 0, themeIndex: 0, busy: false, imageCache: new Map() };
