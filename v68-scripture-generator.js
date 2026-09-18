@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  const VERSION = '71.0';
-  const LOGO_SRC = 'assets/efgc-logo.svg?v=71.0';
+  const VERSION = '72.0';
+  const LOGO_SRC = 'assets/v72-efgc-logo.webp?v=72.0';
   const VERSES = [
     { ref:'Matthew 5:16', text:'Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven.' },
     { ref:'Philippians 4:13', text:'I can do all things through Christ which strengtheneth me.' },
