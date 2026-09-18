@@ -1,8 +1,8 @@
 (() => {
   'use strict';
 
-  const VERSION = '69.0';
-  const LOGO_SRC = 'assets/efgc-logo.svg?v=69.0';
+  const VERSION = '71.0';
+  const LOGO_SRC = 'assets/efgc-logo.svg?v=71.0';
   const VERSES = [
     { ref:'Matthew 5:16', text:'Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven.' },
     { ref:'Philippians 4:13', text:'I can do all things through Christ which strengtheneth me.' },
@@ -30,52 +30,23 @@
     { ref:'Romans 15:13', text:'Now the God of hope fill you with all joy and peace in believing, that ye may abound in hope, through the power of the Holy Ghost.' }
   ];
 
-  function svgData(svg) {
-    return 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg.replace(/\s{2,}/g, ' ').trim());
-  }
-
-  function subjectSvg(kind, accent) {
-    const gold = accent || '#ffd257';
-    const cross = (x, y, h, w) => '<g filter="url(#glow)"><rect x="'+(x-w/2)+'" y="'+y+'" width="'+w+'" height="'+h+'" rx="'+(w/3)+'" fill="#fff"/><rect x="'+(x-h*.32)+'" y="'+(y+h*.27)+'" width="'+(h*.64)+'" height="'+w+'" rx="'+(w/3)+'" fill="#fff"/></g>';
-    if (kind === 'cross-right') return cross(820,235,330,48);
-    if (kind === 'cross-center') return cross(540,250,350,48);
-    if (kind === 'bible') return '<g transform="translate(0 20)"><path d="M150 960 Q340 870 520 965 L520 1190 Q330 1100 150 1170 Z" fill="#fff" fill-opacity=".94" stroke="'+gold+'" stroke-width="10"/><path d="M930 960 Q740 870 560 965 L560 1190 Q750 1100 930 1170 Z" fill="#fff" fill-opacity=".94" stroke="'+gold+'" stroke-width="10"/><path d="M540 960 L540 1205" stroke="#102a55" stroke-width="9"/><path d="M230 1000 Q355 955 470 1008 M230 1045 Q355 1000 470 1054 M610 1008 Q730 955 850 1000 M610 1054 Q730 1000 850 1045" stroke="#55708f" stroke-width="7" fill="none" opacity=".65"/></g>'+cross(540,265,250,40);
-    if (kind === 'prayer') return '<g fill="#071a37" opacity=".94"><path d="M245 1070 C180 1020 190 930 225 865 C247 824 275 780 302 745 C324 716 356 728 357 760 C358 788 338 827 327 852 C356 812 380 777 405 748 C429 721 462 740 455 771 C449 798 425 835 410 859 C438 826 462 799 485 780 C510 760 539 785 524 813 C505 848 482 872 458 899 C505 867 544 855 565 884 C583 910 557 934 522 958 C474 992 440 1021 410 1060 C370 1113 298 1110 245 1070 Z"/><path d="M835 1070 C900 1020 890 930 855 865 C833 824 805 780 778 745 C756 716 724 728 723 760 C722 788 742 827 753 852 C724 812 700 777 675 748 C651 721 618 740 625 771 C631 798 655 835 670 859 C642 826 618 799 595 780 C570 760 541 785 556 813 C575 848 598 872 622 899 C575 867 536 855 515 884 C497 910 523 934 558 958 C606 992 640 1021 670 1060 C710 1113 782 1110 835 1070 Z"/></g>'+cross(540,270,245,42);
-    if (kind === 'dove') return '<g filter="url(#glow)" fill="#fff" transform="translate(610 230) scale(.95)"><path d="M116 168 C53 128 17 79 13 22 C74 43 126 74 160 119 C181 77 223 44 289 27 C274 93 236 139 184 170 C217 187 244 215 260 251 C213 243 172 223 145 194 C113 218 72 231 27 226 C52 198 83 179 116 168 Z"/><circle cx="166" cy="142" r="8" fill="#173b72"/></g>'+cross(183,340,210,36);
-    if (kind === 'worship') return '<g fill="#061936"><path d="M80 1225 L120 965 Q128 915 157 902 Q187 889 202 927 L228 1015 L237 845 Q240 806 267 800 Q297 794 306 833 L326 1002 L357 885 Q366 848 395 849 Q425 851 426 890 L427 1090 Q430 1160 470 1225 Z"/><path d="M610 1225 L645 1035 L671 906 Q678 868 707 865 Q737 862 746 899 L767 1001 L785 822 Q788 786 816 783 Q845 780 853 818 L874 1003 L900 890 Q909 852 938 853 Q968 855 968 894 L965 1110 Q962 1170 1002 1225 Z"/></g>'+cross(541,270,250,42);
-    if (kind === 'sanctuary') return '<g opacity=".9"><path d="M160 1110 V470 Q160 260 360 260 Q560 260 560 470 V1110" fill="#0b2d64" stroke="#d9edff" stroke-width="18"/><path d="M520 1110 V470 Q520 260 720 260 Q920 260 920 470 V1110" fill="#092654" stroke="#d9edff" stroke-width="18"/><path d="M540 370 V650 M450 485 H630" stroke="#fff" stroke-width="34" filter="url(#glow)"/></g>';
-    if (kind === 'ocean') return '<g opacity=".9"><path d="M0 890 Q120 820 240 890 T480 890 T720 890 T960 890 T1200 890 V1350 H0 Z" fill="#0b61a8"/><path d="M0 960 Q120 890 240 960 T480 960 T720 960 T960 960 T1200 960" fill="none" stroke="#9be9ff" stroke-width="18" opacity=".8"/><path d="M0 1040 Q120 970 240 1040 T480 1040 T720 1040 T960 1040 T1200 1040" fill="none" stroke="#fff" stroke-width="10" opacity=".55"/></g>'+cross(541,310,270,42);
-    if (kind === 'city') return '<g fill="#071933" opacity=".94"><rect x="0" y="850" width="115" height="500"/><rect x="120" y="760" width="120" height="590"/><rect x="245" y="900" width="95" height="450"/><rect x="345" y="690" width="145" height="660"/><rect x="495" y="820" width="90" height="530"/><rect x="590" y="620" width="170" height="730"/><rect x="765" y="790" width="105" height="560"/><rect x="875" y="710" width="205" height="640"/></g><g fill="'+gold+'" opacity=".82"><circle cx="175" cy="820" r="7"/><circle cx="410" cy="760" r="7"/><circle cx="655" cy="700" r="7"/><circle cx="950" cy="790" r="7"/></g>'+cross(540,285,245,42);
-    if (kind === 'crown') return '<g filter="url(#glow)"><path d="M300 520 L360 360 L485 465 L540 300 L595 465 L720 360 L780 520 Z" fill="'+gold+'" stroke="#fff" stroke-width="10"/><rect x="320" y="520" width="440" height="70" rx="26" fill="'+gold+'" stroke="#fff" stroke-width="10"/></g>'+cross(541,650,250,42);
-    if (kind === 'lamp') return '<g transform="translate(220 690)"><path d="M120 360 H480 L430 230 H170 Z" fill="#fff" fill-opacity=".92" stroke="'+gold+'" stroke-width="10"/><path d="M300 225 V105" stroke="#fff" stroke-width="28"/><path d="M240 95 Q300 10 360 95 Q330 165 300 175 Q270 165 240 95 Z" fill="'+gold+'" filter="url(#glow)"/><path d="M175 390 H425" stroke="#153866" stroke-width="8" opacity=".55"/></g>'+cross(553,220,205,36);
-    return cross(542,260,290,44);
-  }
-
-  function sceneSvg(kind, c1, c2, accent, label) {
-    const mountain = '<path d="M0 1020 L140 890 L250 965 L400 750 L520 870 L660 690 L820 865 L945 770 L1080 910 L1080 1350 L0 1350 Z" fill="#071a37" opacity=".72"/><path d="M0 1110 L170 1000 L300 1060 L460 900 L610 1010 L760 850 L925 1005 L1080 920 L1080 1350 L0 1350 Z" fill="#0b2e5e" opacity=".72"/>';
-    const stars = '<g fill="#fff" opacity=".72"><circle cx="110" cy="150" r="3"/><circle cx="235" cy="250" r="4"/><circle cx="890" cy="175" r="3"/><circle cx="760" cy="300" r="4"/><circle cx="960" cy="420" r="3"/><circle cx="430" cy="180" r="3"/></g>';
-    return '<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350"><defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="'+c1+'"/><stop offset=".56" stop-color="'+c2+'"/><stop offset="1" stop-color="#061a38"/></linearGradient><radialGradient id="sun"><stop offset="0" stop-color="#fff"/><stop offset=".25" stop-color="'+accent+'" stop-opacity=".95"/><stop offset="1" stop-color="'+accent+'" stop-opacity="0"/></radialGradient><filter id="glow"><feGaussianBlur stdDeviation="7" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><linearGradient id="sheen" x1="0" x2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".48" stop-color="#fff" stop-opacity=".18"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient></defs><rect width="1080" height="1350" fill="url(#sky)"/>'+stars+'<circle cx="540" cy="600" r="390" fill="url(#sun)" opacity=".92"/><path d="M0 640 Q140 580 280 630 T560 620 T840 640 T1120 610" fill="none" stroke="#fff" stroke-opacity=".13" stroke-width="86"/>'+mountain+subjectSvg(kind, accent)+'<rect width="1080" height="1350" fill="url(#sheen)" opacity=".55"/><text x="540" y="1295" text-anchor="middle" fill="#fff" opacity=".12" font-family="Arial,sans-serif" font-size="26" font-weight="700" letter-spacing="6">'+label+'</text></svg>';
-  }
-
-  const THEME_SPECS = [
-    ['glory-cross','Glory Cross','cross-right','#061f51','#0a63b5','#ffd257','CHRIST OUR HOPE'],
-    ['blue-cross','Blue Cross','cross-center','#021a43','#047bd5','#7fe7ff','JESUS • LIGHT OF THE WORLD'],
-    ['open-bible','Open Bible','bible','#071b42','#397fd1','#ffd257','HIS WORD • OUR LIGHT'],
-    ['prayer','Prayer','prayer','#07142e','#315fa8','#ffd257','PRAY • TRUST • BELIEVE'],
-    ['holy-spirit','Holy Spirit','dove','#07356c','#53a8e8','#f6dc7d','SPIRIT • TRUTH • POWER'],
-    ['worship','Worship','worship','#071637','#174b8e','#6ce8ff','WORSHIP • PRAISE • GLORY'],
-    ['sanctuary','Sanctuary','sanctuary','#071736','#1c5e9e','#ffe28a','GATHER • GROW • GO'],
-    ['ocean-faith','Ocean Faith','ocean','#05295c','#0d86c7','#ffd257','FAITH OVER FEAR'],
-    ['mountain-cross','Mountain Cross','cross-center','#071a39','#5a4a83','#ffcf63','STAND FIRM IN CHRIST'],
-    ['city-light','City Light','city','#050f2c','#0d5ea9','#5ff0ff','BE A LIGHT'],
-    ['crown-cross','Crown & Cross','crown','#08173a','#593c86','#ffd257','KING OF KINGS'],
-    ['word-lamp','Word & Lamp','lamp','#071a3a','#1b65a4','#ffd257','WORD • LIGHT • TRUTH']
+  const THEMES = [
+    { id:'bible-sunlight', label:'Bible & Light', image:'https://unsplash.com/photos/MszZIWTVOi8/download?force=true&w=1080', accent:'#ffd45e', tagline:'HIS WORD • OUR LIGHT' },
+    { id:'bible-table', label:'Open Bible', image:'https://unsplash.com/photos/SZaxKdLwz6o/download?force=true&w=1080', accent:'#ffd45e', tagline:'WORD • TRUTH • LIFE' },
+    { id:'bible-hand', label:'Bible Devotion', image:'https://unsplash.com/photos/eCE40LwVDss/download?force=true&w=1080', accent:'#8be9ff', tagline:'READ • RECEIVE • LIVE' },
+    { id:'bible-rest', label:'Bible Sunrise', image:'https://unsplash.com/photos/VbcEb-Fkuzs/download?force=true&w=1080', accent:'#ffd45e', tagline:'MORNING BY HIS WORD' },
+    { id:'bible-pages', label:'Scripture Pages', image:'https://unsplash.com/photos/qhnVF1K3lnk/download?force=true&w=1080', accent:'#8be9ff', tagline:'SCRIPTURE • WISDOM • GRACE' },
+    { id:'john316', label:'John 3:16 Bible', image:'https://unsplash.com/photos/sqyQNuOUl8g/download?force=true&w=1080', accent:'#ffd45e', tagline:'FOR GOD SO LOVED' },
+    { id:'bible-coffee', label:'Quiet Time', image:'https://unsplash.com/photos/wB9AJS9t-4k/download?force=true&w=1080', accent:'#ffd45e', tagline:'BE STILL • KNOW GOD' },
+    { id:'church-cross', label:'Church Cross', image:'https://unsplash.com/photos/kClQjGxyOug/download?force=true&w=1080', accent:'#ffd45e', tagline:'CHRIST OUR HOPE' },
+    { id:'stained-cross', label:'Cross & Light', image:'https://unsplash.com/photos/cRVnk9Sn2cA/download?force=true&w=1080', accent:'#8be9ff', tagline:'JESUS • LIGHT OF THE WORLD' },
+    { id:'sanctuary', label:'Sanctuary', image:'https://unsplash.com/photos/lqgJkQkYva4/download?force=true&w=1080', accent:'#ffd45e', tagline:'GATHER • GROW • GO' },
+    { id:'sunset-cross', label:'Sunset Cross', image:'https://unsplash.com/photos/vQlLGQRiqGQ/download?force=true&w=1080', accent:'#ffd45e', tagline:'FAITH OVER FEAR' },
+    { id:'worship-cross', label:'Worship & Cross', image:'https://unsplash.com/photos/fExQb1KkoWg/download?force=true&w=1080', accent:'#8be9ff', tagline:'WORSHIP • PRAISE • GLORY' },
+    { id:'worship-gathering', label:'Faith Gathering', image:'https://unsplash.com/photos/ATo5DI0csYY/download?force=true&w=1080', accent:'#ffd45e', tagline:'ONE BODY • ONE FAITH' },
+    { id:'cathedral', label:'Cathedral', image:'https://unsplash.com/photos/GxbFfu6yRN0/download?force=true&w=1080', accent:'#8be9ff', tagline:'HOLY • WORTHY • TRUE' },
+    { id:'prayer', label:'Prayer', image:'https://unsplash.com/photos/7bD80m1hzBA/download?force=true&w=1080', accent:'#ffd45e', tagline:'PRAY • TRUST • BELIEVE' }
   ];
-
-  const THEMES = THEME_SPECS.map((t) => ({
-    id:t[0], label:t[1], scene:t[2], accent:t[5], tagline:t[6],
-    image:svgData(sceneSvg(t[2], t[3], t[4], t[5], t[1].toUpperCase()))
-  }));
 
   const state = { verseIndex: 0, themeIndex: 0, busy: false, imageCache: new Map() };
 
@@ -120,12 +91,12 @@
 
   function generatorMarkup() {
     const themeButtons = THEMES.map((theme, index) =>
-      '<button type="button" class="scripture-theme '+(index === state.themeIndex ? 'active' : '')+'" data-scripture-theme="'+index+'" aria-pressed="'+(index === state.themeIndex)+'"><span class="scripture-theme-thumb" style="background-image:url(&quot;'+theme.image+'&quot;)"></span><span class="scripture-theme-label">'+escapeHtmlLocal(theme.label)+'</span></button>'
+      '<button type="button" class="scripture-theme '+(index === state.themeIndex ? 'active' : '')+'" data-scripture-theme="'+index+'" aria-pressed="'+(index === state.themeIndex)+'"><img class="scripture-theme-thumb scripture-theme-photo" src="'+theme.image.replace(/&/g,'&amp;')+'" alt="'+escapeHtmlLocal(theme.label)+' realistic Christian background" loading="lazy"><span class="scripture-theme-label">'+escapeHtmlLocal(theme.label)+'</span></button>'
     ).join('');
     const verseOptions = VERSES.map((verse, index) =>
       '<option value="'+index+'" '+(index === state.verseIndex ? 'selected' : '')+'>'+escapeHtmlLocal(verse.ref)+'</option>'
     ).join('');
-    return '<div class="scripture-generator-v68"><div class="scripture-generator-heading"><span class="scripture-kicker">EFGC YOUTH • DAILY FAITH</span><h2>Daily Scripture Generator</h2><p>Choose from '+THEMES.length+' high-quality Christian backgrounds. Every poster uses the official EFGC logo and is aligned for sharing.</p></div><div class="scripture-generator-layout"><section class="scripture-preview-panel" aria-label="Scripture poster preview"><div class="scripture-canvas-shell"><canvas id="scripturePosterCanvas" width="1080" height="1350" aria-label="Generated EFGC Youth scripture poster"></canvas><div id="scriptureRenderStatus" class="scripture-render-status" aria-live="polite">Preparing today\'s scripture…</div></div></section><section class="scripture-controls-panel"><div class="scripture-control-card"><label for="scriptureVerseSelect"><strong>Scripture</strong></label><select id="scriptureVerseSelect">'+verseOptions+'</select><div class="scripture-inline-actions"><button id="scriptureTodayButton" type="button" class="scripture-secondary">Today</button><button id="scriptureRandomVerseButton" type="button" class="scripture-secondary">New Scripture</button><button id="scriptureRandomButton" type="button" class="scripture-primary">✦ Surprise Me</button></div></div><div class="scripture-control-card"><div class="scripture-gallery-title"><strong>Choose Christian background</strong><span>'+THEMES.length+' images</span></div><div class="scripture-theme-grid">'+themeButtons+'</div></div><div class="scripture-control-card scripture-share-card"><strong>Use your scripture poster</strong><div class="scripture-action-grid"><button id="scriptureDownloadButton" type="button" class="scripture-primary">Download Image</button><button id="scriptureShareButton" type="button" class="scripture-secondary">Share</button><button id="scriptureCopyButton" type="button" class="scripture-secondary">Copy Verse</button></div><p id="scriptureActionMessage" class="scripture-action-message" aria-live="polite"></p></div><div class="scripture-safety-note">KJV • Official EFGC logo • Christian images only • No service details</div></section></div></div>';
+    return '<div class="scripture-generator-v68"><div class="scripture-generator-heading"><span class="scripture-kicker">EFGC YOUTH • DAILY FAITH</span><h2>Daily Scripture Generator</h2><p>Choose from '+THEMES.length+' realistic Christian photography backgrounds. Every poster uses the official EFGC logo and is aligned for sharing.</p></div><div class="scripture-generator-layout"><section class="scripture-preview-panel" aria-label="Scripture poster preview"><div class="scripture-canvas-shell"><canvas id="scripturePosterCanvas" width="1080" height="1350" aria-label="Generated EFGC Youth scripture poster"></canvas><div id="scriptureRenderStatus" class="scripture-render-status" aria-live="polite">Preparing today\'s scripture…</div></div></section><section class="scripture-controls-panel"><div class="scripture-control-card"><label for="scriptureVerseSelect"><strong>Scripture</strong></label><select id="scriptureVerseSelect">'+verseOptions+'</select><div class="scripture-inline-actions"><button id="scriptureTodayButton" type="button" class="scripture-secondary">Today</button><button id="scriptureRandomVerseButton" type="button" class="scripture-secondary">New Scripture</button><button id="scriptureRandomButton" type="button" class="scripture-primary">✦ Surprise Me</button></div></div><div class="scripture-control-card"><div class="scripture-gallery-title"><strong>Choose Christian background</strong><span>'+THEMES.length+' images</span></div><div class="scripture-theme-grid">'+themeButtons+'</div></div><div class="scripture-control-card scripture-share-card"><strong>Use your scripture poster</strong><div class="scripture-action-grid"><button id="scriptureDownloadButton" type="button" class="scripture-primary">Download Image</button><button id="scriptureShareButton" type="button" class="scripture-secondary">Share</button><button id="scriptureCopyButton" type="button" class="scripture-secondary">Copy Verse</button></div><p id="scriptureActionMessage" class="scripture-action-message" aria-live="polite"></p></div><div class="scripture-safety-note">KJV • Official EFGC logo • realistic Christian images only • No service details</div></section></div></div>';
   }
 
   function drawCover(ctx, img, width, height) {
@@ -214,6 +185,8 @@
     if (state.imageCache.has(src)) return state.imageCache.get(src);
     const promise = new Promise((resolve, reject) => {
       const img = new Image();
+      if (src.startsWith('http://') || src.startsWith('https://')) img.crossOrigin = 'anonymous';
+      img.referrerPolicy = 'no-referrer';
       img.decoding = 'async';
       img.onload = () => resolve(img);
       img.onerror = () => reject(new Error(`Could not load ${src}`));
@@ -253,9 +226,9 @@
       drawCover(ctx,bg,W,H);
 
       const veil = ctx.createLinearGradient(0,0,0,H);
-      veil.addColorStop(0,'rgba(2,17,44,.38)');
-      veil.addColorStop(.36,'rgba(2,17,44,.18)');
-      veil.addColorStop(.72,'rgba(2,17,44,.34)');
+      veil.addColorStop(0,'rgba(2,17,44,.16)');
+      veil.addColorStop(.36,'rgba(2,17,44,.10)');
+      veil.addColorStop(.72,'rgba(2,17,44,.26)');
       veil.addColorStop(1,'rgba(1,12,31,.88)');
       ctx.fillStyle = veil;
       ctx.fillRect(0,0,W,H);
