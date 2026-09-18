@@ -10,8 +10,9 @@ from PIL import Image, ImageEnhance, ImageFilter, ImageOps
 ROOT = Path(__file__).resolve().parents[1]
 ASSETS = ROOT / "assets"
 SRC = ROOT / "assets-src" / "v74"
+LOGIN_SRC = ROOT / "assets-src" / "v73"
 SCRIPTURE = ASSETS / "scripture-v74"
-LOGIN_OUT = ASSETS / "v74-login-poster.webp"
+LOGIN_OUT = ASSETS / "v76-login-poster.webp"
 LOGO_OUT = ASSETS / "v76-efgc-logo.png"
 
 TILE_NAMES = [
@@ -35,7 +36,7 @@ TILE_NAMES = [
 FALLBACK_SOURCES = [
     ASSETS / "v49-youth-fellowship.webp",
     ASSETS / "v49-sunrise.webp",
-    ASSETS / "v74-login-poster.webp",
+    ASSETS / "v76-login-poster.webp",
     ASSETS / "efgc-home-hero.webp",
 ]
 
@@ -49,10 +50,20 @@ def valid_image(path: Path, min_w: int = 1, min_h: int = 1) -> bool:
         return False
 
 def build_login() -> None:
-    # The exact user-approved login poster is committed directly to assets/.
-    # Do not transcode it here: browsers already consume the supplied WebP directly.
-    if not LOGIN_OUT.exists() or LOGIN_OUT.stat().st_size < 5000:
-        raise RuntimeError(f"Exact login poster missing or undersized: {LOGIN_OUT}")
+    # Reconstruct the exact approved login artwork from committed source parts.
+    parts = sorted(LOGIN_SRC.glob("poster.part*"))
+    if not parts:
+        raise RuntimeError("Exact login poster source parts are missing.")
+    encoded = "".join(p.read_text(encoding="utf-8").strip() for p in parts)
+    try:
+        raw = base64.b64decode(encoded, validate=True)
+        with Image.open(io.BytesIO(raw)) as im:
+            im.load()
+            if im.width < 500 or im.height < 900:
+                raise RuntimeError(f"Unexpected login poster dimensions: {im.size}")
+        LOGIN_OUT.write_bytes(raw)
+    except Exception as exc:
+        raise RuntimeError(f"Could not reconstruct exact login poster: {exc}") from exc
 
 def build_logo() -> None:
     # Reconstruct the exact approved EFGC logo from the committed source parts.
