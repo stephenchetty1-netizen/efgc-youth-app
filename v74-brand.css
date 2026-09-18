@@ -97,6 +97,8 @@ body.v74-form-open #login{
     linear-gradient(180deg,#07316f 0,#021a3a 48%,#011027 100%)!important;
 }
 body.v74-form-open #login .login-card.v74-card-visible{
+  position:relative!important;
+  z-index:120!important;
   display:block!important;
   width:min(100%,620px)!important;
   max-width:620px!important;
