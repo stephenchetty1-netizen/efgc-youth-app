@@ -1,7 +1,7 @@
 /** V72 — exact supplied EFGC Youth login poster + inserted-picture logo enforcement. */
 (() => {
   const $ = (s) => document.querySelector(s);
-  const OFFICIAL_LOGO = 'assets/v72-efgc-logo.webp?v=72.0';
+  const OFFICIAL_LOGO = 'assets/v72-efgc-logo.webp?v=72.1';
 
   function currentSession() {
     try { return typeof session !== 'undefined' ? session : null; }
@@ -112,7 +112,7 @@
 
 /** V61 — automated EFGC birthday wish poster enhancer for News Feed. */
 (() => {
-  const LOGO = 'assets/v72-efgc-logo.webp?v=72.0';
+  const LOGO = 'assets/v72-efgc-logo.webp?v=72.1';
   const escapeHtml = (value = '') => String(value).replace(/[&<>"']/g, (char) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[char]));
 
   function installBirthdayStyles() {
