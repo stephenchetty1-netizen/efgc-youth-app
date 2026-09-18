@@ -63,17 +63,17 @@ jobs:
           test -f v74-brand.js
           test -f v75-roster-multi.js
           test -f v75-roster-multi.css
-          test -f assets/v74-login-poster.webp
+          test -f assets/v76-login-poster.webp
           test -f assets/v76-efgc-logo.png
           test -d assets/scripture-v74
 
-          test $(stat -c%s assets/v74-login-poster.webp) -gt 10000
+          test $(stat -c%s assets/v76-login-poster.webp) -gt 10000
           test $(stat -c%s assets/v76-efgc-logo.png) -gt 5000
           test $(find assets/scripture-v74 -maxdepth 1 -name '*.jpg' | wc -l) -ge 12
 
           grep -q 'window.EFGC_V74_ACTIVE=true' index.html
           grep -q 'v74-brand.css?v=76.0' index.html
-          grep -q 'v74-brand.js?v=76.0' index.html
+          grep -q 'v74-brand.js?v=76.1' index.html
           grep -q 'v75-roster-multi.js?v=76.0' index.html
           grep -q 'v75-roster-multi.css?v=76.0' index.html
           grep -q 'v68-scripture-generator.js?v=76.0' index.html
@@ -86,7 +86,8 @@ jobs:
           grep -q 'EFGC_V74_ACTIVE' v74-brand.js
           grep -q 'v74LoginButton' v74-brand.js
           grep -q 'v74CreateButton' v74-brand.js
-          grep -q 'assets/v74-login-poster.webp?v=74.0' v74-brand.js
+          grep -q 'assets/v76-login-poster.webp?v=76.1' v74-brand.js
+          grep -q 'assets/v76-login-poster.webp?v=74.0' v74-brand.js
           grep -q 'assets/v76-efgc-logo.png?v=76.0' v74-brand.js
 
           grep -q 'assets/v76-efgc-logo.png?v=76.0' v45-theme.js
@@ -136,7 +137,7 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:8080/v74-brand.js -o /tmp/v74.js
           curl --fail --silent --show-error http://127.0.0.1:8080/v74-brand.css -o /tmp/v74.css
           curl --fail --silent --show-error http://127.0.0.1:8080/v68-scripture-generator.js -o /tmp/scripture.js
-          curl --fail --silent --show-error http://127.0.0.1:8080/assets/v74-login-poster.webp -o /tmp/login.webp
+          curl --fail --silent --show-error http://127.0.0.1:8080/assets/v76-login-poster.webp -o /tmp/login.webp
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/v76-efgc-logo.png -o /tmp/logo.png
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/scripture-v74/bible-light.jpg -o /tmp/bible.jpg
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/scripture-v74/youth-worship.jpg -o /tmp/worship.jpg
