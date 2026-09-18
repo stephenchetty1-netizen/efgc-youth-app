@@ -240,7 +240,7 @@
       ctx.fillRect(0,0,W,H);
 
       try {
-        const logo = await loadImage(LOGO_SRC);
+        const logo = await loadImage(window.EFGC_BRAND_LOGO || LOGO_SRC);
         ctx.save();
         ctx.shadowColor = 'rgba(255,220,112,.55)';
         ctx.shadowBlur = 30;
