@@ -53,13 +53,16 @@ jobs:
           node --check v54-stable-welcome.js
           node --check v62-notifications.js
           node --check v68-scripture-generator.js
-          node --check v74-brand.js\n          node --check v75-roster-multi.js
+          node --check v74-brand.js
+          node --check v75-roster-multi.js
           node --check notification-sw.js
 
           test -f index.html
           test -f manifest.webmanifest
           test -f v74-brand.css
-          test -f v74-brand.js\n          test -f v75-roster-multi.js\n          test -f v75-roster-multi.css
+          test -f v74-brand.js
+          test -f v75-roster-multi.js
+          test -f v75-roster-multi.css
           test -f assets/v74-login-poster.webp
           test -f assets/v74-efgc-logo.webp
           test -d assets/scripture-v74
@@ -70,28 +73,32 @@ jobs:
 
           grep -q 'window.EFGC_V74_ACTIVE=true' index.html
           grep -q 'v74-brand.css?v=74.0' index.html
-          grep -q 'v74-brand.js?v=74.0' index.html\n          grep -q 'v75-roster-multi.js?v=75.0' index.html\n          grep -q 'v75-roster-multi.css?v=75.0' index.html
+          grep -q 'v74-brand.js?v=74.0' index.html
+          grep -q 'v75-roster-multi.js?v=75.0' index.html
+          grep -q 'v75-roster-multi.css?v=75.0' index.html
           grep -q 'v68-scripture-generator.js?v=74.0' index.html
           grep -q 'v68-scripture-generator.css?v=74.0' index.html
           grep -q 'v45-theme.js?v=74.0' index.html
           grep -q 'v54-stable-welcome.js?v=74.0' index.html
-          grep -q 'assets/v74-efgc-logo.webp?v=74.0' index.html
-          grep -q 'assets/v74-efgc-logo.webp?v=74.0' manifest.webmanifest
+          grep -q 'assets/v74-efgc-logo.webp?v=75.0' index.html
+          grep -q 'assets/v74-efgc-logo.webp?v=75.0' manifest.webmanifest
 
           grep -q 'EFGC_V74_ACTIVE' v74-brand.js
           grep -q 'v74LoginButton' v74-brand.js
           grep -q 'v74CreateButton' v74-brand.js
           grep -q 'assets/v74-login-poster.webp?v=74.0' v74-brand.js
-          grep -q 'assets/v74-efgc-logo.webp?v=74.0' v74-brand.js
+          grep -q 'assets/v74-efgc-logo.webp?v=75.0' v74-brand.js
 
-          grep -q 'assets/v74-efgc-logo.webp?v=74.0' v45-theme.js
+          grep -q 'assets/v74-efgc-logo.webp?v=75.0' v45-theme.js
           grep -q 'EFGC_V74_ACTIVE' v45-theme.js
           grep -q 'EFGC_V74_ACTIVE' v54-stable-welcome.js
 
           grep -q 'Daily Scripture Generator' v68-scripture-generator.js
           grep -q 'assets/scripture-v74/' v68-scripture-generator.js
-          grep -q 'assets/v74-efgc-logo.webp?v=74.0' v68-scripture-generator.js
-          grep -q 'waitForPosterReady' v68-scripture-generator.js\n          grep -q 'saveRosterWeekV75' v75-roster-multi.js\n          grep -q 'input type=\"checkbox\"' v75-roster-multi.js
+          grep -q 'assets/v74-efgc-logo.webp?v=75.0' v68-scripture-generator.js
+          grep -q 'waitForPosterReady' v68-scripture-generator.js
+          grep -q 'saveRosterWeekV75' v75-roster-multi.js
+          grep -q 'input type=\"checkbox\"' v75-roster-multi.js
           if grep -q 'https://unsplash.com/photos' v68-scripture-generator.js; then
             echo "Runtime Scripture generator must not depend on remote Unsplash images."
             exit 1
