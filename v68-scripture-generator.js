@@ -2,7 +2,7 @@
   'use strict';
 
   const VERSION = '74.0';
-  const LOGO_SRC = 'assets/v74-efgc-logo.png?v=74.0';
+  const LOGO_SRC = 'assets/v74-efgc-logo.webp?v=75.0';
   const VERSES = [
     { ref:'Matthew 5:16', text:'Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven.' },
     { ref:'Philippians 4:13', text:'I can do all things through Christ which strengtheneth me.' },
