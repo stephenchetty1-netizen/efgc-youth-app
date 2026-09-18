@@ -385,11 +385,41 @@
     renderPoster();
   }
 
-  function canvasToBlob(canvas) {
+  function nextPaint() {
+    return new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  }
+
+  function rawCanvasToBlob(canvas) {
     return new Promise((resolve, reject) => {
       try { canvas.toBlob((blob) => resolve(blob), 'image/png', 0.95); }
       catch (err) { reject(err); }
     });
+  }
+
+  async function canvasToBlob(canvas) {
+    // Android/in-app browsers can occasionally export a partially committed
+    // hardware canvas. Snapshot onto a fresh software canvas after two paints.
+    await nextPaint();
+    const exportCanvas = document.createElement('canvas');
+    exportCanvas.width = canvas.width;
+    exportCanvas.height = canvas.height;
+    const exportCtx = exportCanvas.getContext('2d', { alpha:false, willReadFrequently:false });
+    if (!exportCtx) return rawCanvasToBlob(canvas);
+    exportCtx.fillStyle = '#061b3a';
+    exportCtx.fillRect(0,0,exportCanvas.width,exportCanvas.height);
+    exportCtx.drawImage(canvas,0,0,exportCanvas.width,exportCanvas.height);
+
+    let blob = await rawCanvasToBlob(exportCanvas);
+    if (blob && blob.size >= 50000) return blob;
+
+    // One retry after another paint for mobile GPU flush timing.
+    await nextPaint();
+    exportCtx.clearRect(0,0,exportCanvas.width,exportCanvas.height);
+    exportCtx.fillStyle = '#061b3a';
+    exportCtx.fillRect(0,0,exportCanvas.width,exportCanvas.height);
+    exportCtx.drawImage(canvas,0,0,exportCanvas.width,exportCanvas.height);
+    blob = await rawCanvasToBlob(exportCanvas);
+    return blob;
   }
 
   async function waitForPosterReady() {
@@ -419,7 +449,7 @@
     let blob = null;
     try { blob = await canvasToBlob(canvas); } catch (_) {}
 
-    if (!blob) return message('Could not prepare the image.');
+    if (!blob || blob.size < 50000) return message('Could not prepare the full image. Please try again.');
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -440,7 +470,7 @@
     const shareText = `${verse.ref} — “${verse.text}”\n\nEFGC Youth • Daily Scripture`;
     try {
       const blob = await canvasToBlob(canvas);
-      const file = blob ? new File([blob], 'EFGC-Daily-Scripture.png', { type:'image/png' }) : null;
+      const file = blob && blob.size >= 50000 ? new File([blob], 'EFGC-Daily-Scripture.png', { type:'image/png' }) : null;
       if (file && navigator.canShare?.({ files:[file] })) {
         await navigator.share({ title:'EFGC Youth Daily Scripture', text:shareText, files:[file] });
         message('Scripture shared.');
