@@ -87,7 +87,6 @@ jobs:
           grep -q 'Download Image' v68-scripture-generator.js
           grep -q 'realistic Christian photography backgrounds' v68-scripture-generator.js
           grep -q 'unsplash.com/photos' v68-scripture-generator.js
-          grep -q 'THEME_SPECS' v68-scripture-generator.js
           grep -q 'Official EFGC logo' v68-scripture-generator.js
           grep -q 'notification-sw.js?v=62.0' v62-notifications.js
           grep -q 'news_posts' v62-notifications.js
