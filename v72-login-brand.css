@@ -1,4 +1,4 @@
-/* EFGC Youth V72 — exact supplied login poster + upgraded inserted-picture logo */
+/* EFGC Youth V72.1 — hard-locked supplied login poster + corrected poster-source logo */
 
 :root{
   --v72-navy:#031a3b;
@@ -171,4 +171,103 @@ body:not(.mock-authenticated) #login .login-card:not(.mock-login-hidden){
 
 @media(prefers-reduced-motion:reduce){
   .v72-hotspot{transition:none!important}
+}
+
+
+/* V72.1 HARD LOCK — signed-out screen is the supplied poster only. */
+body:not(.mock-authenticated)>header,
+body:not(.mock-authenticated)>footer,
+body:not(.mock-authenticated) main>.hero,
+body:not(.mock-authenticated) #mainMenu,
+body:not(.mock-authenticated) .userbar{
+  display:none!important;
+}
+body:not(.mock-authenticated) main{
+  display:block!important;
+  width:100vw!important;
+  max-width:none!important;
+  min-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+}
+body:not(.mock-authenticated) #login{
+  display:block!important;
+  width:100vw!important;
+  max-width:none!important;
+  min-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+}
+#mockWelcome.v72-welcome{
+  width:100vw!important;
+  max-width:none!important;
+  height:100dvh!important;
+  min-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+}
+#mockWelcome .v72-poster{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  min-height:0!important;
+  background-image:url('assets/v72-login-poster.webp?v=72.1')!important;
+  background-repeat:no-repeat!important;
+  background-position:center center!important;
+  background-size:cover!important;
+}
+#mockWelcome .v72-poster::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,24,62,.04),transparent 72%,rgba(0,10,28,.14));
+}
+#mockWelcome .v72-poster::after{display:none!important}
+
+/* Touch zones track the buttons printed in the supplied artwork. */
+#mockWelcome .v72-login-hotspot{top:75.0%!important;height:6.6%!important}
+#mockWelcome .v72-create-hotspot{top:82.2%!important;height:6.2%!important}
+
+/* One logo source everywhere: cropped directly from the supplied poster. */
+.mock-authenticated .brand-logo.official-logo{
+  width:72px!important;
+  height:72px!important;
+  flex:0 0 72px!important;
+}
+.mock-authenticated header .brand{
+  min-height:84px!important;
+  gap:14px!important;
+}
+.mock-authenticated .hero-logo.official-logo{
+  width:142px!important;
+  height:142px!important;
+  object-fit:contain!important;
+}
+.official-footer-logo.official-logo{
+  width:124px!important;
+  height:124px!important;
+}
+.birthday-logo-wrap img{
+  width:96px!important;
+  height:96px!important;
+}
+@media(max-width:699px){
+  .mock-authenticated .brand-logo.official-logo{
+    width:62px!important;
+    height:62px!important;
+    flex-basis:62px!important;
+  }
+  .mock-authenticated header .brand{min-height:72px!important}
+  #mockWelcome .v72-poster{
+    background-position:center 46%!important;
+  }
+}
+@media(min-width:700px){
+  #mockWelcome.v72-welcome{
+    width:min(100vw,680px)!important;
+    max-width:680px!important;
+    margin:0 auto!important;
+  }
 }
