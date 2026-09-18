@@ -4,7 +4,7 @@
   window.EFGC_V74_ACTIVE = true;
 
   const $ = (s) => document.querySelector(s);
-  const LOGIN_ART = 'assets/v74-login-poster.webp?v=74.0';
+  const LOGIN_ART = 'assets/v76-login-poster.webp?v=76.1';
   const LOGO = 'assets/v76-efgc-logo.png?v=76.0';
 
   function sessionActive() {
