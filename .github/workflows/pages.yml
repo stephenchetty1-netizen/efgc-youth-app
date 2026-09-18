@@ -11,7 +11,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "efgc-youth-pages-v81"
+  group: "efgc-youth-pages-v82"
   cancel-in-progress: true
 
 jobs:
@@ -74,8 +74,8 @@ jobs:
           grep -q 'window.EFGC_V74_ACTIVE=true' index.html
           grep -q 'v74-brand.css?v=81.0' index.html
           grep -q 'v74-brand.js?v=81.0' index.html
-          grep -q 'v75-roster-multi.js?v=76.0' index.html
-          grep -q 'v75-roster-multi.css?v=76.0' index.html
+          grep -q 'v75-roster-multi.js?v=82.0' index.html
+          grep -q 'v75-roster-multi.css?v=82.0' index.html
           grep -q 'v68-scripture-generator.js?v=79.0' index.html
           grep -q 'v68-scripture-generator.css?v=79.0' index.html
           grep -q 'v45-theme.js?v=76.0' index.html
@@ -105,6 +105,8 @@ jobs:
           grep -q 'assets/v76-efgc-logo.png?v=81.0' v68-scripture-generator.js
           grep -q 'waitForPosterReady' v68-scripture-generator.js
           grep -q 'saveRosterWeekV75' v75-roster-multi.js
+          grep -q "version:'82.0'" v75-roster-multi.js
+          grep -q 'Select multiple leaders for the same duty' v75-roster-multi.js
           grep -q 'canvasToBlob' v68-scripture-generator.js
           grep -q 'nextPaint' v68-scripture-generator.js
           grep -q 'SCRIPTURE_REMOTE_SOURCES' scripts/build-v74-assets.py
