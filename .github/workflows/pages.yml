@@ -80,22 +80,22 @@ jobs:
           grep -q 'v68-scripture-generator.css?v=76.0' index.html
           grep -q 'v45-theme.js?v=76.0' index.html
           grep -q 'v54-stable-welcome.js?v=76.0' index.html
-          grep -q 'assets/v76-efgc-logo.png?v=75.0' index.html
-          grep -q 'assets/v76-efgc-logo.png?v=75.0' manifest.webmanifest
+          grep -q 'assets/v76-efgc-logo.png?v=76.0' index.html
+          grep -q 'assets/v76-efgc-logo.png?v=76.0' manifest.webmanifest
 
           grep -q 'EFGC_V74_ACTIVE' v74-brand.js
           grep -q 'v74LoginButton' v74-brand.js
           grep -q 'v74CreateButton' v74-brand.js
           grep -q 'assets/v74-login-poster.webp?v=74.0' v74-brand.js
-          grep -q 'assets/v76-efgc-logo.png?v=75.0' v74-brand.js
+          grep -q 'assets/v76-efgc-logo.png?v=76.0' v74-brand.js
 
-          grep -q 'assets/v76-efgc-logo.png?v=75.0' v45-theme.js
+          grep -q 'assets/v76-efgc-logo.png?v=76.0' v45-theme.js
           grep -q 'EFGC_V74_ACTIVE' v45-theme.js
           grep -q 'EFGC_V74_ACTIVE' v54-stable-welcome.js
 
           grep -q 'Daily Scripture Generator' v68-scripture-generator.js
           grep -q 'assets/scripture-v74/' v68-scripture-generator.js
-          grep -q 'assets/v76-efgc-logo.png?v=75.0' v68-scripture-generator.js
+          grep -q 'assets/v76-efgc-logo.png?v=76.0' v68-scripture-generator.js
           grep -q 'waitForPosterReady' v68-scripture-generator.js
           grep -q 'saveRosterWeekV75' v75-roster-multi.js
           grep -q 'canvasToBlob' v68-scripture-generator.js
