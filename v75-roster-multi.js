@@ -66,7 +66,7 @@
   }
 
   function rosterAdminRow(p){
-    return `<div class="v44-roster-row v75-roster-row" data-planner-id="${Number(p.id)}"><div class="v44-week"><strong>Week ${isoWeek(p.week_start)}</strong><span>${p.published?'Published':'Draft'}</span></div><div class="v44-date"><strong>${esc(fmtDate(p.week_start))}</strong><button class="text-button" type="button" onclick="editPlannerWeekV44(${Number(p.id)})">Edit details</button></div>${DUTIES.map(d=>{const count=dutyAssignments(p.id,d).length;return `<div class="v44-duty v75-duty"><span>${DUTY_LABEL[d]}</span>${leaderPicker(p.id,d)}<small>${count?`${count} leader${count===1?'':'s'} assigned`:'Not allocated'}</small></div>`;}).join('')}<div class="v44-save v75-save"><button class="mini-button primary" type="button" onclick="saveRosterWeekV75(${Number(p.id)})">Save roles</button><small>Select one or more leaders per item.</small></div></div>`;
+    return `<div class="v44-roster-row v75-roster-row" data-planner-id="${Number(p.id)}"><div class="v44-week"><strong>Week ${isoWeek(p.week_start)}</strong><span>${p.published?'Published':'Draft'}</span></div><div class="v44-date"><strong>${esc(fmtDate(p.week_start))}</strong><button class="text-button" type="button" onclick="editPlannerWeekV44(${Number(p.id)})">Edit details</button></div>${DUTIES.map(d=>{const count=dutyAssignments(p.id,d).length;return `<div class="v44-duty v75-duty"><span>${DUTY_LABEL[d]}</span>${leaderPicker(p.id,d)}<small>${count?`${count} leader${count===1?'':'s'} assigned`:'Not allocated'}</small></div>`;}).join('')}<div class="v44-save v75-save"><button class="mini-button primary" type="button" onclick="saveRosterWeekV75(${Number(p.id)})">Save roles</button><small>Select multiple leaders for the same duty. Tick every leader you want assigned.</small></div></div>`;
   }
 
   function rosterLeaderRow(p,s){
@@ -85,7 +85,7 @@
       if(isAdmin()){
         const summary=`<div class="summary-strip"><div class="summary-box"><strong>${plannerCache.length}</strong><span>WEEKS</span></div><div class="summary-box"><strong>${leaderCache.length}</strong><span>LEADERS</span></div><div class="summary-box"><strong>${dutyCache.filter(d=>d.status==='confirmed').length}</strong><span>CONFIRMED DUTIES</span></div><div class="summary-box"><strong>${dutyCache.filter(d=>d.status==='replacement_requested').length}</strong><span>REPLACEMENTS</span></div></div>`;
         const rows=plannerCache.length?`<div class="v44-roster-table"><div class="v44-roster-head"><span>Week</span><span>Date</span><span>Welcome</span><span>Energizer</span><span>Lesson</span><span>Closing</span><span></span></div>${plannerCache.map(rosterAdminRow).join('')}</div>`:'<div class="empty-state"><strong>No planner weeks yet.</strong><div>Generate the annual planner above.</div></div>';
-        host.innerHTML=`<div class="module-heading"><div><span class="module-kicker">Passing on the Baton</span><h2>Year Planner & Duty Roster</h2><p>Assign one or more leaders to Welcome, Energizer, Lesson and Closing.</p></div></div>${plannerControls()}${summary}${rows}`;
+        host.innerHTML=`<div class="module-heading"><div><span class="module-kicker">Passing on the Baton</span><h2>Year Planner & Duty Roster</h2><p>Assign multiple leaders to any duty. Tick all leaders needed for Welcome, Energizer, Lesson or Closing.</p></div></div>${plannerControls()}${summary}${rows}`;
       }else{
         const visible=plannerCache.filter(p=>p.published);
         const rows=visible.map(p=>rosterLeaderRow(p,s)).filter(Boolean).join('');
@@ -136,5 +136,5 @@
   });
 
   if($('#plannerRoster')&&!$('#plannerRoster').classList.contains('hidden')) setTimeout(()=>window.renderPlannerRoster?.(),50);
-  window.EFGCMultiLeaderRoster={version:'75.0',refresh:()=>window.renderPlannerRoster?.()};
+  window.EFGCMultiLeaderRoster={version:'82.0',refresh:()=>window.renderPlannerRoster?.()};
 })();
