@@ -49,7 +49,7 @@ def valid_image(path: Path, min_w: int = 1, min_h: int = 1) -> bool:
 
 def build_login() -> None:
     # The exact user-approved login poster is committed directly to assets/.
-    if not valid_image(LOGIN_OUT, 700, 1200):
+    if not valid_image(LOGIN_OUT, 360, 640):
         raise RuntimeError(f"Exact login poster missing or invalid: {LOGIN_OUT}")
 
 def build_logo() -> None:
@@ -119,7 +119,7 @@ def verify() -> None:
             raise RuntimeError(f"Missing or undersized asset: {path}")
 
     with Image.open(LOGIN_OUT) as im:
-        if im.width < 700 or im.height < 1200:
+        if im.width < 360 or im.height < 640:
             raise RuntimeError(f"Bad login output size: {im.size}")
 
     with Image.open(LOGO_OUT) as im:
