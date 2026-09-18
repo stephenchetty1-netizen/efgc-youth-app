@@ -273,10 +273,8 @@
     panel.prepend(box);
   }
 
-  document.addEventListener('click',(e)=>{
-    const tab=e.target.closest('[data-tab]')?.dataset.tab;
-    if(tab==='plannerRoster') setTimeout(renderPlannerRoster,0);
-    if(tab==='attendanceAdmin') setTimeout(()=>renderAttendanceAdmin(),0);
+  document.addEventListener('efgc:tab-changed',(e)=>{
+    if(e.detail.tab==='attendanceAdmin') renderAttendanceAdmin();
   });
 
   const priorRenderShell=window.renderShell;

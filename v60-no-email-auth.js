@@ -19,8 +19,7 @@
     wrap.addEventListener('click', (e) => {
       const b = e.target.closest('[data-auth-mode]');
       if (!b) return;
-      authMode = b.dataset.authMode;
-      syncUi();
+      setMode(b.dataset.authMode);
     });
   }
 
@@ -41,11 +40,18 @@
     $('#roleField')?.classList.toggle('hidden', !(registering && loginRole === 'leader'));
     $('#youthSafeguardingFields')?.classList.toggle('hidden', !(registering && loginRole === 'youth'));
     $('#photoPrivacyNote')?.classList.toggle('hidden', !registering);
+    $('#photoPreview')?.classList.toggle('hidden', !registering);
     $('#noEmailModeSwitch')?.classList.toggle('hidden', admin);
     document.querySelectorAll('#noEmailModeSwitch [data-auth-mode]').forEach((b) => b.classList.toggle('active', b.dataset.authMode === authMode));
 
     const password = $('#loginPassword');
-    if (password) password.placeholder = admin ? 'Enter your Admin password' : 'Enter your password';
+    if (password) {
+      password.placeholder = admin ? 'Enter your Admin password' : 'Enter your password';
+      password.autocomplete = registering ? 'new-password' : 'current-password';
+    }
+    $('#loginTitle').textContent = admin ? 'Admin Login' : registering
+      ? (loginRole === 'leader' ? 'Leader Application' : 'Youth Registration')
+      : (loginRole === 'leader' ? 'Leader Login' : 'Youth Login');
     const button = $('#continueButton');
     if (button) button.textContent = admin ? 'Sign In Securely' : registering ? 'Create Secure Profile' : 'Sign In';
 
@@ -63,11 +69,17 @@
     }
   }
 
+  function setMode(mode) {
+    authMode = mode === 'register' && loginRole !== 'admin' ? 'register' : 'signin';
+    syncUi();
+  }
+  window.EFGCLoginUI = { setMode };
+
   const originalSelectRole = window.selectRole;
   window.selectRole = function(role) {
     originalSelectRole(role);
-    authMode = 'signin';
-    setTimeout(syncUi, 0);
+    if (role === 'admin') authMode = 'signin';
+    syncUi();
   };
 
   async function authBridge(payload) {
@@ -125,6 +137,7 @@
     if (d.password.length < 10) throw new Error('Use a password with at least 10 characters.');
     if (!d.dob) throw new Error('Date of birth is required.');
     if (!$('#loginPhoto')?.files?.length) throw new Error('A face photo is required for first-time registration.');
+    EFGCPhotoSecurity.validate($('#loginPhoto').files[0]);
     if (d.role === 'youth') {
       if (!$('#parentName')?.value.trim() || !$('#parentPhone')?.value.trim() || !$('#emergencyName')?.value.trim() || !$('#emergencyPhone')?.value.trim()) {
         throw new Error('Parent/guardian and emergency contact details are required.');

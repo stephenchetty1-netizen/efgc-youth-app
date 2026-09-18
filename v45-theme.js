@@ -118,11 +118,14 @@
     if(!s?.uid || s.role!=='youth' || !host || !window.EFGCLive) return;
     try{
       const rows=await EFGCLive.myAttendance(s.uid);
-      const approved=rows.filter(r=>r.events?.attendance_approved);
+      if (activeSession()?.uid !== s.uid) return;
+      const approved=rows.filter(r=>r.events?.attendance_approved && new Date(r.events.event_date).getTime() <= Date.now());
       const attended=approved.filter(r=>r.status==='present').length;
       const pct=approved.length?Math.round(attended/approved.length*100):0;
       host.innerHTML=`<div class="mock-attendance-summary"><div class="mock-ring" style="--attendance:${pct*3.6}deg"><div><strong>${attended} / ${approved.length}</strong><span>Meetings<br>Attended</span></div></div><div class="mock-stat-grid"><div><strong>${approved.length}</strong><span>Meetings Held</span></div><div><strong>${attended}</strong><span>Meetings Attended</span></div></div></div><h3 class="mock-section-title">Recent Attendance</h3><div class="mock-attendance-list">${approved.slice(0,12).map(r=>`<div class="mock-attendance-item"><span>${esc(new Date(r.events.event_date).toLocaleDateString('en-ZA',{day:'2-digit',month:'short',year:'numeric'}))}</span><b class="${r.status==='present'?'present':'absent'}">${r.status==='present'?'✓ Present':'✕ Absent'}</b></div>`).join('') || '<div class="empty-state">No approved attendance records yet.</div>'}</div>`;
-    }catch{}
+    }catch{
+      if (activeSession()?.uid === s.uid) host.innerHTML='<article class="card"><h3>Attendance could not load</h3><p>Please open My Attendance again to retry.</p></article>';
+    }
   }
 
   function enhanceEventsTabs(){
@@ -151,19 +154,15 @@
   }
 
   function restyleLeaderCards(){ document.querySelectorAll('#leaderList .leader-directory-card').forEach(card=>card.classList.add('mock-leader-row')); }
-  async function restyleEventCards(){
+  function restyleEventCards(){
     const cards=[...document.querySelectorAll('#eventList .event-card')];
-    try{
-      const events=await EFGCLive.events();
-      cards.forEach((card,i)=>{ card.classList.add('mock-event-row'); if(events[i]?.event_date) card.dataset.eventDate=events[i].event_date; });
-    }catch{ cards.forEach(card=>card.classList.add('mock-event-row')); }
+    cards.forEach(card=>card.classList.add('mock-event-row'));
     filterEventCards();
   }
 
   function gotoTab(tab,anchor){
-    try { showTab(tab); } catch {}
+    if (!showTab(tab)) return;
     document.querySelectorAll('#mockBottomNav button').forEach(b=>b.classList.toggle('active',b.dataset.mockTab===tab));
-    if(tab==='plannerRoster' && typeof window.renderPlannerRoster==='function') setTimeout(()=>window.renderPlannerRoster(),0);
     if(anchor) setTimeout(()=>document.getElementById(anchor)?.scrollIntoView({behavior:'smooth',block:'start'}),100);
   }
 
@@ -172,6 +171,11 @@
     if(b) gotoTab(b.dataset.mockTab,b.dataset.mockAnchor||'');
     if(e.target.closest('.userbar button')) setTimeout(syncThemeShell,250);
   });
+  document.addEventListener('efgc:tab-changed', e=>{
+    if(e.detail.tab==='mine') renderAttendanceMock();
+    document.querySelectorAll('#mockBottomNav button').forEach(b=>b.classList.toggle('active',b.dataset.mockTab===e.detail.tab));
+  });
+  document.addEventListener('efgc:events-rendered', restyleEventCards);
 
   const previousRenderLive=window.renderLiveData;
   if(typeof previousRenderLive==='function'){

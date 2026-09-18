@@ -10,10 +10,11 @@
       img.classList.remove('reference-logo'); img.classList.add('official-logo'); img.style.objectPosition = 'center center';
     });
   }
-  function openLogin(role = 'youth') {
+  function openLogin(role = 'youth', mode = 'signin') {
     const welcome = $('#mockWelcome'), card = $('#login .login-card'); if (!card) return;
     welcome?.classList.add('hidden'); card.classList.remove('mock-login-hidden');
     try { selectRole(role); } catch {}
+    window.EFGCLoginUI?.setMode(mode);
     requestAnimationFrame(() => card.scrollIntoView({ block: 'start' }));
   }
   function showWelcome() {
@@ -22,6 +23,8 @@
   }
   function buildWelcome() {
     fixBrandLogos(); const login = $('#login'), card = $('#login .login-card'); if (!login || !card) return false;
+    // Delayed startup and pageshow callbacks must not replace an open form.
+    if ($('#mockWelcome')?.dataset.v59 === '1') return true;
     let welcome = $('#mockWelcome'); if (!welcome) { welcome = document.createElement('div'); welcome.id = 'mockWelcome'; login.insertBefore(welcome, card); }
     welcome.className = 'v57-welcome'; welcome.dataset.v59 = '1';
     welcome.innerHTML = `
@@ -40,7 +43,7 @@
       </div>`;
     card.classList.add('mock-login-card','mock-login-hidden'); card.querySelectorAll('.v49-back,.v57-back').forEach(el=>el.remove());
     const back=document.createElement('button'); back.type='button'; back.className='v57-back ghost-login'; back.textContent='← Back to Welcome'; back.addEventListener('click',showWelcome); card.prepend(back);
-    $('#v57Login')?.addEventListener('click',()=>openLogin('youth')); $('#v57Create')?.addEventListener('click',()=>openLogin('youth'));
+    $('#v57Login')?.addEventListener('click',()=>openLogin('youth')); $('#v57Create')?.addEventListener('click',()=>openLogin('youth','register'));
     const recovery=location.hash.includes('access_token')||/type=recovery|code=/.test(location.search); const signedIn=Boolean(currentSession()?.uid);
     if(recovery) openLogin('admin'); else if(!signedIn){login.classList.remove('hidden');welcome.classList.remove('hidden');card.classList.add('mock-login-hidden');}
     return true;

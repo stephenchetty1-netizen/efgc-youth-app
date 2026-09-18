@@ -58,10 +58,16 @@ document.addEventListener('change', (e) => {
 function showLogin(){ $('#login').classList.remove('hidden'); }
 function hideLogin(){ $('#login').classList.add('hidden'); }
 function showTab(id){
-  document.querySelectorAll('main > section.tab').forEach(el => el.classList.add('hidden'));
+  if (!session?.uid && id !== 'login') return false;
+  if (id === 'plannerRoster' && !roleAllowed(session?.role, session?.approval_status)) return false;
+  if (['admin', 'attendanceAdmin'].includes(id) && session?.role !== 'admin') return false;
   const target = document.getElementById(id);
-  if (target) target.classList.remove('hidden');
+  if (!target?.matches('main > section.tab')) return false;
+  document.querySelectorAll('main > section.tab').forEach(el => el.classList.add('hidden'));
+  target.classList.remove('hidden');
   document.querySelectorAll('.menu-item').forEach(b => b.classList.toggle('active', b.dataset.tab === id));
+  document.dispatchEvent(new CustomEvent('efgc:tab-changed', { detail: { tab: id } }));
+  return true;
 }
 
 function roleAllowed(role, approval='approved') {
@@ -81,7 +87,7 @@ function renderShell(){
   const authenticated = Boolean(session?.uid);
   document.querySelectorAll('#mainMenu, .userbar').forEach(el => el.classList.toggle('hidden', !authenticated));
   if (!authenticated) {
-    document.querySelectorAll('#home,#events,#news,#scripture,#mine,#leaders,#profile,#security,#admin').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('main > section.tab:not(#login)').forEach(el => el.classList.add('hidden'));
     $('#currentUser').textContent = 'Not signed in';
     $('#adminMenu')?.classList.add('hidden');
     showLogin();
@@ -177,10 +183,13 @@ async function renderLiveData(){
   if (session.role === 'youth') {
     try {
       const rows = await EFGCLive.myAttendance(session.uid);
-      const approved = rows.filter(r => r.events?.attendance_approved);
+      const approved = rows.filter(r => r.events?.attendance_approved && new Date(r.events.event_date).getTime() <= Date.now());
       const attended = approved.filter(r => r.status === 'present').length;
       $('#mineList').innerHTML = `<article class="card"><h3>${attended} / ${approved.length}</h3><p>Approved meetings attended / held</p></article>` + approved.map(r => card(r.events?.title || 'Youth meeting', r.status === 'present' ? 'Present' : 'Absent', fmtDate(r.events?.event_date))).join('');
-    } catch(e){ errors.push(`Attendance: ${e.message}`); }
+    } catch(e){
+      $('#mineList').innerHTML = card('Attendance could not load', 'Please open My Attendance again to retry.');
+      errors.push(`Attendance: ${e.message}`);
+    }
   } else {
     $('#mineList').innerHTML = card('Attendance','Personal youth attendance is shown only on Youth accounts.');
   }

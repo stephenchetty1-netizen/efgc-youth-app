@@ -28,7 +28,7 @@ jobs:
           test -f v64-event-rsvp.css
           grep -q 'v63-duty-ack.js?v=63.0' index.html
           grep -q 'v63-duty-ack.css?v=63.0' index.html
-          grep -q 'v64-event-rsvp.js?v=64.0' index.html
+          grep -q 'v64-event-rsvp.js?v=70.0' index.html
           grep -q 'v64-event-rsvp.css?v=64.0' index.html
           grep -q 'event_rsvps' v64-event-rsvp.js
           grep -q 'Attending' v64-event-rsvp.js
