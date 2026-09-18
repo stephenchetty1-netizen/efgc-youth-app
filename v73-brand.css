@@ -1,0 +1,149 @@
+/* EFGC Youth V73 — isolated poster login + poster-source logo. */
+:root{
+  --v73-navy:#021a3a;
+  --v73-blue:#078cff;
+  --v73-cyan:#33d8ff;
+  --v73-gold:#ffd44e;
+}
+
+body.v73-welcome-active{
+  margin:0!important;
+  background:#021a3a!important;
+  overflow-x:hidden!important;
+}
+body.v73-welcome-active>header,
+body.v73-welcome-active>footer,
+body.v73-welcome-active main>.hero,
+body.v73-welcome-active #mainMenu,
+body.v73-welcome-active .userbar{
+  display:none!important;
+}
+body.v73-welcome-active main,
+body.v73-welcome-active #login{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+}
+body.v73-welcome-active #login{
+  min-height:100dvh!important;
+}
+
+#mockWelcome.v73-welcome{
+  position:relative!important;
+  width:100%!important;
+  min-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  background:#021a3a!important;
+  box-shadow:none!important;
+}
+.v73-poster{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  min-height:100dvh;
+  background-repeat:no-repeat;
+  background-position:center center;
+  background-size:cover;
+  background-color:#021a3a;
+}
+.v73-hotspot{
+  position:absolute;
+  z-index:4;
+  left:14.5%;
+  right:14.5%;
+  border:0;
+  border-radius:999px;
+  background:transparent;
+  color:transparent;
+  font-size:0;
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.v73-login{top:75.2%;height:6.2%}
+.v73-create{top:82.45%;height:5.9%}
+.v73-hotspot:focus-visible{
+  outline:3px solid #fff;
+  outline-offset:3px;
+  box-shadow:0 0 0 7px rgba(41,201,255,.42),0 0 34px rgba(41,201,255,.5);
+}
+.v73-hotspot:active{background:rgba(255,255,255,.08)}
+
+body.v73-form-open #mockWelcome{display:none!important}
+body.v73-form-open #login{
+  min-height:100dvh!important;
+  padding:18px 14px 36px!important;
+  background:
+    radial-gradient(circle at 50% 0,rgba(28,163,255,.28),transparent 33%),
+    linear-gradient(180deg,#062a60 0,#021a3a 48%,#011027 100%)!important;
+}
+body.v73-form-open #login .login-card:not(.mock-login-hidden){
+  display:block!important;
+  width:min(100%,620px)!important;
+  max-width:620px!important;
+  margin:0 auto!important;
+  border:1px solid rgba(94,211,255,.38)!important;
+  border-radius:26px!important;
+  background:linear-gradient(180deg,rgba(9,48,101,.98),rgba(3,23,55,.99))!important;
+  box-shadow:0 24px 70px rgba(0,6,25,.48)!important;
+  color:#fff!important;
+}
+body.v73-form-open .login-card label,
+body.v73-form-open .login-card h2,
+body.v73-form-open .login-card p{color:#fff!important}
+body.v73-form-open .login-card input,
+body.v73-form-open .login-card select{
+  background:rgba(255,255,255,.96)!important;
+  color:#0b2a50!important;
+}
+
+.v73-official-logo{
+  object-fit:contain!important;
+  object-position:center!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  filter:drop-shadow(0 0 8px rgba(78,202,255,.30)) drop-shadow(0 6px 16px rgba(0,17,45,.25))!important;
+}
+.mock-authenticated .brand-logo.v73-official-logo{
+  width:60px!important;
+  height:60px!important;
+  flex:0 0 60px!important;
+}
+.mock-authenticated .hero-logo.v73-official-logo{
+  width:132px!important;
+  height:132px!important;
+}
+.official-footer-logo.v73-official-logo{
+  width:108px!important;
+  height:108px!important;
+}
+
+@media(max-width:699px){
+  #mockWelcome.v73-welcome,.v73-poster{
+    width:100vw!important;
+    min-height:100dvh!important;
+  }
+  .v73-poster{
+    background-size:cover!important;
+    background-position:center center!important;
+  }
+}
+@media(min-width:700px){
+  body.v73-welcome-active{
+    background:radial-gradient(circle at 50% 16%,#0a559c 0,#021a3a 42%,#010917 100%)!important;
+  }
+  #mockWelcome.v73-welcome{
+    width:min(100vw,650px)!important;
+    max-width:650px!important;
+    margin:0 auto!important;
+    box-shadow:0 0 90px rgba(0,7,26,.62)!important;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .v73-hotspot{transition:none!important}
+}
