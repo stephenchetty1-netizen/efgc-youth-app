@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import base64
+import io
 from pathlib import Path
 
 from PIL import Image, ImageEnhance, ImageFilter, ImageOps
@@ -11,7 +13,6 @@ SRC = ROOT / "assets-src" / "v74"
 SCRIPTURE = ASSETS / "scripture-v74"
 LOGIN_OUT = ASSETS / "v74-login-poster.webp"
 LOGO_OUT = ASSETS / "v76-efgc-logo.png"
-LOGO_SOURCE = ASSETS / "v74-efgc-logo.webp"
 
 TILE_NAMES = [
     "bible-light.jpg",
@@ -54,15 +55,23 @@ def build_login() -> None:
         raise RuntimeError(f"Exact login poster missing or undersized: {LOGIN_OUT}")
 
 def build_logo() -> None:
-    # Convert the exact historical EFGC logo WebP into a broadly compatible PNG.
-    # The visual is preserved; only the container format and canvas size change.
-    if not valid_image(LOGO_SOURCE, 128, 128):
-        raise RuntimeError(f"Exact EFGC logo source missing or invalid: {LOGO_SOURCE}")
-    with Image.open(LOGO_SOURCE) as src:
-        im = ImageOps.contain(src.convert("RGBA"), (640, 640), method=Image.Resampling.LANCZOS)
+    # Reconstruct the exact approved EFGC logo from the committed source parts.
+    parts = sorted(SRC.glob("logo.part*"))
+    if not parts:
+        raise RuntimeError("Exact EFGC logo source parts are missing.")
+    encoded = "".join(p.read_text(encoding="utf-8").strip() for p in parts)
+    try:
+        raw = base64.b64decode(encoded, validate=True)
+        src = Image.open(io.BytesIO(raw)).convert("RGBA")
+    except Exception as exc:
+        raise RuntimeError(f"Could not decode exact EFGC logo source: {exc}") from exc
+    try:
+        im = ImageOps.contain(src, (640, 640), method=Image.Resampling.LANCZOS)
         canvas = Image.new("RGBA", (640, 640), (0, 0, 0, 0))
         canvas.alpha_composite(im, ((640 - im.width) // 2, (640 - im.height) // 2))
         canvas.save(LOGO_OUT, "PNG", optimize=True)
+    finally:
+        src.close()
 
 def _variant(source: Image.Image, index: int) -> Image.Image:
     # Deterministic high-resolution crops/grades. These are same-origin fallbacks
