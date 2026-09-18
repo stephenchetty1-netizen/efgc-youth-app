@@ -21,16 +21,16 @@ POSTER_OUT = ASSETS / "v74-login-poster.webp"
 LOGO_OUT = ASSETS / "v74-efgc-logo.png"
 
 REMOTE = [
-    ("bible-light.jpg", "https://unsplash.com/photos/MszZIWTVOi8/download?force=true&w=1800"),
-    ("open-bible.jpg", "https://unsplash.com/photos/SZaxKdLwz6o/download?force=true&w=1800"),
-    ("bible-devotion.jpg", "https://unsplash.com/photos/eCE40LwVDss/download?force=true&w=1800"),
-    ("bible-sunrise.jpg", "https://unsplash.com/photos/VbcEb-Fkuzs/download?force=true&w=1800"),
-    ("scripture-pages.jpg", "https://unsplash.com/photos/qhnVF1K3lnk/download?force=true&w=1800"),
-    ("quiet-time.jpg", "https://unsplash.com/photos/wB9AJS9t-4k/download?force=true&w=1800"),
-    ("blue-cross.jpg", "https://unsplash.com/photos/ITiJrBI3XnE/download?force=true&w=1800"),
-    ("sunrise-cross.jpg", "https://unsplash.com/photos/UTY4N-NU6Wg/download?force=true&w=1800"),
-    ("bible-community.jpg", "https://unsplash.com/photos/5AoQbO_-TYo/download?force=true&w=1800"),
-    ("prayer-bible.jpg", "https://images.unsplash.com/photo-1607098263775-e2cc11657839?auto=format&fit=crop&w=1800&q=88"),
+    ("bible-light.jpg", "https://images.unsplash.com/photo-1777421389268-ebefab72e96d?auto=format&fit=crop&w=1800&q=88"),
+    ("open-bible.jpg", "https://images.unsplash.com/photo-1774471989266-df596ba56a17?auto=format&fit=crop&w=1800&q=88"),
+    ("bible-devotion.jpg", "https://images.unsplash.com/photo-1777421389422-519764272b2f?auto=format&fit=crop&w=1800&q=88"),
+    ("bible-sunrise.jpg", "https://images.unsplash.com/photo-1747738609473-9e92707075eb?auto=format&fit=crop&w=1800&q=88"),
+    ("scripture-pages.jpg", "https://images.unsplash.com/photo-1763996668109-f540f3346cc2?auto=format&fit=crop&w=1800&q=88"),
+    ("quiet-time.jpg", "https://images.unsplash.com/photo-1554355792-f1e604a9c3d1?auto=format&fit=crop&w=1800&q=88"),
+    ("blue-cross.jpg", "https://images.unsplash.com/photo-1594896837825-ceb91c7b8eab?auto=format&fit=crop&w=1800&q=88"),
+    ("sunrise-cross.jpg", "https://images.unsplash.com/photo-1564471806241-9c3a79cb628f?auto=format&fit=crop&w=1800&q=88"),
+    ("bible-community.jpg", "https://images.unsplash.com/photo-1776653096690-325005d1d2bc?auto=format&fit=crop&w=1800&q=88"),
+    ("prayer-bible.jpg", "https://images.unsplash.com/photo-1729714625765-6ad07c70038e?auto=format&fit=crop&w=1800&q=88"),
 ]
 
 LOCAL = [
@@ -92,10 +92,10 @@ def download_image(url: str) -> Image.Image:
         "Accept": "image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8",
     }
     last = None
-    for attempt in range(3):
+    for attempt in range(2):
         try:
             req = urllib.request.Request(url, headers=headers)
-            with urllib.request.urlopen(req, timeout=35) as resp:
+            with urllib.request.urlopen(req, timeout=22) as resp:
                 data = resp.read()
             if len(data) < 12000:
                 raise RuntimeError(f"download too small: {len(data)} bytes")
