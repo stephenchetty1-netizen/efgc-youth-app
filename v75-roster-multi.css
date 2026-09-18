@@ -1,0 +1,23 @@
+/* EFGC Youth v75 — multi-leader roster picker */
+.v75-duty{position:relative}
+.v75-roster-picker{width:100%;margin-top:2px}
+.v75-roster-picker>summary{list-style:none;display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:40px;padding:8px 10px;border:1px solid #cbdbe8;border-radius:10px;background:#f9fbfd;color:#153a5e;font-size:11px;font-weight:800;cursor:pointer;user-select:none}
+.v75-roster-picker>summary::-webkit-details-marker{display:none}
+.v75-roster-picker>summary b{font-size:17px;line-height:1;color:#0876cc;transition:transform .15s ease}
+.v75-roster-picker[open]>summary{border-color:#55b9f4;background:#eef8ff;box-shadow:0 0 0 3px rgba(8,118,204,.08)}
+.v75-roster-picker[open]>summary b{transform:rotate(45deg)}
+.v75-roster-summary{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left}
+.v75-roster-options{display:flex;flex-direction:column;gap:5px;max-height:230px;overflow:auto;margin-top:6px;padding:7px;border:1px solid #d9e7f1;border-radius:10px;background:#fff}
+.v75-roster-option{display:grid!important;grid-template-columns:22px minmax(0,1fr) auto;align-items:center;gap:7px;margin:0!important;padding:7px!important;border:1px solid transparent;border-radius:8px;background:#f8fbfe;cursor:pointer}
+.v75-roster-option:has(input:checked){border-color:#8fd7ff;background:#edf9ff}
+.v75-roster-option input{width:18px!important;height:18px!important;margin:0!important;accent-color:#078cff}
+.v75-roster-option-name{min-width:0;color:#123a62;font-size:11px;font-weight:800}
+.v75-roster-option-name small{display:block;margin-top:2px;color:#72879a;font-size:9px;font-weight:600}
+.v75-roster-option-status{font-style:normal;font-size:9px;font-weight:800;color:#815f00}
+.v75-roster-option-status.confirmed{color:#157447}
+.v75-roster-option-status.replacement{color:#a43c27}
+.v75-roster-empty{padding:8px;color:#72879a;font-size:11px}
+.v75-save{flex-direction:column;gap:5px}
+.v75-save small{font-size:9px;line-height:1.25;color:#72879a;text-align:center}
+@media(max-width:980px){.v75-roster-options{max-height:260px}.v75-save{align-items:flex-start}.v75-save small{text-align:left}}
+@media(max-width:650px){.v75-roster-picker>summary{min-height:44px;font-size:12px}.v75-roster-option{min-height:44px}.v75-roster-option-name{font-size:12px}}
