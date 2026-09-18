@@ -1,8 +1,8 @@
-/** EFGC Youth v72 brand asset adapter — supplied poster logo. */
+/** EFGC Youth v45 — mockup-driven mobile theme using the user's supplied reference artwork. */
 (() => {
   const $ = (s) => document.querySelector(s);
   const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const logoAsset = 'assets/v72-efgc-logo.webp?v=72.1';
+  const logoAsset = 'assets/efgc-logo.svg?v=70.0';
   const heroAsset = 'assets/efgc-home-hero.webp?v=45';
 
   function activeSession(){ try { return session || null; } catch { return null; } }
