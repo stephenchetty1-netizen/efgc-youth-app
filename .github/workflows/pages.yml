@@ -81,14 +81,14 @@ jobs:
           grep -q 'v60-no-email.css?v=60.0' index.html
           grep -q 'v62-notifications.js?v=62.0' index.html
           grep -q 'v62-notifications.css?v=62.0' index.html
-          grep -q 'v68-scripture-generator.js?v=72.0' index.html
-          grep -q 'v68-scripture-generator.css?v=72.0' index.html
+          grep -q 'v68-scripture-generator.js?v=72.1' index.html
+          grep -q 'v68-scripture-generator.css?v=72.1' index.html
           grep -q 'v70-genz-theme.css?v=70.0' index.html
           grep -q 'v71-mobile-realism-fixes.css?v=71.0' index.html
-          grep -q 'v72-login-brand.css?v=72.0' index.html
-          grep -q 'v45-theme.js?v=72.0' index.html
-          grep -q 'v54-stable-welcome.js?v=72.0' index.html
-          grep -q 'v72-efgc-logo.webp?v=72.0' v45-theme.js
+          grep -q 'v72-login-brand.css?v=72.1' index.html
+          grep -q 'v45-theme.js?v=72.1' index.html
+          grep -q 'v54-stable-welcome.js?v=72.1' index.html
+          grep -q 'v72-efgc-logo.webp?v=72.1' v45-theme.js
           grep -q 'data.v72\|dataset.v72' v54-stable-welcome.js
           grep -q 'Daily Scripture Generator' v68-scripture-generator.js
           grep -q 'scripturePosterCanvas' v68-scripture-generator.js
@@ -178,6 +178,7 @@ jobs:
           grep -q 'realistic Scripture gallery' /tmp/v71.css
           grep -q 'max-width:1100px' /tmp/v71.css
           grep -q 'v72-poster' /tmp/v72.css
+          grep -q 'V72.1 HARD LOCK' /tmp/v72.css
           test $(stat -c%s /tmp/login.webp) -gt 10000
           test $(stat -c%s /tmp/logo.webp) -gt 5000
 
