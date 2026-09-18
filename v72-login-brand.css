@@ -1,0 +1,174 @@
+/* EFGC Youth V72 — exact supplied login poster + upgraded inserted-picture logo */
+
+:root{
+  --v72-navy:#031a3b;
+  --v72-blue:#078cff;
+  --v72-cyan:#21c8ff;
+  --v72-gold:#ffd24d;
+}
+
+/* LOGIN / WELCOME
+   The supplied poster is the visual. We do not rebuild or redraw it in CSS. */
+body:not(.mock-authenticated){
+  background:#03172f!important;
+}
+body:not(.mock-authenticated) main,
+body:not(.mock-authenticated) #login{
+  width:100%!important;
+  max-width:none!important;
+  min-height:100dvh!important;
+  margin:0!important;
+  padding:0!important;
+}
+#mockWelcome.v72-welcome{
+  position:relative!important;
+  width:100%!important;
+  max-width:none!important;
+  min-height:100dvh!important;
+  margin:0!important;
+  overflow:hidden!important;
+  background:#03172f!important;
+  isolation:isolate;
+  box-shadow:none!important;
+}
+.v72-poster{
+  position:absolute;
+  inset:0;
+  min-height:100dvh;
+  background-image:url('assets/v72-login-poster.webp?v=72.0');
+  background-position:center top;
+  background-repeat:no-repeat;
+  background-size:cover;
+}
+.v72-poster::after{
+  content:'';
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background:linear-gradient(180deg,transparent 0 87%,rgba(1,10,25,.15) 100%);
+}
+.v72-hotspot{
+  position:absolute;
+  z-index:3;
+  left:14.4%;
+  right:14.4%;
+  border:0;
+  border-radius:999px;
+  background:transparent;
+  color:transparent;
+  font-size:0;
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  touch-action:manipulation;
+}
+.v72-login-hotspot{top:75.25%;height:6.05%}
+.v72-create-hotspot{top:82.55%;height:5.75%}
+.v72-hotspot:focus-visible{
+  outline:3px solid #fff;
+  outline-offset:3px;
+  box-shadow:0 0 0 7px rgba(31,197,255,.45),0 0 30px rgba(31,197,255,.65);
+}
+.v72-hotspot:active{
+  background:rgba(255,255,255,.08);
+}
+
+/* Keep the functional form polished once Login / Create Account is pressed. */
+body:not(.mock-authenticated) #login .login-card:not(.mock-login-hidden){
+  width:min(94vw,620px)!important;
+  max-width:620px!important;
+  margin:18px auto 34px!important;
+  border:1px solid rgba(122,218,255,.45)!important;
+  background:
+    radial-gradient(circle at 50% -10%,rgba(31,184,255,.25),transparent 38%),
+    linear-gradient(180deg,rgba(7,39,86,.98),rgba(2,16,40,.99))!important;
+  box-shadow:0 28px 80px rgba(0,5,22,.58)!important;
+}
+
+/* INSERTED-PICTURE LOGO
+   The raster logo is transparent and should never be forced into a white box/crop. */
+.brand-logo.official-logo,
+.hero-logo.official-logo,
+.official-footer-logo.official-logo,
+.birthday-logo-wrap img{
+  object-fit:contain!important;
+  object-position:center!important;
+  border:0!important;
+  border-radius:50%!important;
+  background:transparent!important;
+  filter:drop-shadow(0 0 8px rgba(70,185,255,.28)) drop-shadow(0 5px 12px rgba(0,15,40,.22))!important;
+}
+.mock-authenticated .brand-logo.official-logo{
+  width:64px!important;
+  height:64px!important;
+  flex:0 0 64px!important;
+}
+.official-footer-logo.official-logo{
+  width:112px!important;
+  height:112px!important;
+}
+.birthday-logo-wrap{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+}
+.birthday-logo-wrap img{
+  width:86px!important;
+  height:86px!important;
+}
+
+/* Improve header balance for the higher-detail logo. */
+.mock-authenticated header .brand{
+  min-height:72px;
+  gap:12px!important;
+}
+.mock-authenticated header .brand b{
+  font-size:18px!important;
+  font-weight:900!important;
+}
+.mock-authenticated header .brand span{
+  letter-spacing:1.8px!important;
+}
+
+/* Mobile uses full screen edge-to-edge: no poster column and no bottom void. */
+@media(max-width:699px){
+  #mockWelcome.v72-welcome,
+  .v72-poster{
+    width:100vw!important;
+    min-height:100dvh!important;
+  }
+  .v72-poster{
+    background-size:cover!important;
+    background-position:center top!important;
+  }
+  .mock-authenticated .brand-logo.official-logo{
+    width:56px!important;
+    height:56px!important;
+    flex-basis:56px!important;
+  }
+}
+
+/* On wider screens keep the poster's 9:16 composition intact inside a premium frame. */
+@media(min-width:700px){
+  body:not(.mock-authenticated){
+    background:
+      radial-gradient(circle at 50% 16%,#0b4b8b 0,#031a3b 42%,#010916 100%)!important;
+  }
+  #mockWelcome.v72-welcome{
+    width:min(100vw,620px)!important;
+    max-width:620px!important;
+    margin:0 auto!important;
+    box-shadow:0 0 90px rgba(0,9,28,.65)!important;
+  }
+}
+
+/* Very tall phone screens: keep the poster filled while preventing a blank lower section. */
+@media(max-aspect-ratio:9/18.5){
+  .v72-poster{
+    background-size:auto 100dvh!important;
+    background-position:center top!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .v72-hotspot{transition:none!important}
+}
