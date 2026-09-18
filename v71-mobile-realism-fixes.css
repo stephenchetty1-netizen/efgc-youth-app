@@ -1,0 +1,100 @@
+/* EFGC Youth V71 — mobile login sizing + realistic Scripture gallery fixes. */
+
+html,body{max-width:100%;overflow-x:hidden}
+
+/* Full-bleed welcome background. Keep content readable without creating side bars. */
+body:not(.mock-authenticated) main,
+body:not(.mock-authenticated) #login,
+body:not(.mock-authenticated) #mockWelcome.v57-welcome{
+  width:100%!important;
+  max-width:none!important;
+  margin-left:0!important;
+  margin-right:0!important;
+}
+body:not(.mock-authenticated) #mockWelcome.v57-welcome{
+  min-height:100dvh!important;
+  box-shadow:none!important;
+}
+body:not(.mock-authenticated) #mockWelcome .v57-bg{
+  left:0!important;
+  right:0!important;
+  width:100%!important;
+}
+body:not(.mock-authenticated) #mockWelcome .v57-content{
+  width:min(100%,620px)!important;
+  max-width:620px!important;
+  min-height:100dvh!important;
+  margin:0 auto!important;
+  padding-top:calc(12px + env(safe-area-inset-top))!important;
+  padding-bottom:calc(18px + env(safe-area-inset-bottom))!important;
+  grid-template-rows:auto auto auto minmax(18px,1fr) auto auto!important;
+}
+body:not(.mock-authenticated) #login .login-card{
+  width:calc(100% - 28px)!important;
+  max-width:680px!important;
+  margin:14px auto 24px!important;
+}
+
+/* The Daily Scripture screen must stack on phones/tablets instead of squeezing two columns. */
+@media(max-width:1100px){
+  .scripture-generator-layout{
+    grid-template-columns:1fr!important;
+  }
+  .scripture-preview-panel{
+    position:relative!important;
+    top:auto!important;
+    width:min(100%,680px)!important;
+    margin:0 auto!important;
+  }
+  .scripture-controls-panel{
+    width:100%!important;
+  }
+}
+
+/* Real photographs: no SVG/background placeholders and no empty thumbnail tiles. */
+.scripture-theme-thumb.scripture-theme-photo{
+  display:block!important;
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:4/5!important;
+  object-fit:cover!important;
+  object-position:center!important;
+  background:none!important;
+}
+.scripture-theme{
+  padding:7px!important;
+}
+.scripture-theme-grid{
+  max-height:none!important;
+  overflow:visible!important;
+}
+@media(min-width:700px) and (max-width:1100px){
+  .scripture-theme-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+}
+@media(max-width:699px){
+  .scripture-theme-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+@media(max-width:460px){
+  .scripture-theme-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
+/* Keep the generator text and controls comfortably sized on mobile. */
+@media(max-width:760px){
+  .scripture-generator-heading{border-radius:20px!important}
+  .scripture-generator-heading h2{font-size:clamp(30px,8vw,42px)!important}
+  .scripture-control-card{border-radius:18px!important}
+  .scripture-inline-actions{grid-template-columns:1fr 1fr!important}
+  .scripture-inline-actions .scripture-primary{grid-column:1/-1!important}
+}
+
+/* Override the legacy >=700px fixed welcome width/min-height rule. */
+@media(min-width:700px){
+  #mockWelcome.v57-welcome{
+    width:100%!important;
+    max-width:none!important;
+    margin:0!important;
+  }
+  #mockWelcome .v57-content{
+    min-height:100dvh!important;
+  }
+}
