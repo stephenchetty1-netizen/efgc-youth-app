@@ -1,0 +1,153 @@
+/* EFGC Youth V74 — exact poster login, isolated from signed-in app. */
+:root{
+  --v74-navy:#021a3a;
+  --v74-blue:#078cff;
+  --v74-cyan:#35d7ff;
+  --v74-gold:#ffd34d;
+}
+
+body.v74-signed-out{
+  margin:0!important;
+  background:#02162f!important;
+  overflow-x:hidden!important;
+}
+body.v74-signed-out>header,
+body.v74-signed-out>footer,
+body.v74-signed-out main>.hero,
+body.v74-signed-out #mainMenu,
+body.v74-signed-out .userbar,
+body.v74-signed-out main>section.tab:not(#login){
+  display:none!important;
+}
+body.v74-signed-out main,
+body.v74-signed-out #login{
+  display:block!important;
+  width:100%!important;
+  max-width:none!important;
+  margin:0!important;
+  padding:0!important;
+}
+body.v74-signed-out #login{
+  min-height:100dvh!important;
+  background:
+    radial-gradient(circle at 50% 12%,rgba(10,106,190,.55),transparent 38%),
+    #02162f!important;
+}
+
+.v74-welcome{
+  width:100%;
+  min-height:100dvh;
+  display:grid;
+  place-items:start center;
+  background:#02162f;
+}
+.v74-poster-frame{
+  position:relative;
+  width:min(100vw,650px);
+  aspect-ratio:9/16;
+  overflow:hidden;
+  background:#02162f;
+  box-shadow:0 0 70px rgba(0,8,28,.55);
+}
+.v74-login-art{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center;
+  background:#02162f;
+  user-select:none;
+  -webkit-user-drag:none;
+}
+.v74-art-button{
+  position:absolute;
+  z-index:5;
+  left:14.4%;
+  right:14.4%;
+  border:0;
+  border-radius:999px;
+  color:transparent;
+  font-size:0;
+  background:transparent;
+  cursor:pointer;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+}
+.v74-login-button{top:75.0%;height:6.6%}
+.v74-create-button{top:82.1%;height:6.3%}
+.v74-art-button:focus-visible{
+  outline:3px solid #fff;
+  outline-offset:3px;
+  box-shadow:0 0 0 7px rgba(31,199,255,.45),0 0 34px rgba(31,199,255,.55);
+}
+.v74-art-button:active{background:rgba(255,255,255,.09)}
+
+body.v74-form-open #v74Welcome{display:none!important}
+body.v74-form-open #login{
+  padding:18px 14px 38px!important;
+  background:
+    radial-gradient(circle at 50% -8%,rgba(26,165,255,.30),transparent 36%),
+    linear-gradient(180deg,#07316f 0,#021a3a 48%,#011027 100%)!important;
+}
+body.v74-form-open #login .login-card.v74-card-visible{
+  display:block!important;
+  width:min(100%,620px)!important;
+  max-width:620px!important;
+  margin:0 auto!important;
+  padding:22px!important;
+  border:1px solid rgba(91,217,255,.42)!important;
+  border-radius:26px!important;
+  background:linear-gradient(180deg,rgba(8,45,96,.985),rgba(2,19,48,.995))!important;
+  box-shadow:0 26px 72px rgba(0,5,22,.55)!important;
+  color:#fff!important;
+}
+body.v74-form-open .login-card h2,
+body.v74-form-open .login-card label,
+body.v74-form-open .login-card p,
+body.v74-form-open .login-card small{color:#fff!important}
+body.v74-form-open .login-card input,
+body.v74-form-open .login-card select,
+body.v74-form-open .login-card textarea{
+  background:#fff!important;
+  color:#0b2b54!important;
+  border-color:#9ed7ff!important;
+}
+.v74-back{margin-bottom:12px!important}
+
+.v74-official-logo,
+.brand-logo[src*="v74-efgc-logo"],
+.hero-logo[src*="v74-efgc-logo"],
+.official-footer-logo[src*="v74-efgc-logo"]{
+  object-fit:contain!important;
+  object-position:center!important;
+  background:transparent!important;
+  border:0!important;
+  border-radius:50%!important;
+  filter:drop-shadow(0 0 7px rgba(66,193,255,.28)) drop-shadow(0 5px 12px rgba(0,15,40,.22))!important;
+}
+.mock-authenticated .brand-logo[src*="v74-efgc-logo"]{
+  width:62px!important;
+  height:62px!important;
+  flex:0 0 62px!important;
+}
+.mock-authenticated .hero-logo[src*="v74-efgc-logo"]{
+  width:132px!important;
+  height:132px!important;
+}
+.official-footer-logo[src*="v74-efgc-logo"]{
+  width:110px!important;
+  height:110px!important;
+}
+
+@media(max-width:699px){
+  .v74-poster-frame{width:100vw}
+}
+@media(min-width:700px){
+  .v74-welcome{
+    background:
+      radial-gradient(circle at 50% 16%,#0a579f 0,#021a3a 42%,#010917 100%);
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .v74-art-button{transition:none!important}
+}
