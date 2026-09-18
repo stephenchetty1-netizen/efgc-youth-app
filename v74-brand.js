@@ -4,8 +4,8 @@
   window.EFGC_V74_ACTIVE = true;
 
   const $ = (s) => document.querySelector(s);
-  const LOGIN_ART = 'assets/v76-login-poster.webp?v=80.0';
-  const LOGO = 'assets/v76-efgc-logo.png?v=80.0';
+  const LOGIN_ART = 'assets/v76-login-poster.webp?v=81.0';
+  const LOGO = 'assets/v76-efgc-logo.png?v=81.0';
 
   function sessionActive() {
     try {
@@ -37,7 +37,7 @@
     for (const [prop,value] of [
       ['position','fixed'],['left','0px'],['top','0px'],['right','auto'],['bottom','auto'],
       ['width',width+'px'],['height',height+'px'],['min-height','0px'],['max-height','none'],
-      ['overflow','hidden'],['display','block'],['z-index','30'],['pointer-events','auto']
+      ['overflow','hidden'],['z-index','30'],['pointer-events','auto']
     ]) welcome.style.setProperty(prop,value,'important');
 
     for (const [prop,value] of [
@@ -119,6 +119,8 @@
     }
 
     welcome.classList.remove('hidden');
+    welcome.style.removeProperty('display');
+    welcome.style.removeProperty('pointer-events');
     if (welcome.querySelector('.v74-login-art')?.complete) syncWelcomeViewport();
     else welcome.querySelector('.v74-login-art')?.addEventListener('load',syncWelcomeViewport,{once:true});
     requestAnimationFrame(syncWelcomeViewport);
@@ -161,7 +163,12 @@
 
     login.classList.remove('hidden');
     document.body.classList.add('v74-signed-out','v74-form-open');
-    $('#v74Welcome')?.classList.add('hidden');
+    const welcome = $('#v74Welcome');
+    if (welcome) {
+      welcome.classList.add('hidden');
+      welcome.style.setProperty('display','none','important');
+      welcome.style.setProperty('pointer-events','none','important');
+    }
 
     card.classList.remove('mock-login-hidden','hidden');
     card.classList.add('v74-card-visible');
@@ -176,7 +183,12 @@
 
   function authenticatedState() {
     document.body.classList.remove('v74-signed-out','v74-form-open');
-    $('#v74Welcome')?.classList.add('hidden');
+    const welcome = $('#v74Welcome');
+    if (welcome) {
+      welcome.classList.add('hidden');
+      welcome.style.setProperty('display','none','important');
+      welcome.style.setProperty('pointer-events','none','important');
+    }
     const card = $('#login .login-card');
     if (card) {
       card.style.removeProperty('display');
