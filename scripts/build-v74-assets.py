@@ -36,7 +36,6 @@ TILE_NAMES = [
 FALLBACK_SOURCES = [
     ASSETS / "v49-youth-fellowship.webp",
     ASSETS / "v49-sunrise.webp",
-    ASSETS / "v76-login-poster.webp",
     ASSETS / "efgc-home-hero.webp",
 ]
 
@@ -107,6 +106,8 @@ def _variant(source: Image.Image, index: int) -> Image.Image:
     im = ImageEnhance.Brightness(im).enhance(brightness)
     im = ImageEnhance.Contrast(im).enhance(contrast)
     im = ImageEnhance.Color(im).enhance(color)
+    if index % 2:
+        im = ImageOps.mirror(im)
     if index % 4 == 3:
         im = im.filter(ImageFilter.GaussianBlur(radius=0.35))
     return im
