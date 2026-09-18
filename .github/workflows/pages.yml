@@ -54,13 +54,14 @@ jobs:
           test -f v62-notifications.css
           test -f v68-scripture-generator.css
           test -f v68-scripture-generator.js
+          test -f v70-genz-theme.css
           test -f notification-sw.js
           test -f assets/v49-sunrise.webp
           test -f assets/v49-youth-fellowship.webp
           test -f assets/efgc-logo.svg
           test -f assets/efgc-home-hero.webp
 
-          for asset in backend-adapter.js v60-auth-adapter.js app.js v22-live-data.js v23-photo-security.js v60-no-email-auth.js v43-ministry-tools.js v44-updates.js v45-theme.js v54-stable-welcome.js v62-notifications.js v68-scripture-generator.js v43.css v44.css v45-theme.css v54-stable-welcome.css v60-no-email.css v62-notifications.css v68-scripture-generator.css assets/efgc-logo.svg; do
+          for asset in backend-adapter.js v60-auth-adapter.js app.js v22-live-data.js v23-photo-security.js v60-no-email-auth.js v43-ministry-tools.js v44-updates.js v45-theme.js v54-stable-welcome.js v62-notifications.js v68-scripture-generator.js v43.css v44.css v45-theme.css v54-stable-welcome.css v60-no-email.css v62-notifications.css v68-scripture-generator.css v70-genz-theme.css assets/efgc-logo.svg; do
             grep -q "$asset" index.html || { echo "Missing reference to $asset"; exit 1; }
           done
 
@@ -74,6 +75,11 @@ jobs:
           grep -q 'v62-notifications.css?v=62.0' index.html
           grep -q 'v68-scripture-generator.js?v=69.0' index.html
           grep -q 'v68-scripture-generator.css?v=69.0' index.html
+          grep -q 'v70-genz-theme.css?v=70.0' index.html
+          grep -q 'v45-theme.js?v=70.0' index.html
+          grep -q 'v54-stable-welcome.js?v=70.0' index.html
+          grep -q 'efgc-logo.svg?v=70.0' v45-theme.js
+          grep -q 'data.v70\|dataset.v70' v54-stable-welcome.js
           grep -q 'Daily Scripture Generator' v68-scripture-generator.js
           grep -q 'scripturePosterCanvas' v68-scripture-generator.js
           grep -q 'Download Image' v68-scripture-generator.js
@@ -138,6 +144,7 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:8080/v60-no-email.css -o /tmp/no-email.css
           curl --fail --silent --show-error http://127.0.0.1:8080/v68-scripture-generator.js -o /tmp/scripture.js
           curl --fail --silent --show-error http://127.0.0.1:8080/v68-scripture-generator.css -o /tmp/scripture.css
+          curl --fail --silent --show-error http://127.0.0.1:8080/v70-genz-theme.css -o /tmp/v70.css
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-logo.svg -o /tmp/logo.svg
 
           grep -q 'EFGC YOUTH' /tmp/index.html
@@ -151,6 +158,9 @@ jobs:
           grep -q 'Daily Scripture Generator' /tmp/scripture.js
           grep -q 'scripturePosterCanvas' /tmp/scripture.js
           grep -q 'scripture-generator-v68' /tmp/scripture.css
+          grep -q 'EFGC Youth V70' /tmp/v70.css
+          grep -q 'v57-welcome' /tmp/v70.css
+          grep -q 'mock-authenticated' /tmp/v70.css
           grep -q 'EMMANUEL FULL GOSPEL CHURCH' /tmp/logo.svg
           grep -q 'Pass on the Baton' /tmp/logo.svg
 
