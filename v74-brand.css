@@ -56,13 +56,25 @@ body.v74-signed-out #login{
   background:#02162f;
   box-shadow:0 0 70px rgba(0,8,28,.55);
 }
+/* Extend the artwork behind the uncropped portrait: no hard navy letterbox strips. */
+.v74-poster-frame::before{
+  content:"";
+  position:absolute;
+  inset:-24px;
+  z-index:0;
+  background: url("assets/efgc-login-2026-09-20.webp?v=84.0") center center / cover no-repeat;
+  filter:blur(18px) brightness(.72);
+  pointer-events:none;
+}
 .v74-login-art{
+  position:relative;
+  z-index:1;
   display:block;
   width:100%;
   height:100%;
   object-fit:contain;
   object-position:center;
-  background:#02162f;
+  background:transparent;
   user-select:none;
   -webkit-user-drag:none;
 }
