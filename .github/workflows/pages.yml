@@ -37,6 +37,7 @@ jobs:
           set -euo pipefail
           python -m pip install --quiet pillow
           python scripts/build-v74-assets.py
+          python scripts/build-login-art.py
 
       - name: Validate JavaScript and app shell
         shell: bash
@@ -63,17 +64,19 @@ jobs:
           test -f v74-brand.js
           test -f v75-roster-multi.js
           test -f v75-roster-multi.css
+          test -f assets/efgc-login-2026-09-20.webp
           test -f assets/v76-login-poster.webp
           test -f assets/v76-efgc-logo.png
           test -d assets/scripture-v74
 
+          test $(stat -c%s assets/efgc-login-2026-09-20.webp) -gt 50000
           test $(stat -c%s assets/v76-login-poster.webp) -gt 10000
           test $(stat -c%s assets/v76-efgc-logo.png) -gt 5000
           test $(find assets/scripture-v74 -maxdepth 1 -name '*.jpg' | wc -l) -ge 12
 
           grep -q 'window.EFGC_V74_ACTIVE=true' index.html
-          grep -q 'v74-brand.css?v=81.0' index.html
-          grep -q 'v74-brand.js?v=81.0' index.html
+          grep -q 'v74-brand.css?v=83.0' index.html
+          grep -q 'v74-brand.js?v=83.0' index.html
           grep -q 'v75-roster-multi.js?v=82.0' index.html
           grep -q 'v75-roster-multi.css?v=82.0' index.html
           grep -q 'v68-scripture-generator.js?v=79.0' index.html
@@ -93,7 +96,7 @@ jobs:
           grep -q "openForm('register')" v74-brand.js
           grep -q "position:fixed" v74-brand.css
           grep -q 'v74CreateButton' v74-brand.js
-          grep -q 'assets/v76-login-poster.webp?v=81.0' v74-brand.js
+          grep -q 'assets/efgc-login-2026-09-20.webp?v=83.0' v74-brand.js
           grep -q 'assets/v76-efgc-logo.png?v=81.0' v74-brand.js
 
           grep -q 'assets/v76-efgc-logo.png?v=76.0' v45-theme.js
@@ -152,6 +155,7 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:8080/v74-brand.js -o /tmp/v74.js
           curl --fail --silent --show-error http://127.0.0.1:8080/v74-brand.css -o /tmp/v74.css
           curl --fail --silent --show-error http://127.0.0.1:8080/v68-scripture-generator.js -o /tmp/scripture.js
+          curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-login-2026-09-20.webp -o /tmp/new-login.webp
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/v76-login-poster.webp -o /tmp/login.webp
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/v76-efgc-logo.png -o /tmp/logo.png
           curl --fail --silent --show-error http://127.0.0.1:8080/assets/scripture-v74/bible-light.jpg -o /tmp/bible.jpg
@@ -161,6 +165,7 @@ jobs:
           grep -q 'v74LoginButton' /tmp/v74.js
           grep -q 'v74-poster-frame' /tmp/v74.css
           grep -q 'assets/scripture-v74/' /tmp/scripture.js
+          test $(stat -c%s /tmp/new-login.webp) -gt 50000
           test $(stat -c%s /tmp/login.webp) -gt 10000
           test $(stat -c%s /tmp/logo.png) -gt 5000
           test $(stat -c%s /tmp/bible.jpg) -gt 10000
@@ -187,6 +192,7 @@ jobs:
           set -euo pipefail
           python -m pip install --quiet pillow
           python scripts/build-v74-assets.py
+          python scripts/build-login-art.py
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

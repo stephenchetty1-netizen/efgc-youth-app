@@ -4,7 +4,7 @@
   window.EFGC_V74_ACTIVE = true;
 
   const $ = (s) => document.querySelector(s);
-  const LOGIN_ART = 'assets/v76-login-poster.webp?v=81.0';
+  const LOGIN_ART = 'assets/efgc-login-2026-09-20.webp?v=83.0';
   const LOGO = 'assets/v76-efgc-logo.png?v=81.0';
 
   function sessionActive() {
@@ -46,14 +46,14 @@
     ]) frame.style.setProperty(prop,value,'important');
 
     for (const [prop,value] of [
-      ['width','100%'],['height','100%'],['object-fit','cover'],['object-position','center center'],
+      ['width','100%'],['height','100%'],['object-fit','contain'],['object-position','center center'],
       ['pointer-events','none']
     ]) art.style.setProperty(prop,value,'important');
 
     const placeHitbox = (button, rect) => {
       const iw = art.naturalWidth || 1080;
       const ih = art.naturalHeight || 1920;
-      const scale = Math.max(width / iw, height / ih);
+      const scale = Math.min(width / iw, height / ih);
       const renderedW = iw * scale;
       const renderedH = ih * scale;
       const offsetX = (width - renderedW) / 2;
@@ -79,10 +79,9 @@
       ]) button.style.setProperty(prop,value,'important');
     };
 
-    // Map the original poster's visible Login/Create Account buttons into the
-    // cropped/covered mobile viewport so taps stay exactly over the artwork.
-    placeHitbox(loginButton,  { x:0.142, y:0.748, w:0.716, h:0.066 });
-    placeHitbox(createButton, { x:0.142, y:0.821, w:0.716, h:0.064 });
+    // Match the uploaded 864 x 1536 poster's buttons, including letterboxing.
+    placeHitbox(loginButton,  { x:0.195, y:0.753, w:0.610, h:0.048 });
+    placeHitbox(createButton, { x:0.195, y:0.804, w:0.610, h:0.048 });
   }
 
   function ensureWelcome() {
