@@ -4,8 +4,8 @@
   window.EFGC_V74_ACTIVE = true;
 
   const $ = (s) => document.querySelector(s);
-  const LOGIN_ART = 'https://d2ol7oe51mr4n9.cloudfront.net/user_3JWUZpcMSfms4wKF11rbDVcHjyJ/7064d407-f62e-4b59-a211-13148ccd04e3.png';
-  const LOGO = 'assets/v74-efgc-logo.webp?v=83.0';
+  const LOGIN_ART = 'assets/efgc-login-2026-09-20.webp?v=83.0';
+  const LOGO = 'assets/v76-efgc-logo.png?v=81.0';
 
   function sessionActive() {
     try {
@@ -16,7 +16,7 @@
 
   function forceCorrectLogos(root = document) {
     root.querySelectorAll?.('.brand-logo,.hero-logo,.official-footer-logo,.mock-welcome-logo,.birthday-logo-wrap img').forEach((img) => {
-      if (!img.src.includes('v74-efgc-logo.webp')) img.src = LOGO;
+      if (!img.src.includes('v76-efgc-logo.png')) img.src = LOGO;
       img.classList.add('v74-official-logo');
       img.alt = 'Emmanuel Full Gospel Church official logo';
     });
