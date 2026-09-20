@@ -75,7 +75,7 @@ jobs:
           test $(find assets/scripture-v74 -maxdepth 1 -name '*.jpg' | wc -l) -ge 12
 
           grep -q 'window.EFGC_V74_ACTIVE=true' index.html
-          grep -q 'v74-brand.css?v=83.0' index.html
+          grep -q 'v74-brand.css?v=84.0' index.html
           grep -q 'v74-brand.js?v=83.0' index.html
           grep -q 'v75-roster-multi.js?v=82.0' index.html
           grep -q 'v75-roster-multi.css?v=82.0' index.html
