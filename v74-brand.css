@@ -152,7 +152,7 @@ body.v74-form-open .login-card textarea{
   .v74-login-art{
     width:100%;
     height:100%;
-    object-fit:cover;
+    object-fit:contain;
     object-position:center center;
   }
   .v74-art-button{
