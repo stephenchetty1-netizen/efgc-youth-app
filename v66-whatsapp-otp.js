@@ -76,7 +76,7 @@
           <button id="v66CompleteReset" type="button" class="primary-login">Set New Password</button>
         </div>
         <p id="v66ResetMessage" class="login-message" aria-live="polite"></p>
-        <small class="v66-security-note">For security, the app does not reveal whether a cellphone number is registered.</small>
+        <small class="v66-security-note">WhatsApp codes require EFGC Admin setup. If unavailable, ask an EFGC Youth Admin to reset your password after verifying your identity. The app does not reveal whether a cellphone number is registered.</small>
       </div>`;
     document.body.appendChild(modal);
     modal.querySelector('.v66-close')?.addEventListener('click', closeResetModal);
