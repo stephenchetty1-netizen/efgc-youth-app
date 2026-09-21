@@ -58,6 +58,16 @@ jobs:
           node --check v75-roster-multi.js
           node --check notification-sw.js
 
+          # The app loads many versioned modules. Check every script referenced
+          # by index.html, not just the historical hand-maintained subset.
+          grep -oE '<script src="[^"]+"' index.html | cut -d'"' -f2 | cut -d'?' -f1 | while IFS= read -r script; do
+            test -f "$script" || { echo "Missing app script: $script"; exit 1; }
+            node --check "$script"
+          done
+          grep -oE '<link rel="stylesheet" href="[^"]+"' index.html | cut -d'"' -f4 | cut -d'?' -f1 | while IFS= read -r stylesheet; do
+            test -f "$stylesheet" || { echo "Missing stylesheet: $stylesheet"; exit 1; }
+          done
+
           test -f index.html
           test -f manifest.webmanifest
           test -f v74-brand.css
