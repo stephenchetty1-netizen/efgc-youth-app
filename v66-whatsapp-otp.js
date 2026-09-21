@@ -40,7 +40,7 @@
       btn.id = 'v66ForgotPassword';
       btn.type = 'button';
       btn.className = 'v66-forgot-button';
-      btn.innerHTML = '<span>💬</span> Forgot Password? Reset with WhatsApp';
+      btn.innerHTML = '<span>💬</span> Forgot Password? WhatsApp or Admin Help';
       $('#continueButton')?.insertAdjacentElement('afterend', btn);
       btn.addEventListener('click', openResetModal);
     }
