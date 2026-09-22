@@ -228,7 +228,7 @@
       const existing=await EFGCLive.adminAttendance(eventId);
       const byYouth=new Map((existing||[]).map(r=>[r.youth_id,r.status]));
       const present=[...byYouth.values()].filter(v=>v==='present').length;
-      const rows=youthCache.length?youthCache.map(y=>{const st=byYouth.get(y.id)||'';return `<div class="attendance-row"><h3>${esc(y.full_name)}</h3><select class="attendance-page-status" data-youth-id="${esc(y.id)}" ${event.attendance_approved?'disabled':''}><option value="" ${!st?'selected':''}>Select status…</option><option value="present" ${st==='present'?'selected':''}>Present</option><option value="absent" ${st==='absent'?'selected':''}>Absent</option></select></div>`;}).join(''):staffEmpty('No Youth accounts yet','Youth must register and be approved before they appear in the attendance register.');
+      const rows=youthCache.length?youthCache.map(y=>{const st=byYouth.get(y.id)||'';return `<div class="attendance-row"><h3>${esc(y.full_name)}</h3><select class="attendance-page-status" data-youth-id="${esc(y.id)}" ${event.attendance_approved?'disabled':''}><option value="" ${!st?'selected':''}>Select status…</option><option value="present" ${st==='present'?'selected':''}>Present</option><option value="absent" ${st==='absent'?'selected':''}>Absent</option><option value="excused" ${st==='excused'?'selected':''}>Excused</option></select></div>`;}).join(''):staffEmpty('No Youth accounts yet','Youth must register and be approved before they appear in the attendance register.');
       const controls=event.attendance_approved?`<div class="inline-actions"><span class="status-pill finalized">Finalized & locked</span><span class="attendance-count">${present} present</span></div>`:`<div class="inline-actions"><button class="mini-button primary" type="button" onclick="saveAttendancePage(false)">Save register</button><button class="mini-button success" type="button" onclick="saveAttendancePage(true)">Save & finalize</button></div><div id="attendanceSaveMessage" class="toast-line"></div>`;
       host.innerHTML=`<article class="module-card"><div class="planner-week-head"><div><span class="module-kicker">Attendance</span><h3>${esc(event.title)}</h3><div class="planner-meta">${esc(formatEventDate(event.event_date))}${event.theme?` • ${esc(event.theme)}`:''}</div></div><span class="status-pill ${event.attendance_approved?'finalized':'pending'}">${event.attendance_approved?'Finalized':'Open'}</span></div><div style="margin-top:10px">${rows}</div>${controls}</article>`;
     }catch(e){ host.innerHTML=staffEmpty('Register could not open',e.message); }
@@ -237,7 +237,7 @@
   function collectAttendance(){
     const selects=[...document.querySelectorAll('.attendance-page-status')];
     if(!selects.length) throw new Error('There are no Youth in this register yet.');
-    return selects.map(s=>{ if(!['present','absent'].includes(s.value)) throw new Error('Mark every Youth Present or Absent before saving.'); return {youth_id:s.dataset.youthId,status:s.value}; });
+    return selects.map(s=>{ if(!['present','absent','excused'].includes(s.value)) throw new Error('Mark every Youth Present, Absent or Excused before saving.'); return {youth_id:s.dataset.youthId,status:s.value}; });
   }
 
   window.saveAttendancePage = async (finalize=false) => {
