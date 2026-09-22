@@ -14,25 +14,19 @@ const dailyScriptures = [
   { ref:'Romans 8:28', text:'All things work together for good to them that love God, to them who are the called according to his purpose.' },
 ];
 
-function selectRole(r) {
-  loginRole = r;
-  document.querySelectorAll('.login-type').forEach((b) => b.classList.toggle('active', b.dataset.role === r));
-  $('#loginTitle').textContent = r === 'leader' ? 'Leader Login / Application' : r === 'admin' ? 'Admin Login' : 'Youth Login';
-  $('#loginHint').textContent = r === 'leader'
-    ? 'Leaders use cellphone number and password. New Leader access requires Admin approval.'
-    : r === 'admin'
-      ? 'Secure Admin sign-in uses your password. Admin rights cannot be created from this screen.'
-      : 'Youth use cellphone number and password. New youth can create a secure profile.';
-  $('#youthSafeguardingFields').classList.toggle('hidden', r !== 'youth');
-  $('#roleField').classList.toggle('hidden', r !== 'leader');
-  $('#photoField').classList.toggle('hidden', r === 'admin');
-  $('#dobField').classList.toggle('hidden', r === 'admin');
+function selectRole() {
+  // Registration is always Youth; existing user permissions come from the verified Supabase profile.
+  loginRole = 'youth';
+  $('#loginTitle').textContent = 'EFGC Youth Sign In';
+  $('#loginHint').textContent = 'One secure sign-in for all EFGC Youth members.';
+  $('#youthSafeguardingFields')?.classList.add('hidden');
+  $('#roleField')?.classList.add('hidden');
+  $('#photoField')?.classList.add('hidden');
+  $('#dobField')?.classList.add('hidden');
   $('#emailField')?.classList.add('hidden');
 }
 
 document.addEventListener('click', (e) => {
-  const b = e.target.closest('.login-type');
-  if (b) selectRole(b.dataset.role);
   const tab = e.target.closest('[data-tab]');
   if (tab && session) showTab(tab.dataset.tab);
 });
@@ -100,7 +94,12 @@ function card(title, body, meta='') {
 
 function adminProfileCard(p){
   const pendingLeader = p.role === 'leader' && p.approval_status === 'pending';
-  const approvalActions = pendingLeader ? `<button class="primary-login" type="button" onclick="adminSetLeaderApproval('${p.id}','approved')">Approve Leader</button><button class="ghost-login" type="button" onclick="adminSetLeaderApproval('${p.id}','rejected')">Reject</button>` : '';
+  const eligibleYouth = p.role === 'youth' && p.approval_status === 'approved';
+  const approvalActions = pendingLeader
+    ? `<button class="primary-login" type="button" onclick="adminSetLeaderApproval('${p.id}','approved')">Approve Leader</button><button class="ghost-login" type="button" onclick="adminSetLeaderApproval('${p.id}','rejected')">Reject</button>`
+    : eligibleYouth
+      ? `<button class="primary-login" type="button" onclick="adminApproveAsLeader('${p.id}')">Approve as Leader</button>`
+      : '';
   const resetAction = p.role !== 'admin' ? `<button class="ghost-login member-password-reset" type="button" data-user-id="${escapeHtml(p.id)}" data-user-name="${escapeHtml(p.full_name)}">Reset Password</button>` : '';
   const actions = approvalActions || resetAction ? `<div class="admin-actions">${approvalActions}${resetAction}</div>` : '';
   return `<article class="card"><h3>${escapeHtml(p.full_name)}</h3><small>${escapeHtml(p.leader_role || '')}</small><p>${escapeHtml(`${p.role} • ${p.approval_status}`)}</p>${actions}</article>`;
@@ -110,6 +109,7 @@ function adminTools(){
   return `<div class="security-grid">
     <article class="card"><h3>Create Youth Event</h3><label>Event title<input id="adminEventTitle" type="text" placeholder="Youth Meeting"></label><label>Date & time<input id="adminEventDate" type="datetime-local"></label><label>Theme<input id="adminEventTheme" type="text" placeholder="Optional theme"></label><label>Scripture<input id="adminEventScripture" type="text" placeholder="e.g. Matthew 5:16"></label><button class="primary-login" type="button" onclick="adminCreateEvent()">Create Event</button></article>
     <article class="card"><h3>Publish News</h3><label>Announcement<textarea id="adminNewsContent" rows="5" placeholder="Write an approved EFGC Youth update"></textarea></label><button class="primary-login" type="button" onclick="adminPublishNews()">Publish Update</button></article>
+    ${session?.phone ? '' : `<article class="card"><h3>Link your Admin cellphone</h3><p>One-time setup: use your existing Admin password to link your South African cellphone number. You can then use that number on the single login screen. Until then, sign in with username <strong>admin</strong>.</p><label>Your cellphone<input id="adminLinkPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="071 234 5678"></label><label>Confirm current Admin password<input id="adminLinkConfirmPassword" type="password" autocomplete="current-password" placeholder="Current Admin password"></label><button id="adminLinkButton" class="primary-login" type="button" onclick="linkAdminCellphone()">Link Admin cellphone</button><p id="adminLinkMessage" role="status" class="login-message"></p></article>`}
   </div><p id="adminActionMessage" class="login-message"></p>`;
 }
 
@@ -123,6 +123,20 @@ window.adminSetLeaderApproval = async (id, status) => {
     await renderLiveData();
     setAdminMessage(status === 'approved' ? 'Leader approved successfully.' : 'Leader application rejected.');
   } catch(e){ setAdminMessage(`Could not update Leader: ${e.message}`); }
+};
+
+window.adminApproveAsLeader = async (id) => {
+  if (session?.role !== 'admin' || !session.uid) return;
+  // Requires an explicit decision by the signed-in Admin, never by the member.
+  if (!window.confirm('Approve this Youth member for EFGC Leader access?')) return;
+  try {
+    setAdminMessage('Approving Leader access…');
+    await EFGCLive.adminPromoteYouth(id);
+    await renderLiveData();
+    setAdminMessage('Youth member approved as Leader. Leader tools will unlock on their next sign-in or session refresh.');
+  } catch (e) {
+    setAdminMessage('Leader approval failed: ' + (e.message || 'Check Admin permissions.'));
+  }
 };
 
 window.adminCreateEvent = async () => {
