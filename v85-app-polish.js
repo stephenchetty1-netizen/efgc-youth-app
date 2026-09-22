@@ -7,6 +7,8 @@
   const esc = (value = '') => String(value).replace(/[&<>"']/g, (char) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
   let members = [];
+  let memberConsents = new Map();
+  let guardianPermissions = new Map();
   let latestPreview = null;
   let loadVersion = 0;
 
@@ -111,6 +113,7 @@
       + '<h2>🎉 Birthday Studio</h2>'
       + '<p>Create a personalised EFGC Youth birthday greeting and download a full-colour 1080 × 1350 poster. Nothing is posted automatically.</p>'
       + '<div id="birthdayUpcoming" class="efgc-birthday-upcoming">Loading birthday dates…</div>'
+      + '<p id="birthdayConsentInfo" class="efgc-birthday-upcoming" role="status">Choose a member to check their sharing permission.</p>'
       + '<div class="efgc-birthday-control">'
       + '<label for="birthdayMember">Choose a registered member<select id="birthdayMember"><option value="">Custom greeting</option></select></label>'
       + '<label for="birthdayName">Name on poster<input id="birthdayName" maxlength="70" placeholder="Enter the name to celebrate" autocomplete="off"></label>'
@@ -159,7 +162,13 @@
     const version = ++loadVersion;
     try {
       // Only approved EFGC Admin profiles may access the date-of-birth directory.
-      const rows = await EFGCAuth.rest('profiles?select=id,full_name,birthday,role,approval_status&order=full_name.asc');
+      const [rows,preferences,guardians] = await Promise.all([
+        EFGCAuth.rest('profiles?select=id,full_name,birthday,role,approval_status,archived_at&archived_at=is.null&order=full_name.asc'),
+        EFGCAuth.rest('member_preferences?select=member_id,birthday_opt_in,photo_opt_in'),
+        EFGCAuth.rest('member_guardian_permissions?select=member_id,birthday_and_photo_authorized'),
+      ]);
+      memberConsents = new Map((Array.isArray(preferences)?preferences:[]).map(p=>[p.member_id,p]));
+      guardianPermissions = new Map((Array.isArray(guardians)?guardians:[]).map(p=>[p.member_id,p]));
       if (version !== loadVersion || !isAdmin() || !$('#birthdayStudio')) return;
       members = (Array.isArray(rows) ? rows : [])
         .filter((row) => ['youth', 'leader', 'admin'].includes(row.role)
@@ -185,6 +194,30 @@
     }
   }
 
+  function memberSharingPermission(member) {
+    if (!member) return { ok: true, reason: '' };
+    const consent = memberConsents.get(member.id);
+    if (!consent?.birthday_opt_in) return { ok: false, reason: 'This member has not opted in to public birthday greetings.' };
+    const dob = member.birthday ? new Date(member.birthday + 'T12:00:00') : null;
+    const ageKnown = dob && !Number.isNaN(dob.getTime());
+    const minorOrUnknown = !ageKnown || dob > new Date(new Date().setFullYear(new Date().getFullYear()-18));
+    if (minorOrUnknown && !guardianPermissions.get(member.id)?.birthday_and_photo_authorized) {
+      return { ok: false, reason: 'Admin must record guardian permission before publishing this greeting.' };
+    }
+    return { ok: true, reason: 'Member birthday-sharing permission confirmed.' };
+  }
+  function selectedMember() {
+    const id=$('#birthdayMember')?.value || '';
+    return members.find(m=>String(m.id)===String(id)) || null;
+  }
+  function updateConsentInfo() {
+    const el=$('#birthdayConsentInfo');
+    if(!el) return;
+    const member=selectedMember();
+    el.textContent=member ? memberSharingPermission(member).reason
+      : 'Custom greetings are not published automatically. Check permission before sharing a person’s name or photo.';
+  }
+
   function selectMember() {
     const id = $('#birthdayMember')?.value;
     const member = members.find((row) => String(row.id) === String(id));
@@ -199,6 +232,7 @@
       $('#birthdayDate').value = '';
     }
     invalidatePreview();
+    updateConsentInfo();
   }
 
   function invalidatePreview() {
@@ -211,7 +245,12 @@
 
   function updatePublish() {
     const button = $('#birthdayPublish');
-    if (button) button.disabled = !(latestPreview && $('#birthdayApproved')?.checked && isAdmin());
+    const member = selectedMember();
+    const allowed = memberSharingPermission(member).ok;
+    if (button) button.disabled = !(latestPreview && $('#birthdayApproved')?.checked && isAdmin() && allowed);
+    const downloadButton=$('#birthdayDownload');
+    if(downloadButton) downloadButton.disabled=!(latestPreview && allowed);
+    updateConsentInfo();
   }
 
   function preview() {
@@ -223,7 +262,7 @@
     if (name.length > 70 || blessing.length > 420) return showMessage('Please shorten the name or greeting.', true);
     const parts = birthdayParts(dateRaw);
     const date = parts ? new Date(2024, parts.month - 1, parts.day) : null;
-    latestPreview = { name, blessing, dateLabel: dayLabel(date) };
+    latestPreview = { name, blessing, dateLabel: dayLabel(date), memberId: selectedMember()?.id || null };
     const box = $('#birthdayPreviewHost');
     box.innerHTML = '<div class="efgc-birthday-poster">'
       + '<img src="' + LOGO + '" alt="Official Emmanuel Full Gospel Church logo">'
@@ -234,7 +273,7 @@
       + '<p>' + esc(blessing) + '</p>'
       + '<div class="efgc-birthday-verse">“The LORD bless thee, and keep thee.”<br>Numbers 6:24 (KJV)</div>'
       + '<p>With love from EFGC Youth • Pass on the Baton</p></div>';
-    $('#birthdayDownload').disabled = false;
+    $('#birthdayDownload').disabled = !memberSharingPermission(selectedMember()).ok;
     $('#birthdayApproved').checked = false;
     updatePublish();
     showMessage('Preview generated. Review the name and blessing before downloading or publishing.');
@@ -356,6 +395,9 @@
 
   async function publish() {
     if (!isAdmin() || !latestPreview || !$('#birthdayApproved')?.checked) return;
+    const matched = selectedMember() || members.find(m => m.full_name?.toLowerCase() === latestPreview.name.toLowerCase());
+    const share = memberSharingPermission(matched);
+    if(!share.ok) return showMessage(share.reason,true);
     const button = $('#birthdayPublish');
     button.disabled = true;
     try {
@@ -367,7 +409,8 @@
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
         body: JSON.stringify({
-          author_id: uid, content, post_type: 'birthday', member_name: name, is_published: true,
+          author_id: uid, content, post_type: 'birthday', member_name: name,
+          birthday_member_id: matched?.id || null, is_published: true,
         }),
       });
       if (!Array.isArray(result) || !result.length) throw new Error('No published birthday post was returned.');
