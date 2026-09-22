@@ -2,7 +2,7 @@
 (() => {
   'use strict';
   const $ = (selector) => document.querySelector(selector);
-  const LOGO = 'assets/v76-efgc-logo.png?v=76.0';
+  const LOGO = 'assets/v74-efgc-logo.webp?v=87.0';
   const DEFAULT_BLESSING = 'May the Lord bless you and keep you. May He strengthen your faith, guide your steps and fill this new year of your life with His peace, joy and purpose.';
   const esc = (value = '') => String(value).replace(/[&<>"']/g, (char) =>
     ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
