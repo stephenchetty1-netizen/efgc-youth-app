@@ -100,8 +100,18 @@
   }
 
   async function finish(profile, authUser) {
+    // Android WebView: dismiss the keyboard before hiding the login form.
+    const focused = document.activeElement;
+    if (focused && typeof focused.blur === 'function') focused.blur();
+    try { navigator.virtualKeyboard?.hide?.(); } catch (_) {}
+    const passwordInput = $('#loginPassword');
+    if (passwordInput) { passwordInput.value = ''; passwordInput.type = 'password'; }
+    const showButton = $('#efgcTogglePassword');
+    if (showButton) { showButton.textContent = 'Show'; showButton.setAttribute('aria-pressed', 'false'); }
     session = sessionFromProfile(profile, authUser);
-    localStorage.setItem('efgcYouthSession', JSON.stringify(session));
+    localStorage.removeItem('efgcYouthSession');
+    sessionStorage.removeItem('efgcYouthSession');
+    (EFGCAuth.remembersDevice() ? localStorage : sessionStorage).setItem('efgcYouthSession', JSON.stringify(session));
     message(session.role === 'leader' && session.approval_status !== 'approved'
       ? 'Your Leader application is signed in and awaiting Admin approval.'
       : 'Secure sign-in complete.');
@@ -133,6 +143,7 @@
   }
 
   async function completeRegistration(d, result) {
+    EFGCAuth.setRememberDevice(Boolean($('#rememberDevice')?.checked));
     EFGCAuth.setSession(result.session);
     const base = result.profile;
     let profile = await EFGCAuth.upsertProfile({
@@ -173,6 +184,7 @@
   async function adminSignIn(d) {
     if (!d.password) throw new Error('Enter your Admin password.');
     const result = await authBridge({ action: 'admin-login', password: d.password });
+    EFGCAuth.setRememberDevice(Boolean($('#rememberDevice')?.checked));
     EFGCAuth.setSession(result.session);
     const profile = await EFGCAuth.getMyProfile();
     if (!profile || profile.role !== 'admin' || profile.approval_status !== 'approved') {
@@ -202,6 +214,7 @@
       }
 
       const result = await authBridge({ action: 'login', phone: d.phone, password: d.password });
+      EFGCAuth.setRememberDevice(Boolean($('#rememberDevice')?.checked));
       EFGCAuth.setSession(result.session);
       const profile = await EFGCAuth.getMyProfile();
       if (!profile) throw new Error('Your EFGC profile could not be loaded.');
@@ -218,6 +231,8 @@
     finally {
       session = null;
       localStorage.removeItem('efgcYouthSession');
+      sessionStorage.removeItem('efgcYouthSession');
+      $('#loginPassword').value = '';
       authMode = 'signin';
       showLogin();
       renderShell();
