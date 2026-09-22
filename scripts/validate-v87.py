@@ -76,7 +76,7 @@ def run() -> int:
             check(result.returncode == 0, f"JavaScript syntax: {file.name}: {result.stderr.strip()}")
 
     manifest = json.loads((ROOT / "manifest.webmanifest").read_text("utf-8"))
-    check(str(manifest.get("start_url", "")).startswith("./?v=97"), "Manifest must open the V95 app")
+    check(str(manifest.get("start_url", "")).startswith("./?v=98"), "Manifest must open the V95 app")
     for icon in manifest.get("icons", []):
         target = local_asset(icon.get("src", ""), "manifest")
         check(bool(target and target.is_file()), f"Manifest icon missing: {icon.get('src')}")
@@ -85,7 +85,7 @@ def run() -> int:
     required = (
         "v87-network.js", "v87-dashboard.js", "v87-ministry.js", "v87-admin.js", "v88-layout.js",
         "v85-app-polish.js", "v66-whatsapp-otp.js", "v75-roster-multi.js",
-        "v62-notifications.js", "v63-duty-ack.js", "v97-directory.js"
+        "v62-notifications.js", "v63-duty-ack.js", "v97-directory.js", "v98-whatsapp-share.js"
     )
     for name in required:
         check(ROOT / name in parser.scripts, f"Required feature is not included: {name}")
@@ -96,6 +96,14 @@ def run() -> int:
     check(ROOT / "v93.css" in parser.styles, "V93 readable handset layout is not loaded")
     check(ROOT / "v94.css" in parser.styles, "V94 More and Scripture styling is not loaded")
     check(ROOT / "v97-directory.css" in parser.styles, "Staff directory and mobile fixes are missing")
+    check(ROOT / "v98-whatsapp-share.css" in parser.styles, "WhatsApp share styling is missing")
+    check('id="whatsappShareMenu"' in html and 'id="whatsappShare"' in html,
+          "WhatsApp share route is missing")
+    share = (ROOT / "v98-whatsapp-share.js").read_text("utf-8")
+    check("getMyProfile()" in share and "status=eq.approved" in share and "https://wa.me/?text=" in share,
+          "Direct sharing must verify staff role and use only approved messages")
+    check("v65-whatsapp-admin.js?v=" not in html and "v67-whatsapp-otp-admin.js?v=" not in html,
+          "Inactive Meta API controls must not appear in direct-only mode")
     check('id="staffDirectory"' in html and 'id="staffDirectoryMenu"' in html,
           "Staff-only Members route is missing")
     directory = (ROOT / "v97-directory.js").read_text("utf-8")

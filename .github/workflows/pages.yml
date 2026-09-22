@@ -1,4 +1,4 @@
-name: Validate and deploy EFGC Youth V97
+name: Validate and deploy EFGC Youth V98
 
 on:
   push:
@@ -45,7 +45,7 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Validate V97 source, logout privacy, manifest and safeguarding gates
+      - name: Validate V98 source, logout privacy, manifest and safeguarding gates
         run: python3 scripts/validate-v87.py
 
       - name: Smoke-test static site and app entrypoints
@@ -69,7 +69,7 @@ jobs:
               assert len(data)==8+struct.unpack_from('<I',data,4)[0]
               print('OK complete',asset,len(data),'bytes')
           PY
-          for file in index.html manifest.webmanifest v97-directory.js v97-directory.css v87-network.js v87-dashboard.js v87-ministry.js v87-admin.js v87.css v88-layout.js v88.css v91.css v92.css v93.css v94.css assets/v74-efgc-logo.webp assets/v74-login-poster.webp; do
+          for file in index.html manifest.webmanifest v98-whatsapp-share.js v98-whatsapp-share.css v97-directory.js v97-directory.css v87-network.js v87-dashboard.js v87-ministry.js v87-admin.js v87.css v88-layout.js v88.css v91.css v92.css v93.css v94.css assets/v74-efgc-logo.webp assets/v74-login-poster.webp; do
             curl --fail --silent --show-error "http://127.0.0.1:8080/$file" -o /dev/null
             echo "OK $file"
           done
@@ -88,15 +88,16 @@ jobs:
             if curl --fail --silent http://127.0.0.1:8081/index.html >/dev/null; then break; fi
             sleep 1
           done
-          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=95" EFGC_SCREENSHOT_DIR="v97-qa" python3 scripts/test-v93-phone-layout.py
-          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=97" EFGC_SCREENSHOT_DIR="v97-qa" python3 scripts/test-v97-staff-directory.py
+          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=95" EFGC_SCREENSHOT_DIR="v98-qa" python3 scripts/test-v93-phone-layout.py
+          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=97" EFGC_SCREENSHOT_DIR="v98-qa" python3 scripts/test-v97-staff-directory.py
+          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=98" EFGC_SCREENSHOT_DIR="v98-qa" python3 scripts/test-v98-whatsapp-share.py
 
       - name: Preserve visual smoke-test screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: EFGC-V97-Phone-Layout-Checks
-          path: v97-qa/*.png
+          name: EFGC-V98-Phone-Layout-Checks
+          path: v98-qa/*.png
           if-no-files-found: ignore
           retention-days: 14
 

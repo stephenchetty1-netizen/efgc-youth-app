@@ -114,7 +114,7 @@
         '<button data-v87-draft="'+esc(d.id)+'" data-v87-draft-decision="rejected">Reject</button>':'')+
       (approved && (isAdmin()||mine) ?
         '<button data-v87-copy="'+esc(d.id)+'">Copy approved text</button>'+
-        '<a class="v87-share" href="https://wa.me/?text='+encodeURIComponent(d.content)+'" target="_blank" rel="noopener noreferrer">Open WhatsApp</a>':'')+
+        '<a class="v87-share" href="https://wa.me/?text='+encodeURIComponent(d.content)+'" target="_self" rel="noreferrer">Share to WhatsApp</a>':'')+
       '</div></div>';
   }
   function whatsappHtml(drafts) {
