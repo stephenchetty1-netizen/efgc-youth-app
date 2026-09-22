@@ -35,6 +35,21 @@
     async safeguardingDirectory() {
       return get('safeguarding_contacts?select=youth_id,parent_name,parent_phone,emergency_name,emergency_phone,updated_at&order=updated_at.desc');
     },
+    async adminPromoteYouth(userId) {
+      // Server RLS permits only an approved Admin to change another member's role.
+      if (!/^[0-9a-f-]{36}$/i.test(String(userId || ''))) throw new Error('Choose a valid Youth account.');
+      const rows = await window.EFGCAuth.rest(
+        `profiles?id=eq.${esc(userId)}&role=eq.youth&approval_status=eq.approved`, {
+          method: 'PATCH',
+          headers: jsonHeaders,
+          body: JSON.stringify({ role: 'leader', approval_status: 'approved', leader_role: 'EFGC Youth Leader' }),
+        },
+      );
+      if (!Array.isArray(rows) || rows.length !== 1 || rows[0].role !== 'leader' || rows[0].approval_status !== 'approved') {
+        throw new Error('Youth member was not promoted. Check account status and Admin access.');
+      }
+      return rows[0];
+    },
     async adminSetLeaderApproval(userId, status) {
       if (!['approved', 'rejected'].includes(status)) throw new Error('Invalid Leader approval status.');
       const rows = await window.EFGCAuth.rest(`profiles?id=eq.${esc(userId)}&role=eq.leader`, {
