@@ -2,8 +2,8 @@
 
 A mobile-first EFGC Youth website with a unified Youth / approved Leader / Admin sign-in, an official church identity, and a safeguarded ministry experience.
 
-## Current test release: V90 stabilization
-- Blue, white, silver and gold home dashboard with the EFGC emblem, the next published event, and relevant actions for each role.
+## Current layout release: V91 dashboard
+- The V91 home is rendered in the initial HTML: Shalom greeting after sign-in, authentic EFGC emblem, next event, role-specific overview, four quick actions, then compact Scripture and Youth news. This layout is never conditional on prior Admin/network calls.
 - Five-destination mobile navigation: Home, Events, Journey / Leader Hub / Ministry, News and More.
 - Role-specific links in the More menu, including roster and Admin Centre where authorised.
 - Birthday Studio, attendance, member directory, prayer, testimony review, consent and WhatsApp draft features from V87 remain connected.
@@ -21,3 +21,6 @@ Source deployment: `.github/workflows/pages.yml`. The GitHub Pages build must su
 - The homepage mounts on confirmed sign-in independently of other data requests.
 - Notifications correctly show in-app foreground alerts when native push is unavailable, without an unusable Enable button or JavaScript alert.
 - Android V90 has a loading spinner; Retry/Open Website appear only after an actual load failure, not during ordinary startup. V90 test APK uses a distinct application ID to keep V89 installed for comparison.
+
+## V91 layout delivery
+The web shell provides the recommended visual hierarchy; the Android V90 test wrapper opens the online site, so a fresh app restart refreshes the V91 layout without rebuilding the native APK. The device push-notifications implementation is not yet available; in-app alerts remain usable while the app is open. Android device verification is still required.

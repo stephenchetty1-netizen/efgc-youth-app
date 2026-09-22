@@ -76,7 +76,7 @@ def run() -> int:
             check(result.returncode == 0, f"JavaScript syntax: {file.name}: {result.stderr.strip()}")
 
     manifest = json.loads((ROOT / "manifest.webmanifest").read_text("utf-8"))
-    check(str(manifest.get("start_url", "")).startswith("./?v=90"), "Manifest must open the V90 app")
+    check(str(manifest.get("start_url", "")).startswith("./?v=91"), "Manifest must open the V91 app")
     for icon in manifest.get("icons", []):
         target = local_asset(icon.get("src", ""), "manifest")
         check(bool(target and target.is_file()), f"Manifest icon missing: {icon.get('src')}")
@@ -91,6 +91,9 @@ def run() -> int:
         check(ROOT / name in parser.scripts, f"Required feature is not included: {name}")
 
     check(ROOT / "v88.css" in parser.styles, "V88 responsive layout stylesheet is not loaded")
+    check(ROOT / "v91.css" in parser.styles, "V91 designed dashboard stylesheet is not loaded")
+    check('id="v87Today"' in html and 'class="v91-hero-emblem"' in html,
+          "Recommended home layout must be present in HTML even before JavaScript runs")
     dashboard = (ROOT / "v87-dashboard.js").read_text("utf-8")
     notifications = (ROOT / "v62-notifications.js").read_text("utf-8")
     check("scheduleBuild(0)" in dashboard and "finally {" in dashboard, "Home must render even if other modules fail")
@@ -98,7 +101,8 @@ def run() -> int:
           "Unsupported WebView notification action is not disabled")
     layout = (ROOT / "v88-layout.js").read_text("utf-8")
     style = (ROOT / "v88.css").read_text("utf-8")
-    check("v88NextEvent" in dashboard and "v88-quick-actions" in dashboard,
+    check("v88NextEvent" in dashboard and "v88-quick-actions" in dashboard
+          and "function paint(s)" in dashboard and "loadEvent(s, token)" in dashboard,
           "The designed homepage or prominent event card was not loaded")
     check("v88MobileNav" in layout and "v88MoreBackdrop" in layout,
           "Responsive role-aware navigation is incomplete")
@@ -145,7 +149,7 @@ def run() -> int:
         for message in ERRORS:
             print(" - " + message)
         return 1
-    print(f"EFGC V90 static release checks PASS: {len(parser.scripts)} JS, "
+    print(f"EFGC V91 static release checks PASS: {len(parser.scripts)} JS, "
           f"{len(parser.styles)} CSS, {len(parser.assets)} HTML assets checked.")
     return 0
 
