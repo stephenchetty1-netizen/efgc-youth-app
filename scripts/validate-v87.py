@@ -98,6 +98,9 @@ def run() -> int:
     check(ROOT / "v97-directory.css" in parser.styles, "Staff directory and mobile fixes are missing")
     check('id="staffDirectory"' in html and 'id="staffDirectoryMenu"' in html,
           "Staff-only Members route is missing")
+    directory = (ROOT / "v97-directory.js").read_text("utf-8")
+    check("EFGCAuth.getMyProfile()" in directory and "approved" in directory and "archived_at=is.null" in directory,
+          "Staff directory must verify role server-side and exclude archived members")
     check('id="v87Today"' in html and 'class="v91-hero-emblem"' in html,
           "Recommended home layout must be present in HTML even before JavaScript runs")
     dashboard = (ROOT / "v87-dashboard.js").read_text("utf-8")

@@ -131,11 +131,6 @@
     return result;
   };
   document.addEventListener('click',event => {
-    const nav = event.target.closest?.('#mainMenu [data-tab="staffDirectory"]');
-    if (nav && authorised(state())) {
-      // The legacy menu's click handler routes before this handler.
-      if (!root()?.classList.contains('hidden')) void load();
-    }
     const select = event.target.closest?.('#v97DirectoryTabs button[data-kind]');
     if (select) { tab = select.dataset.kind === 'leaders' ? 'leaders' : 'youth'; renderRows(); }
     if (event.target.closest?.('#v97DirectoryRetry')) void load();

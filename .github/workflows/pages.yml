@@ -89,6 +89,7 @@ jobs:
             sleep 1
           done
           EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=95" EFGC_SCREENSHOT_DIR="v97-qa" python3 scripts/test-v93-phone-layout.py
+          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=97" EFGC_SCREENSHOT_DIR="v97-qa" python3 scripts/test-v97-staff-directory.py
 
       - name: Preserve visual smoke-test screenshots
         if: always()
