@@ -22,7 +22,7 @@
         <label>OTP template language<input id="v67OtpLanguage" value="${esc(s.otp_template_language || 'en_US')}" placeholder="en_US"></label>
       </div>
       <label class="wa-otp-check"><input id="v67OtpEnabled" type="checkbox" ${s.otp_enabled ? 'checked' : ''}><span><strong>Enable WhatsApp OTP</strong><br><small>Allows Youth and Leaders to recover their password with a WhatsApp verification code.</small></span></label>
-      <label class="wa-otp-check"><input id="v67RequireRegistrationOtp" type="checkbox" ${s.require_registration_otp ? 'checked' : ''}><span><strong>Require OTP for new registrations</strong><br><small>New Youth and Leader profiles must verify their cellphone before the account is created.</small></span></label>
+      <label class="wa-otp-check"><input id="v67RequireRegistrationOtp" type="checkbox" ${s.require_registration_otp ? 'checked' : ''}><span><strong>Require OTP for new registrations</strong><br><small>New Youth profiles must verify their cellphone before the account is created. Admins approve Leader access later.</small></span></label>
       <button id="v67SaveOtpSettings" type="button" class="primary-login">Save OTP Settings</button>
       <p id="v67OtpAdminMessage" class="login-message" aria-live="polite"></p>
       <p class="wa-otp-note">OTP codes expire after 10 minutes, are hashed in the database, and are limited to five code attempts.</p>
