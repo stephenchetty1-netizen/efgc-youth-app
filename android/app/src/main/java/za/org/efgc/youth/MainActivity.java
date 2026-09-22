@@ -1,0 +1,181 @@
+package za.org.efgc.youth;
+
+import android.app.Activity;
+import android.content.ActivityNotFoundException;
+import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
+import android.os.Build;
+import android.os.Bundle;
+import android.view.View;
+import android.view.WindowInsets;
+import android.webkit.CookieManager;
+import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import android.webkit.WebResourceResponse;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
+public final class MainActivity extends Activity {
+    private static final String HOME = "https://stephenchetty1-netizen.github.io/efgc-youth-app/?apk=88";
+    private static final int PROFILE_IMAGE_REQUEST = 8801;
+    private WebView webView;
+    private LinearLayout errorPanel;
+    private android.webkit.ValueCallback<Uri[]> fileCallback;
+    private boolean pageFailed;
+
+    @Override public void onCreate(Bundle state) {
+        super.onCreate(state);
+        getWindow().setStatusBarColor(Color.rgb(8, 34, 70));
+        getWindow().setNavigationBarColor(Color.rgb(8, 34, 70));
+
+        FrameLayout root = new FrameLayout(this);
+        webView = new WebView(this);
+        root.addView(webView, new FrameLayout.LayoutParams(-1, -1));
+
+        errorPanel = new LinearLayout(this);
+        errorPanel.setOrientation(LinearLayout.VERTICAL);
+        errorPanel.setPadding(50, 90, 50, 50);
+        errorPanel.setBackgroundColor(Color.rgb(8, 34, 70));
+        TextView title = new TextView(this);
+        title.setText("EFGC Youth is temporarily unavailable");
+        title.setTextSize(21);
+        title.setTextColor(Color.WHITE);
+        errorPanel.addView(title);
+        TextView hint = new TextView(this);
+        hint.setText("Please check your internet connection, then try again.");
+        hint.setTextColor(Color.WHITE);
+        hint.setPadding(0, 26, 0, 36);
+        errorPanel.addView(hint);
+        Button retry = new Button(this);
+        retry.setText("Retry");
+        retry.setOnClickListener(v -> openCurrentApp());
+        errorPanel.addView(retry);
+        errorPanel.setVisibility(View.GONE);
+        root.addView(errorPanel, new FrameLayout.LayoutParams(-1, -1));
+
+        if (Build.VERSION.SDK_INT >= 35) {
+            root.setOnApplyWindowInsetsListener((v, insets) -> {
+                android.graphics.Insets bars = insets.getInsets(WindowInsets.Type.systemBars());
+                v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+                return insets;
+            });
+        }
+        setContentView(root);
+
+        WebSettings settings = webView.getSettings();
+        settings.setJavaScriptEnabled(true);
+        settings.setDomStorageEnabled(true);
+        settings.setAllowFileAccess(false);
+        settings.setAllowContentAccess(true);
+        settings.setMixedContentMode(WebSettings.MIXED_CONTENT_NEVER_ALLOW);
+        settings.setJavaScriptCanOpenWindowsAutomatically(false);
+        CookieManager.getInstance().setAcceptCookie(true);
+        WebView.setWebContentsDebuggingEnabled(false);
+
+        webView.setWebViewClient(new WebViewClient() {
+            @Override public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                Uri url = request.getUrl();
+                String host = url.getHost();
+                String path = url.getPath();
+                if ("https".equals(url.getScheme()) &&
+                    "stephenchetty1-netizen.github.io".equals(host) &&
+                    path != null && path.startsWith("/efgc-youth-app/")) return false;
+                if ("about".equals(url.getScheme())) return false;
+                try {
+                    if ("https".equals(url.getScheme()) || "mailto".equals(url.getScheme())
+                        || "tel".equals(url.getScheme()) || "market".equals(url.getScheme())) {
+                        startActivity(new Intent(Intent.ACTION_VIEW, url));
+                    }
+                } catch (ActivityNotFoundException ignored) { }
+                return true;
+            }
+
+            @Override public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+                pageFailed = false;
+                errorPanel.setVisibility(View.GONE);
+                webView.setVisibility(View.VISIBLE);
+            }
+
+            @Override public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                if (request.isForMainFrame()) showLoadError();
+            }
+
+            @Override public void onReceivedHttpError(WebView view, WebResourceRequest request, WebResourceResponse response) {
+                if (request.isForMainFrame() && response.getStatusCode() >= 400) showLoadError();
+            }
+
+            @Override public void onPageFinished(WebView view, String url) {
+                if (pageFailed) showLoadError();
+            }
+        });
+
+        webView.setWebChromeClient(new WebChromeClient() {
+            @Override public boolean onShowFileChooser(WebView view,
+                android.webkit.ValueCallback<Uri[]> callback, FileChooserParams parameters) {
+                if (fileCallback != null) fileCallback.onReceiveValue(null);
+                fileCallback = callback;
+                Intent selectImage = new Intent(Intent.ACTION_GET_CONTENT);
+                selectImage.addCategory(Intent.CATEGORY_OPENABLE);
+                selectImage.setType("image/*");
+                try {
+                    startActivityForResult(Intent.createChooser(selectImage, "Choose profile photo"),
+                        PROFILE_IMAGE_REQUEST);
+                } catch (ActivityNotFoundException e) {
+                    fileCallback.onReceiveValue(null);
+                    fileCallback = null;
+                }
+                return true;
+            }
+        });
+
+        // Clear HTTP asset cache, NOT Web Storage or authenticated sessions.
+        webView.clearCache(true);
+        openCurrentApp();
+    }
+
+    private void openCurrentApp() {
+        pageFailed = false;
+        errorPanel.setVisibility(View.GONE);
+        webView.setVisibility(View.VISIBLE);
+        webView.loadUrl(HOME);
+    }
+
+    private void showLoadError() {
+        pageFailed = true;
+        webView.setVisibility(View.INVISIBLE);
+        errorPanel.setVisibility(View.VISIBLE);
+    }
+
+    @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != PROFILE_IMAGE_REQUEST || fileCallback == null) return;
+        Uri[] chosen = (resultCode == RESULT_OK && data != null && data.getData() != null)
+            ? new Uri[] { data.getData() } : null;
+        fileCallback.onReceiveValue(chosen);
+        fileCallback = null;
+    }
+
+    @Override public void onBackPressed() {
+        if (errorPanel.getVisibility() == View.VISIBLE) {
+            openCurrentApp();
+        } else if (webView.canGoBack()) {
+            webView.goBack();
+        } else {
+            super.onBackPressed();
+        }
+    }
+
+    @Override protected void onDestroy() {
+        if (fileCallback != null) fileCallback.onReceiveValue(null);
+        fileCallback = null;
+        webView.destroy();
+        super.onDestroy();
+    }
+}
