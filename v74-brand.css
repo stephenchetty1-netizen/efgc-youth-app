@@ -62,7 +62,7 @@ body.v74-signed-out #login{
   position:absolute;
   inset:-24px;
   z-index:0;
-  background: url("assets/v74-login-poster.webp?v=89.0") center center / cover no-repeat;
+  background: url("assets/v74-login-poster.webp?v=89.1") center center / cover no-repeat;
   filter:blur(18px) brightness(.72);
   pointer-events:none;
 }
