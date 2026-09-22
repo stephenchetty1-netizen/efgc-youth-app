@@ -54,6 +54,7 @@
     sheet.classList.add('hidden');
     $('#v88MobileNav [data-v88-more]')?.setAttribute('aria-expanded','false');
     document.body.classList.remove('v88-modal-open');
+    setActive(currentTab);
     if (returnFocus) lastTrigger?.focus?.();
   }
   function labelFor(button) {
@@ -87,7 +88,7 @@
     setActive('more');
   }
   function setActive(tab) {
-    currentTab=tab || 'home';
+    if(tab && tab!=='more') currentTab=tab;
     const sheetIsOpen=!$('#v88MoreBackdrop')?.classList.contains('hidden');
     const activeRoot=['home','events','ministry','news'].includes(currentTab)?currentTab:'more';
     document.querySelectorAll('#v88MobileNav button').forEach(button=>{
@@ -125,16 +126,15 @@
     if (!source || source.classList.contains('hidden'))return;
     closeMore(false);
     source.click();
-    if(typeof window.showTab==='function') window.showTab(tab);
     setActive(tab);
     if(tab==='ministry')window.EFGCV87Ministry?.render?.();
     if(tab==='plannerRoster')window.renderPlannerRoster?.();
     if(tab==='attendanceAdmin')window.renderAttendanceAdmin?.();
     if(tab==='admin')window.EFGCV87Admin?.render?.();
-    window.scrollTo?.({top:0,behavior:'instant'});
+    window.scrollTo?.({top:0,behavior:'auto'});
   }
   document.addEventListener('click',e=>{
-    const routeButton=e.target.closest?.('#v88MobileNav [data-v88-route], #v88MoreSheet [data-v88-route], #v88MoreBackdrop [data-v88-route]');
+    const routeButton=e.target.closest?.('#v88MobileNav [data-v88-route], #v88MoreBackdrop [data-v88-route]');
     if(routeButton) {route(routeButton.dataset.v88Route);return;}
     const more=e.target.closest?.('#v88MobileNav [data-v88-more]');
     if(more){openMore(more);return;}
