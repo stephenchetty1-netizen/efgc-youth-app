@@ -1,0 +1,86 @@
+
+/* EFGC Youth V87 — ministry-first dashboard, safeguarding and usable touch targets */
+#v87Today { margin: 12px 0 22px; }
+.v87-intro {
+  position: relative;
+  border-radius: 20px;
+  padding: 22px 20px;
+  color: #fff;
+  background: linear-gradient(128deg, #061b3b 0%, #0b418b 68%, #164c9d 100%);
+  border: 1px solid rgba(203,219,250,.48);
+  box-shadow: 0 12px 30px rgba(0,34,92,.18);
+}
+.v87-intro small,.v87-journey-head small {
+  color: #f1ce74; font-size: .76rem; font-weight: 800; letter-spacing: .13em;
+}
+.v87-intro h2 {font-size: clamp(1.65rem, 4vw, 2.2rem);line-height:1.14;margin:.6rem 0 .5rem;color:white;}
+.v87-intro p {margin: 0 0 12px;color:#e7eefc;}
+.v87-pill {display:inline-block;font-size:.75rem;letter-spacing:.04em;font-weight:750;border-radius:99px;padding:5px 10px;background:#f5d47d;color:#092652;}
+.v87-stat-row {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0;}
+.v87-mini-stat {border:1px solid #cad8ea;border-radius:16px;padding:15px;background:#fff;color:#17355c;min-width:0;}
+.v87-mini-stat strong {display:block;font-size:1.05rem;overflow-wrap:anywhere;color:#0b3979;margin-bottom:6px;}
+.v87-mini-stat span {font-size:.83rem;line-height:1.35;color:#425a75;}
+.v87-quick-actions {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:9px 0 15px;}
+.v87-quick-actions button {border:1px solid #abc4e9;border-radius:12px;background:#eaf2ff;color:#0b3778;min-height:46px;padding:9px 4px;font-size:.87rem;font-weight:700;line-height:1.2;}
+.v87-quick-actions button:focus-visible,.v87-panel button:focus-visible,.v87-network-notice button:focus-visible {outline:3px solid #c38f23;outline-offset:2px;}
+.v87-network-notice {margin: 12px 0; padding:14px 17px;background:#fff6dc;border:2px solid #d39a2a;border-radius:14px;color:#3c2a00;}
+.v87-network-notice.hidden {display:none!important;}
+.v87-network-notice strong {display:block;color:#382401;}
+.v87-network-notice p {margin:6px 0 10px;color:#3c2a00;}
+.v87-network-notice button {border:0;border-radius:9px;background:#083b83;color:white;font-weight:800;padding:10px 15px;min-height:44px;}
+.v87-journey-head {border-radius:18px;padding:22px;background:linear-gradient(120deg,#061d43,#1154a4);color:#fff;margin:8px 0 16px;}
+.v87-journey-head h2 {color:#fff;margin:8px 0;font-size:1.8rem;}
+.v87-journey-head p {color:#e5efff;}
+.v87-panels {display:grid;grid-template-columns:minmax(0,1fr);gap:16px;margin-bottom:20px;}
+.v87-panel {border:1px solid #ccd9eb;border-radius:18px;background:#fff;padding:17px;color:#1a3150;box-shadow:0 6px 18px rgba(12,36,74,.05);overflow-wrap:anywhere;}
+.v87-panel>small {display:block;color:#956716;font-weight:850;font-size:.73rem;letter-spacing:.10em;margin-bottom:8px;}
+.v87-panel h3 {font-size:1.23rem;color:#063c83;margin:0 0 12px;}
+.v87-panel h4 {font-size:1rem;margin:18px 0 9px;color:#08366d;}
+.v87-panel p,.v87-entry p {line-height:1.55;}
+.v87-muted {font-size:.90rem;color:#48617e;}
+.v87-panel label:not(.v87-check) {display:block;font-size:.9rem;font-weight:700;margin:12px 0;color:#243c5d;}
+.v87-panel textarea,.v87-panel input:not([type=checkbox]),.v87-panel select,
+.v87-search input {display:block;box-sizing:border-box;width:100%;max-width:100%;min-height:44px;
+  margin-top:7px;padding:11px;border:1px solid #a1b8d9;border-radius:9px;background:#fff;color:#132e56;font:inherit;}
+.v87-panel textarea {min-height:106px;resize:vertical;}
+.v87-panel button:not(.v87-close),.v87-panel a.v87-share {
+  display:inline-flex;align-items:center;justify-content:center;min-height:43px;padding:9px 13px;
+  border-radius:10px;border:1px solid #a3bbe2;background:#e9f2ff;color:#0b3779;
+  font:inherit;font-size:.89rem;font-weight:750;cursor:pointer;text-decoration:none;}
+.v87-panel button.primary-login {background:#0c55aa;color:#fff;border-color:#0c55aa;}
+.v87-panel button:disabled {opacity:.5;cursor:wait;}
+.v87-panel button.v87-success {background:#e5f8ed;border-color:#71ba8e;color:#07582c;}
+.v87-panel .v87-check {display:flex;align-items:start;gap:10px;margin:12px 0;font-size:.91rem;line-height:1.45;font-weight:500;color:#213b59;}
+.v87-panel .v87-check input {width:20px;height:20px;min-width:20px;accent-color:#0b58b2;margin-top:1px;}
+.v87-list-row {display:flex;align-items:center;justify-content:space-between;gap:8px;padding:13px 0;border-bottom:1px solid #e5edf5;}
+.v87-list-row strong {color:#0b3979;}
+.v87-list-row p {font-size:.87rem;margin:4px 0;color:#4b6079;}
+.v87-list-row button {white-space:nowrap;}
+.v87-entry {border-top:1px solid #dde7f3;padding:12px 0;}
+.v87-entry small {color:#526983;}
+.v87-entry p {color:#263e59;white-space:pre-wrap;}
+.v87-actions {display:flex;gap:8px;flex-wrap:wrap;margin-top:9px;}
+.v87-admin-extensions {display:grid;gap:14px;margin:18px 0;}
+.v87-search {display:block;color:#102d58;font-weight:700;margin:10px 0;}
+.v87-archive-check {display:flex;gap:9px;align-items:center;margin:9px 0 13px;color:#33516f;}
+.v87-archive-check input {width:19px;height:19px;accent-color:#0b58b2;}
+.v87-member-card {margin:10px 0;}
+.v87-member-card[hidden] {display:none!important;}
+.v87-member-card .admin-actions {display:flex;flex-wrap:wrap;gap:8px;}
+#v87RoleAudit {max-height:380px;overflow:auto;}
+#v87MemberSearchStatus,#v87GuardianStatus,#v87AdminStatus,
+#v87JourneyStatus,#v87PreferencesStatus,#v87PrayerStatus,
+#v87TestimonyStatus,#v87DraftStatus {color:#234d84;font-size:.87rem;line-height:1.5;}
+@media(min-width:780px){
+  .v87-panels {grid-template-columns:repeat(2,minmax(0,1fr));}
+  .v87-stat-row {grid-template-columns:repeat(4,minmax(0,1fr));}
+  .v87-admin-extensions {grid-template-columns:repeat(2,minmax(0,1fr));}
+}
+@media(max-width:380px){
+  .v87-quick-actions {grid-template-columns:1fr;}
+  .v87-intro {padding:18px 15px;}
+  .v87-list-row {flex-direction:column;align-items:stretch;}
+}
+@media(prefers-reduced-motion:reduce){
+  #v87Today *,#ministry * {scroll-behavior:auto!important;animation:none!important;}
+}
