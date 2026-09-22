@@ -1,4 +1,4 @@
-name: Validate and deploy EFGC Youth App
+name: Validate and deploy EFGC Youth V87
 
 on:
   push:
@@ -11,175 +11,40 @@ permissions:
   id-token: write
 
 concurrency:
-  group: "efgc-youth-pages-v82"
+  group: efgc-youth-pages
   cancel-in-progress: true
 
 jobs:
   validate:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
+      - name: Checkout source
+        uses: actions/checkout@v4
 
-      - name: Setup Node
-        uses: actions/setup-node@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: "22"
 
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
+      - name: Validate actual V87 source, manifest, security gates and committed visual assets
+        run: python3 scripts/validate-v87.py
 
-      - name: Build V74 local visual assets
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -m pip install --quiet pillow
-          python scripts/build-v74-assets.py
-          python scripts/build-login-art.py
-
-      - name: Validate JavaScript and app shell
-        shell: bash
-        run: |
-          set -euo pipefail
-          node --check app.js
-          node --check v60-auth-adapter.js
-          node --check v60-no-email-auth.js
-          node --check v22-live-data.js
-          node --check v23-photo-security.js
-          node --check v43-ministry-tools.js
-          node --check v44-updates.js
-          node --check v45-theme.js
-          node --check v54-stable-welcome.js
-          node --check v62-notifications.js
-          node --check v68-scripture-generator.js
-          node --check v74-brand.js
-          node --check v75-roster-multi.js
-          node --check notification-sw.js
-
-          # The app loads many versioned modules. Check every script referenced
-          # by index.html, not just the historical hand-maintained subset.
-          grep -oE '<script src="[^"]+"' index.html | cut -d'"' -f2 | cut -d'?' -f1 | while IFS= read -r script; do
-            test -f "$script" || { echo "Missing app script: $script"; exit 1; }
-            node --check "$script"
-          done
-          grep -oE '<link rel="stylesheet" href="[^"]+"' index.html | cut -d'"' -f4 | cut -d'?' -f1 | while IFS= read -r stylesheet; do
-            test -f "$stylesheet" || { echo "Missing stylesheet: $stylesheet"; exit 1; }
-          done
-
-          test -f index.html
-          test -f manifest.webmanifest
-          test -f v74-brand.css
-          test -f v74-brand.js
-          test -f v75-roster-multi.js
-          test -f v75-roster-multi.css
-          test -f assets/efgc-login-2026-09-20.webp
-          test -f assets/v76-login-poster.webp
-          test -f assets/v76-efgc-logo.png
-          test -d assets/scripture-v74
-
-          test $(stat -c%s assets/efgc-login-2026-09-20.webp) -gt 50000
-          test $(stat -c%s assets/v76-login-poster.webp) -gt 10000
-          test $(stat -c%s assets/v76-efgc-logo.png) -gt 5000
-          test $(find assets/scripture-v74 -maxdepth 1 -name '*.jpg' | wc -l) -ge 12
-
-          grep -q 'window.EFGC_V74_ACTIVE=true' index.html
-          grep -q 'v74-brand.css?v=84.0' index.html
-          grep -q 'v74-brand.js?v=83.0' index.html
-          grep -q 'v75-roster-multi.js?v=82.0' index.html
-          grep -q 'v75-roster-multi.css?v=82.0' index.html
-          grep -q 'v68-scripture-generator.js?v=79.0' index.html
-          grep -q 'v68-scripture-generator.css?v=79.0' index.html
-          grep -q 'v45-theme.js?v=76.0' index.html
-          grep -q 'v54-stable-welcome.js?v=76.0' index.html
-          grep -q 'assets/v76-efgc-logo.png?v=76.0' index.html
-          grep -q 'assets/v76-efgc-logo.png?v=76.0' manifest.webmanifest
-
-          grep -q 'EFGC_V74_ACTIVE' v74-brand.js
-          grep -q 'v74LoginButton' v74-brand.js
-          grep -q 'syncWelcomeViewport' v74-brand.js
-          grep -q 'placeHitbox' v74-brand.js
-          grep -q "welcome.style.setProperty('display','none','important')" v74-brand.js
-          grep -q "welcome.style.setProperty('pointer-events','none','important')" v74-brand.js
-          grep -q "openForm('signin')" v74-brand.js
-          grep -q "openForm('register')" v74-brand.js
-          grep -q "position:fixed" v74-brand.css
-          grep -q 'v74CreateButton' v74-brand.js
-          grep -q 'assets/efgc-login-2026-09-20.webp?v=83.0' v74-brand.js
-          grep -q 'assets/v76-efgc-logo.png?v=81.0' v74-brand.js
-
-          grep -q 'assets/v76-efgc-logo.png?v=76.0' v45-theme.js
-          grep -q 'EFGC_V74_ACTIVE' v45-theme.js
-          grep -q 'EFGC_V74_ACTIVE' v54-stable-welcome.js
-
-          grep -q 'Daily Scripture Generator' v68-scripture-generator.js
-          grep -q 'assets/scripture-v74/' v68-scripture-generator.js
-          grep -q 'assets/v76-efgc-logo.png?v=81.0' v68-scripture-generator.js
-          grep -q 'waitForPosterReady' v68-scripture-generator.js
-          grep -q 'saveRosterWeekV75' v75-roster-multi.js
-          grep -q "version:'82.0'" v75-roster-multi.js
-          grep -q 'Select multiple leaders for the same duty' v75-roster-multi.js
-          grep -q 'canvasToBlob' v68-scripture-generator.js
-          grep -q 'nextPaint' v68-scripture-generator.js
-          grep -q 'SCRIPTURE_REMOTE_SOURCES' scripts/build-v74-assets.py
-          test "$(grep -c 'https://images.pexels.com/photos/' scripts/build-v74-assets.py)" -ge 15
-          grep -q "label:'Blue Worship'" v68-scripture-generator.js
-          if grep -A 6 '^FALLBACK_SOURCES' scripts/build-v74-assets.py | grep -q 'login-poster'; then
-            echo "Login poster must never be a Scripture background source."
-            exit 1
-          fi
-          grep -q 'input type=\"checkbox\"' v75-roster-multi.js
-          if grep -q 'https://unsplash.com/photos' v68-scripture-generator.js; then
-            echo "Runtime Scripture generator must not depend on remote Unsplash images."
-            exit 1
-          fi
-
-          if grep -q 'v73-brand.js' index.html || grep -q 'v73-brand.css' index.html; then
-            echo "Broken V73 branding layer must not be loaded."
-            exit 1
-          fi
-          if grep -q 'v61-smoke-login.js' index.html || grep -q 'v61-smoke-login.css' index.html; then
-            echo "Smoke-test login assets must not be loaded by the live app."
-            exit 1
-          fi
-          if grep -q 'v36-password-recovery.js' index.html || grep -q 'v21-auth-ui.js' index.html; then
-            echo "Legacy email authentication scripts must not be loaded by the live app."
-            exit 1
-          fi
-          if grep -R -E 'service_role|sb_secret_' --include='*.js' --include='*.html' .; then
-            echo "Secret/service-role material must never be shipped to the browser."
-            exit 1
-          fi
-
-      - name: Smoke-test static site
+      - name: Smoke-test static site and app entrypoints
         shell: bash
         run: |
           set -euo pipefail
           python3 -m http.server 8080 >/tmp/efgc-http.log 2>&1 &
           server_pid=$!
-          trap 'kill $server_pid || true' EXIT
-          sleep 2
+          trap 'kill "$server_pid" || true' EXIT
+          for i in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8080/index.html >/dev/null; then break; fi
+            sleep 1
+          done
 
-          curl --fail --silent --show-error http://127.0.0.1:8080/index.html -o /tmp/index.html
-          curl --fail --silent --show-error http://127.0.0.1:8080/v74-brand.js -o /tmp/v74.js
-          curl --fail --silent --show-error http://127.0.0.1:8080/v74-brand.css -o /tmp/v74.css
-          curl --fail --silent --show-error http://127.0.0.1:8080/v68-scripture-generator.js -o /tmp/scripture.js
-          curl --fail --silent --show-error http://127.0.0.1:8080/assets/efgc-login-2026-09-20.webp -o /tmp/new-login.webp
-          curl --fail --silent --show-error http://127.0.0.1:8080/assets/v76-login-poster.webp -o /tmp/login.webp
-          curl --fail --silent --show-error http://127.0.0.1:8080/assets/v76-efgc-logo.png -o /tmp/logo.png
-          curl --fail --silent --show-error http://127.0.0.1:8080/assets/scripture-v74/bible-light.jpg -o /tmp/bible.jpg
-          curl --fail --silent --show-error http://127.0.0.1:8080/assets/scripture-v74/youth-worship.jpg -o /tmp/worship.jpg
-
-          grep -q 'EFGC YOUTH' /tmp/index.html
-          grep -q 'v74LoginButton' /tmp/v74.js
-          grep -q 'v74-poster-frame' /tmp/v74.css
-          grep -q 'assets/scripture-v74/' /tmp/scripture.js
-          test $(stat -c%s /tmp/new-login.webp) -gt 50000
-          test $(stat -c%s /tmp/login.webp) -gt 10000
-          test $(stat -c%s /tmp/logo.png) -gt 5000
-          test $(stat -c%s /tmp/bible.jpg) -gt 10000
-          test $(stat -c%s /tmp/worship.jpg) -gt 10000
+          for file in index.html manifest.webmanifest v87-network.js v87-dashboard.js v87-ministry.js v87-admin.js v87.css assets/v74-efgc-logo.webp assets/v74-login-poster.webp; do
+            curl --fail --silent --show-error "http://127.0.0.1:8080/$file" -o /dev/null
+            echo "OK $file"
+          done
 
   deploy:
     needs: validate
@@ -188,32 +53,19 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Setup Python
-        uses: actions/setup-python@v6
-        with:
-          python-version: "3.12"
-
-      - name: Build V74 local visual assets
-        shell: bash
-        run: |
-          set -euo pipefail
-          python -m pip install --quiet pillow
-          python scripts/build-v74-assets.py
-          python scripts/build-login-art.py
+      - name: Checkout validated source
+        uses: actions/checkout@v4
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
         with:
           enablement: true
 
-      - name: Upload GitHub Pages artifact
+      - name: Upload validated static site
         uses: actions/upload-pages-artifact@v4
         with:
           path: "."
 
-      - name: Deploy to GitHub Pages
+      - name: Deploy EFGC Youth site
         id: deployment
         uses: actions/deploy-pages@v4
