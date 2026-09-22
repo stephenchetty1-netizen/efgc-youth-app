@@ -37,6 +37,49 @@ jobs:
           test -d "$ANDROID_HOME"
           echo "Android SDK: $ANDROID_HOME"
 
+      - name: Verify mobile-origin authentication CORS
+        shell: bash
+        run: |
+          set -euo pipefail
+          endpoint="https://ktgdabqninofldpafklz.supabase.co/functions/v1/member-auth"
+          status=$(curl --silent --show-error --max-time 20 --output /tmp/efgc-preflight-body --dump-header /tmp/efgc-preflight-headers --write-out '%{http_code}' --request OPTIONS "$endpoint" \
+            --header 'Origin: https://localhost' \
+            --header 'Access-Control-Request-Method: POST' \
+            --header 'Access-Control-Request-Headers: apikey,content-type,authorization')
+          test "$status" = "200" || { echo "Auth preflight returned HTTP $status"; exit 1; }
+          grep -qi '^access-control-allow-origin: https://localhost\r\?        run: |
+          python -m pip install --quiet pillow
+          python scripts/build-v74-assets.py
+          python scripts/build-login-art.py
+
+      - name: Install Capacitor dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Validate and stage website assets
+        run: npm run mobile:prepare
+
+      - name: Generate native Android project
+        run: |
+          npx cap add android
+          npx cap sync android
+
+      - name: Compile Android debug APK
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Upload installable test APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: EFGC-Youth-Android-debug-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 7
+ /tmp/efgc-preflight-headers || { echo "Auth function does not allow the Capacitor origin"; exit 1; }
+          grep -qi 'access-control-allow-methods:.*POST' /tmp/efgc-preflight-headers || { echo "Auth function does not allow POST"; exit 1; }
+          echo "Capacitor Android auth preflight accepted."
+
       - name: Generate official EFGC artwork and offline Scripture images
         run: |
           python -m pip install --quiet pillow
