@@ -79,7 +79,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m pip install --disable-pip-version-check "playwright==1.55.0"
+          python3 -m pip install --disable-pip-version-check --retries 6 --timeout 180 "playwright==1.55.0"
           python3 -m playwright install --with-deps chromium
           python3 -m http.server 8081 >/tmp/efgc-v93-http.log 2>&1 &
           server_pid=$!
