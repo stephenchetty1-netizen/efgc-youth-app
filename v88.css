@@ -167,3 +167,21 @@ body.v88-modal-open{overflow:hidden!important}
 @media(prefers-reduced-motion:reduce){
  body.v88-ready *,body.v88-ready *:before,body.v88-ready *:after{scroll-behavior:auto!important;animation:none!important;transition:none!important}
 }
+
+
+/* V90: reserve actual header space for the notification bell instead of
+   allowing the role badge to sit behind the bell's touch target. */
+body.v88-ready header .brand{
+  width:calc(100% - 60px)!important;max-width:calc(100% - 60px)!important;
+  margin-left:0!important;margin-right:60px!important;
+}
+body.v88-ready header .brand>div{min-width:0!important;overflow:hidden}
+body.v88-ready header .brand>div>b,
+body.v88-ready header .brand>div>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.v88-ready #v88RoleBadge{margin-left:0;flex-shrink:0}
+@media(max-width:440px){
+  body.v88-ready #v88RoleBadge{min-width:42px;max-width:62px;padding:5px 6px;font-size:.57rem}
+  body.v88-ready header .brand{gap:7px!important}
+  body.v88-ready header .brand-logo[src*="v74-efgc-logo"]{
+    width:36px!important;height:36px!important;flex:0 0 36px!important}
+}
