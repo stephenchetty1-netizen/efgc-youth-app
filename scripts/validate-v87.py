@@ -75,19 +75,32 @@ def run() -> int:
             check(result.returncode == 0, f"JavaScript syntax: {file.name}: {result.stderr.strip()}")
 
     manifest = json.loads((ROOT / "manifest.webmanifest").read_text("utf-8"))
-    check(str(manifest.get("start_url", "")).startswith("./?v=87"), "Manifest must open the V87 app")
+    check(str(manifest.get("start_url", "")).startswith("./?v=88"), "Manifest must open the V88 app")
     for icon in manifest.get("icons", []):
         target = local_asset(icon.get("src", ""), "manifest")
         check(bool(target and target.is_file()), f"Manifest icon missing: {icon.get('src')}")
     check(bool(manifest.get("icons")), "App manifest has no icon")
 
     required = (
-        "v87-network.js", "v87-dashboard.js", "v87-ministry.js", "v87-admin.js",
+        "v87-network.js", "v87-dashboard.js", "v87-ministry.js", "v87-admin.js", "v88-layout.js",
         "v85-app-polish.js", "v66-whatsapp-otp.js", "v75-roster-multi.js",
         "v62-notifications.js", "v63-duty-ack.js"
     )
     for name in required:
         check(ROOT / name in parser.scripts, f"Required feature is not included: {name}")
+
+    check(ROOT / "v88.css" in parser.styles, "V88 responsive layout stylesheet is not loaded")
+    dashboard = (ROOT / "v87-dashboard.js").read_text("utf-8")
+    layout = (ROOT / "v88-layout.js").read_text("utf-8")
+    style = (ROOT / "v88.css").read_text("utf-8")
+    check("v88NextEvent" in dashboard and "v88-quick-actions" in dashboard,
+          "The designed homepage or prominent event card was not loaded")
+    check("v88MobileNav" in layout and "v88MoreBackdrop" in layout,
+          "Responsive role-aware navigation is incomplete")
+    check("body.v88-ready .v88-mobile-nav" in style,
+          "Mobile navigation layout is missing")
+    check("body.v88-ready #mockBottomNav{display:none" in style,
+          "Legacy mobile dock is still visible behind V88")
 
     for ref in (
         "assets/v74-login-poster.webp", "assets/v74-efgc-logo.webp",
