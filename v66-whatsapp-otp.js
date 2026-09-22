@@ -30,7 +30,7 @@
   }
 
   function isRegistrationMode() {
-    return loginRole !== 'admin' && !$('#nameField')?.classList.contains('hidden');
+    return !$('#nameField')?.classList.contains('hidden');
   }
 
   function syncForgotButton() {
@@ -44,7 +44,7 @@
       $('#continueButton')?.insertAdjacentElement('afterend', btn);
       btn.addEventListener('click', openResetModal);
     }
-    btn.classList.toggle('hidden', loginRole === 'admin' || isRegistrationMode());
+    btn.classList.toggle('hidden', isRegistrationMode() || $('#loginPhone')?.value.trim().toLowerCase() === 'admin');
   }
 
   function ensureResetModal() {
@@ -175,8 +175,7 @@
       phone: $('#loginPhone')?.value.trim() || '',
       password: $('#loginPassword')?.value || '',
       dob: $('#loginDob')?.value || '',
-      role: loginRole,
-      leaderRole: $('#loginRoleText')?.value.trim() || '',
+      role: 'youth',
     };
   }
 
@@ -186,7 +185,7 @@
     if (d.password.length < 10) throw new Error('Use a password with at least 10 characters.');
     if (!d.dob) throw new Error('Date of birth is required.');
     if (!$('#loginPhoto')?.files?.length) throw new Error('A face photo is required for first-time registration.');
-    if (d.role === 'youth' && (!$('#parentName')?.value.trim() || !$('#parentPhone')?.value.trim() || !$('#emergencyName')?.value.trim() || !$('#emergencyPhone')?.value.trim())) {
+    if (!$('#parentName')?.value.trim() || !$('#parentPhone')?.value.trim() || !$('#emergencyName')?.value.trim() || !$('#emergencyPhone')?.value.trim()) {
       throw new Error('Parent/guardian and emergency contact details are required.');
     }
   }
@@ -220,6 +219,12 @@
   function registrationMessage(text) { const el=$('#v66RegistrationMessage'); if(el) el.textContent=text || ''; }
 
   async function finish(profile, authUser) {
+    document.activeElement?.blur?.();
+    try { navigator.virtualKeyboard?.hide?.(); } catch (_) {}
+    const passwordInput = $('#loginPassword');
+    if (passwordInput) { passwordInput.value = ''; passwordInput.type = 'password'; }
+    const showButton = $('#efgcTogglePassword');
+    if (showButton) { showButton.textContent = 'Show'; showButton.setAttribute('aria-pressed', 'false'); }
     session = {
       name: profile.full_name || 'EFGC Member',
       phone: profile.phone || '',
@@ -227,7 +232,9 @@
       approval_status: profile.approval_status || 'approved',
       uid: profile.id || authUser?.id,
     };
-    localStorage.setItem('efgcYouthSession', JSON.stringify(session));
+    localStorage.removeItem('efgcYouthSession');
+    sessionStorage.removeItem('efgcYouthSession');
+    (EFGCAuth.remembersDevice() ? localStorage : sessionStorage).setItem('efgcYouthSession', JSON.stringify(session));
     setLoginMessage(session.role === 'leader' && session.approval_status !== 'approved'
       ? 'Your Leader application is signed in and awaiting Admin approval.'
       : 'Secure sign-in complete.');
@@ -235,6 +242,7 @@
   }
 
   async function completeRegistration(d, result) {
+    EFGCAuth.setRememberDevice(Boolean($('#rememberDevice')?.checked));
     EFGCAuth.setSession(result.session);
     const base = result.profile;
     let profile = await EFGCAuth.upsertProfile({
@@ -244,7 +252,7 @@
       face_photo_path:base?.face_photo_path || null,
       role:base.role,
       approval_status:base.approval_status,
-      leader_role:base.role === 'leader' ? (d.leaderRole || base.leader_role || 'EFGC Youth Leader') : null,
+      leader_role:null,
     });
     const photo = $('#loginPhoto')?.files?.[0];
     if (photo) {
@@ -255,19 +263,17 @@
         leader_role:profile.leader_role,
       }) || profile;
     }
-    if (d.role === 'youth') {
-      await EFGCAuth.upsertSafeguarding({
-        parent_name:$('#parentName').value.trim(), parent_phone:$('#parentPhone').value.trim(),
-        emergency_name:$('#emergencyName').value.trim(), emergency_phone:$('#emergencyPhone').value.trim(),
-      });
-    }
+    await EFGCAuth.upsertSafeguarding({
+      parent_name:$('#parentName').value.trim(), parent_phone:$('#parentPhone').value.trim(),
+      emergency_name:$('#emergencyName').value.trim(), emergency_phone:$('#emergencyPhone').value.trim(),
+    });
     return finish(profile, result.session.user);
   }
 
   async function createRegistration(d, phoneVerificationToken = null) {
     const result = await authBridge({
-      action:'register', role:d.role, name:d.name, phone:d.phone, password:d.password,
-      leaderRole:d.leaderRole, phoneVerificationToken,
+      action:'register', role:'youth', name:d.name, phone:d.phone, password:d.password,
+      phoneVerificationToken,
     });
     return completeRegistration(d, result);
   }
@@ -314,7 +320,7 @@
 
   window.loginUser = async () => {
     syncForgotButton();
-    if (!isRegistrationMode() || loginRole === 'admin') return originalLoginUser();
+    if (!isRegistrationMode()) return originalLoginUser();
     const d = readRegistrationForm();
     const button = $('#continueButton');
     if (button) button.disabled = true;
@@ -330,8 +336,9 @@
   };
 
   document.addEventListener('click', (e) => {
-    if (e.target.closest('.login-type') || e.target.closest('[data-auth-mode]')) setTimeout(syncForgotButton, 20);
+    if (e.target.closest('[data-auth-mode]')) setTimeout(syncForgotButton, 20);
   });
+  $('#loginPhone')?.addEventListener('input', syncForgotButton);
   const login = $('#login');
   if (login) new MutationObserver(() => syncForgotButton()).observe(login, { subtree:true, childList:true, attributes:true, attributeFilter:['class'] });
   syncForgotButton();
