@@ -105,6 +105,42 @@ def verify(browser, width: int, screen_width: int, screenshot: str) -> None:
         page.screenshot(path=str(OUTPUT / "efgc-v95-scripture-handset.png"), full_page=True)
         assert not page.locator("#v88MoreBackdrop").is_visible()
     if width == 393:
+        # V96 regression: a newly registered Youth account must NOT appear as an
+        # approved Leader or show an editable Main Youth Leader title.
+        page.evaluate("""() => {
+            const member = {
+              id:'00000000-0000-4000-8000-000000000002',
+              full_name:'Synthetic Youth Member',
+              phone:'',role:'youth',approval_status:'approved',leader_role:null
+            };
+            window.__v96OriginalProfile = window.EFGCAuth.getMyProfile;
+            window.EFGCAuth.getMyProfile = async () => member;
+            session = {uid:member.id,name:member.full_name,phone:'',
+              role:'youth',approval_status:'approved'};
+            renderShell();
+            document.querySelector('#mainMenu [data-tab="profile"]').click();
+        }""")
+        page.wait_for_function(
+            "() => document.querySelector('#profileCard h2')?.textContent === 'Synthetic Youth Member'",
+            timeout=10_000,
+        )
+        youth_card = page.locator("#profileCard")
+        assert youth_card.get_by_text("Youth Member", exact=True).count() > 0
+        assert youth_card.get_by_text("Main Youth Leader").count() == 0
+        assert youth_card.get_by_text("Approved Leader").count() == 0
+        assert page.locator("#ownProfileRole").count() == 0
+        preview_limit = page.evaluate(
+            "() => getComputedStyle(document.querySelector('#photoPreview')).maxWidth"
+        )
+        assert preview_limit == "100%", preview_limit
+        print("V96 YOUTH ROLE SAFETY PASS")
+        page.evaluate("""() => {
+            window.EFGCAuth.getMyProfile = window.__v96OriginalProfile;
+            session = {uid:'00000000-0000-4000-8000-000000000001',
+              name:'Layout Test',phone:'',role:'admin',approval_status:'approved'};
+            renderShell();
+        }""")
+    if width == 393:
         # Regression for V95: the Admin must not leave a private roster visible
         # after signing out while that dynamic route is open.
         page.evaluate("""() => {
