@@ -246,7 +246,9 @@
   function updatePublish() {
     const button = $('#birthdayPublish');
     const member = selectedMember();
-    const allowed = memberSharingPermission(member).ok;
+    const allowed = Boolean(member && memberSharingPermission(member).ok
+      && latestPreview?.memberId === member.id
+      && latestPreview?.name === member.full_name);
     if (button) button.disabled = !(latestPreview && $('#birthdayApproved')?.checked && isAdmin() && allowed);
     const downloadButton=$('#birthdayDownload');
     if(downloadButton) downloadButton.disabled=!(latestPreview && allowed);
@@ -389,7 +391,8 @@
     } catch (error) {
       showMessage('Could not export poster: ' + (error.message || 'Please try again.'), true);
     } finally {
-      if ($('#birthdayDownload')) $('#birthdayDownload').disabled = !latestPreview;
+      if ($('#birthdayDownload')) $('#birthdayDownload').disabled =
+        !(latestPreview && memberSharingPermission(selectedMember()).ok);
     }
   }
 
@@ -397,12 +400,29 @@
     if (!isAdmin() || !latestPreview || !$('#birthdayApproved')?.checked) return;
     const matched = selectedMember() || members.find(m => m.full_name?.toLowerCase() === latestPreview.name.toLowerCase());
     const share = memberSharingPermission(matched);
+    if (!matched || latestPreview.memberId !== matched.id || latestPreview.name !== matched.full_name) {
+      return showMessage('Choose the registered member and retain their verified name before publishing. Custom greetings can be downloaded but not posted automatically.', true);
+    }
     if(!share.ok) return showMessage(share.reason,true);
     const button = $('#birthdayPublish');
     button.disabled = true;
     try {
       const uid = EFGCAuth.userId();
       if (!uid) throw new Error('Admin session required.');
+      const [freshProfiles, freshPreferences, freshGuardians] = await Promise.all([
+        EFGCAuth.rest('profiles?select=id,full_name,birthday,archived_at&id=eq.' + encodeURIComponent(matched.id)),
+        EFGCAuth.rest('member_preferences?select=member_id,birthday_opt_in&member_id=eq.' + encodeURIComponent(matched.id)),
+        EFGCAuth.rest('member_guardian_permissions?select=member_id,birthday_and_photo_authorized&member_id=eq.' + encodeURIComponent(matched.id)),
+      ]);
+      const fresh = freshProfiles?.[0];
+      if (!fresh || fresh.archived_at || fresh.full_name !== latestPreview.name) {
+        throw new Error('This member is no longer eligible for this birthday greeting.');
+      }
+      memberConsents.set(matched.id, freshPreferences?.[0] || {});
+      guardianPermissions.set(matched.id, freshGuardians?.[0] || {});
+      if (!memberSharingPermission({...matched,birthday:fresh.birthday}).ok) {
+        throw new Error('Member or guardian has not authorised sharing this greeting.');
+      }
       const { name, blessing } = latestPreview;
       const content = 'Happy Birthday, ' + name + '! ' + blessing + ' With love from EFGC Youth.';
       const result = await EFGCAuth.rest('news_posts', {
