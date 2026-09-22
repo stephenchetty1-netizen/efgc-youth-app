@@ -94,12 +94,15 @@ function card(title, body, meta='') {
 
 function adminProfileCard(p){
   const pendingLeader = p.role === 'leader' && p.approval_status === 'pending';
+  const approvedLeader = p.role === 'leader' && p.approval_status === 'approved';
   const eligibleYouth = p.role === 'youth' && p.approval_status === 'approved';
   const approvalActions = pendingLeader
     ? `<button class="primary-login" type="button" onclick="adminSetLeaderApproval('${p.id}','approved')">Approve Leader</button><button class="ghost-login" type="button" onclick="adminSetLeaderApproval('${p.id}','rejected')">Reject</button>`
     : eligibleYouth
       ? `<button class="primary-login" type="button" onclick="adminApproveAsLeader('${p.id}')">Approve as Leader</button>`
-      : '';
+      : approvedLeader
+        ? `<button class="ghost-login" type="button" onclick="adminRevokeLeader('${p.id}')">Remove Leader Access</button>`
+        : '';
   const resetAction = p.role !== 'admin' ? `<button class="ghost-login member-password-reset" type="button" data-user-id="${escapeHtml(p.id)}" data-user-name="${escapeHtml(p.full_name)}">Reset Password</button>` : '';
   const actions = approvalActions || resetAction ? `<div class="admin-actions">${approvalActions}${resetAction}</div>` : '';
   return `<article class="card"><h3>${escapeHtml(p.full_name)}</h3><small>${escapeHtml(p.leader_role || '')}</small><p>${escapeHtml(`${p.role} • ${p.approval_status}`)}</p>${actions}</article>`;
@@ -136,6 +139,19 @@ window.adminApproveAsLeader = async (id) => {
     setAdminMessage('Youth member approved as Leader. Leader tools will unlock on their next sign-in or session refresh.');
   } catch (e) {
     setAdminMessage('Leader approval failed: ' + (e.message || 'Check Admin permissions.'));
+  }
+};
+
+window.adminRevokeLeader = async (id) => {
+  if (session?.role !== 'admin' || !session.uid) return;
+  if (!window.confirm('Remove this member’s EFGC Leader access and return them to Youth access?')) return;
+  try {
+    setAdminMessage('Removing Leader access…');
+    await EFGCLive.adminDemoteLeader(id);
+    await renderLiveData();
+    setAdminMessage('Leader access removed. This account now has Youth permissions.');
+  } catch (e) {
+    setAdminMessage('Could not remove Leader access: ' + (e.message || 'Check Admin permissions.'));
   }
 };
 
