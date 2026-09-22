@@ -26,48 +26,41 @@
 
   function syncUi() {
     ensureModeSwitch();
-    const admin = loginRole === 'admin';
-    const registering = !admin && authMode === 'register';
-
+    const registering = authMode === 'register';
     $('#emailField')?.classList.add('hidden');
     $('#passwordRecoveryControls')?.classList.add('hidden');
     $('#passwordResetPanel')?.classList.add('hidden');
     $('#supabaseOtpBox')?.remove();
     $('#passwordField')?.classList.remove('hidden');
-    $('#phoneField')?.classList.toggle('hidden', admin);
+    $('#phoneField')?.classList.remove('hidden');
     $('#nameField')?.classList.toggle('hidden', !registering);
     $('#dobField')?.classList.toggle('hidden', !registering);
     $('#photoField')?.classList.toggle('hidden', !registering);
-    $('#roleField')?.classList.toggle('hidden', !(registering && loginRole === 'leader'));
-    $('#youthSafeguardingFields')?.classList.toggle('hidden', !(registering && loginRole === 'youth'));
+    $('#roleField')?.classList.add('hidden');
+    $('#youthSafeguardingFields')?.classList.toggle('hidden', !registering);
     $('#photoPrivacyNote')?.classList.toggle('hidden', !registering);
-    $('#noEmailModeSwitch')?.classList.toggle('hidden', admin);
-    document.querySelectorAll('#noEmailModeSwitch [data-auth-mode]').forEach((b) => b.classList.toggle('active', b.dataset.authMode === authMode));
-
-    const password = $('#loginPassword');
-    if (password) password.placeholder = admin ? 'Enter your Admin password' : 'Enter your password';
-    const button = $('#continueButton');
-    if (button) button.textContent = admin ? 'Sign In Securely' : registering ? 'Create Secure Profile' : 'Sign In';
-
-    if (admin) {
-      $('#loginHint').textContent = 'Secure Admin sign-in uses your password. No email is required.';
-      message('');
-    } else if (registering) {
-      $('#loginHint').textContent = loginRole === 'leader'
-        ? 'Create your Leader profile with cellphone number and password. Leader access remains pending until Admin approval.'
-        : 'Create your Youth profile with cellphone number and password. Complete the safeguarding details below.';
-      message('');
-    } else {
-      $('#loginHint').textContent = `Returning ${loginRole === 'leader' ? 'Leaders' : 'Youth'}: sign in with your cellphone number and password.`;
-      message('');
+    document.querySelectorAll('#noEmailModeSwitch [data-auth-mode]').forEach((button) => {
+      button.classList.toggle('active', button.dataset.authMode === authMode);
+    });
+    const phone = $('#loginPhone');
+    if (phone) {
+      phone.placeholder = registering ? 'e.g. 071 234 5678' : '071 234 5678 or admin';
+      phone.autocomplete = registering ? 'tel' : 'username';
     }
+    const password = $('#loginPassword');
+    if (password) password.placeholder = registering ? 'Create your password' : 'Enter your password';
+    const button = $('#continueButton');
+    if (button) button.textContent = registering ? 'Create Youth Profile' : 'Sign In';
+    $('#loginTitle').textContent = registering ? 'Join EFGC Youth' : 'EFGC Youth Sign In';
+    $('#loginHint').textContent = registering
+      ? 'Register as Youth. An Admin can approve your account for Leader access later.'
+      : 'One secure sign-in for Youth, approved Leaders and Admins. Enter your registered cellphone number and password. Existing Admin without a linked number: use admin as the username.';
   }
 
-  const originalSelectRole = window.selectRole;
-  window.selectRole = function(role) {
-    originalSelectRole(role);
-    authMode = 'signin';
-    setTimeout(syncUi, 0);
+  // Compatibility with older welcome artwork: role selection never changes login permissions.
+  window.selectRole = function() {
+    loginRole = 'youth';
+    syncUi();
   };
 
   async function authBridge(payload) {
@@ -124,8 +117,7 @@
       phone: $('#loginPhone')?.value.trim() || '',
       password: $('#loginPassword')?.value || '',
       dob: $('#loginDob')?.value || '',
-      role: loginRole,
-      leaderRole: $('#loginRoleText')?.value.trim() || '',
+      role: 'youth',
     };
   }
 
@@ -135,10 +127,8 @@
     if (d.password.length < 10) throw new Error('Use a password with at least 10 characters.');
     if (!d.dob) throw new Error('Date of birth is required.');
     if (!$('#loginPhoto')?.files?.length) throw new Error('A face photo is required for first-time registration.');
-    if (d.role === 'youth') {
-      if (!$('#parentName')?.value.trim() || !$('#parentPhone')?.value.trim() || !$('#emergencyName')?.value.trim() || !$('#emergencyPhone')?.value.trim()) {
-        throw new Error('Parent/guardian and emergency contact details are required.');
-      }
+    if (!$('#parentName')?.value.trim() || !$('#parentPhone')?.value.trim() || !$('#emergencyName')?.value.trim() || !$('#emergencyPhone')?.value.trim()) {
+      throw new Error('Parent/guardian and emergency contact details are required.');
     }
   }
 
@@ -153,7 +143,7 @@
       face_photo_path: base?.face_photo_path || null,
       role: base.role,
       approval_status: base.approval_status,
-      leader_role: base.role === 'leader' ? (d.leaderRole || base.leader_role || 'EFGC Youth Leader') : null,
+      leader_role: null,
     });
 
     const photo = $('#loginPhoto')?.files?.[0];
@@ -170,19 +160,19 @@
       }) || profile;
     }
 
-    if (d.role === 'youth') {
-      await EFGCAuth.upsertSafeguarding({
-        parent_name: $('#parentName').value.trim(),
-        parent_phone: $('#parentPhone').value.trim(),
-        emergency_name: $('#emergencyName').value.trim(),
-        emergency_phone: $('#emergencyPhone').value.trim(),
-      });
-    }
+    await EFGCAuth.upsertSafeguarding({
+      parent_name: $('#parentName').value.trim(),
+      parent_phone: $('#parentPhone').value.trim(),
+      emergency_name: $('#emergencyName').value.trim(),
+      emergency_phone: $('#emergencyPhone').value.trim(),
+    });
     return finish(profile, result.session.user);
   }
 
-  async function adminSignIn(d) {
-    if (!d.password) throw new Error('Enter your Admin password.');
+  async function adminAliasSignIn(d) {
+    // Keep the existing Admin account accessible until the Admin links a cellphone.
+    // The backend verifies the password and the Admin role against Supabase.
+    if (!d.password) throw new Error('Enter your password.');
     const result = await authBridge({ action: 'admin-login', password: d.password });
     EFGCAuth.setRememberDevice(Boolean($('#rememberDevice')?.checked));
     EFGCAuth.setSession(result.session);
@@ -200,19 +190,24 @@
     const button = $('#continueButton');
     if (button) button.disabled = true;
     try {
-      if (d.role === 'admin') return await adminSignIn(d);
-      if (!d.phone) throw new Error('Enter your cellphone number.');
+      if (!d.phone) throw new Error('Enter your registered cellphone number or Admin username.');
       if (!d.password) throw new Error('Enter your password.');
 
       if (authMode === 'register') {
         validateRegistration(d);
+        if (!/^\\+27\\d{9}$/.test(EFGCAuth.normalizeZA(d.phone))) {
+          throw new Error('Enter a valid South African cellphone number to register.');
+        }
         const result = await authBridge({
-          action: 'register', role: d.role, name: d.name, phone: d.phone,
-          password: d.password, leaderRole: d.leaderRole,
+          action: 'register', role: 'youth', name: d.name, phone: d.phone,
+          password: d.password,
         });
         return await completeRegistration(d, result);
       }
 
+      // One login screen. Admin is a temporary username only for the existing
+      // password-only Admin account. Everyone else signs in by cellphone.
+      if (d.phone.toLowerCase() === 'admin') return await adminAliasSignIn(d);
       const result = await authBridge({ action: 'login', phone: d.phone, password: d.password });
       EFGCAuth.setRememberDevice(Boolean($('#rememberDevice')?.checked));
       EFGCAuth.setSession(result.session);
