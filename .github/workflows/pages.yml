@@ -1,4 +1,4 @@
-name: Validate and deploy EFGC Youth V91
+name: Validate and deploy EFGC Youth V92
 
 on:
   push:
@@ -43,7 +43,7 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Validate V89 source, design layout, manifest and safeguarding gates
+      - name: Validate V92 source, phone layout, manifest and safeguarding gates
         run: python3 scripts/validate-v87.py
 
       - name: Smoke-test static site and app entrypoints
@@ -67,7 +67,7 @@ jobs:
               assert len(data)==8+struct.unpack_from('<I',data,4)[0]
               print('OK complete',asset,len(data),'bytes')
           PY
-          for file in index.html manifest.webmanifest v87-network.js v87-dashboard.js v87-ministry.js v87-admin.js v87.css v88-layout.js v88.css v91.css assets/v74-efgc-logo.webp assets/v74-login-poster.webp; do
+          for file in index.html manifest.webmanifest v87-network.js v87-dashboard.js v87-ministry.js v87-admin.js v87.css v88-layout.js v88.css v91.css v92.css assets/v74-efgc-logo.webp assets/v74-login-poster.webp; do
             curl --fail --silent --show-error "http://127.0.0.1:8080/$file" -o /dev/null
             echo "OK $file"
           done

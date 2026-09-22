@@ -5,6 +5,22 @@
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, c =>
     ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const state = () => { try { return session?.uid ? session : null; } catch { return null; } };
+  // Android Chrome may report a 980px desktop viewport on a real phone.
+  // Select the handset shell from device capabilities, not viewport alone.
+  function syncHandsetLayout() {
+    const ua = navigator.userAgent || '';
+    const edge = Math.min(screen.width || 9999, screen.height || 9999);
+    const coarse = Boolean(navigator.maxTouchPoints > 0 ||
+      window.matchMedia?.('(pointer:coarse)')?.matches);
+    const mobile = navigator.userAgentData?.mobile === true ||
+      /Android.*Mobile|iPhone|iPod|Mobile Safari/i.test(ua) ||
+      (/Android/i.test(ua) && coarse && edge <= 1200) ||
+      (coarse && edge <= 600) ||
+      (coarse && edge <= 1200 && screen.height >= screen.width * 1.35 &&
+        (window.devicePixelRatio || 1) >= 1.5);
+    document.body.classList.toggle('v92-phone', mobile);
+    return mobile;
+  }
   let currentTab = 'home';
   let lastTrigger = null;
   const path = {
@@ -100,6 +116,7 @@
     });
   }
   function sync() {
+    syncHandsetLayout();
     ensure();
     const s=state();
     const active=Boolean(s);
@@ -180,7 +197,9 @@
     return result;
   };
   const init=()=>sync();
+  window.addEventListener('resize',syncHandsetLayout,{passive:true});
+  window.addEventListener('orientationchange',syncHandsetLayout,{passive:true});
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});
   else init();
-  window.EFGCV88Layout={sync,route,openMore,closeMore};
+  window.EFGCV88Layout={sync,route,openMore,closeMore,syncHandsetLayout};
 })();

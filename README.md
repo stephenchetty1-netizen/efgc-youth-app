@@ -2,12 +2,12 @@
 
 A mobile-first EFGC Youth website with a unified Youth / approved Leader / Admin sign-in, an official church identity, and a safeguarded ministry experience.
 
-## Current layout release: V91 dashboard
+## Current layout release: V92 phone navigation
 - The V91 home is rendered in the initial HTML: Shalom greeting after sign-in, authentic EFGC emblem, next event, role-specific overview, four quick actions, then compact Scripture and Youth news. This layout is never conditional on prior Admin/network calls.
 - Five-destination mobile navigation: Home, Events, Journey / Leader Hub / Ministry, News and More.
 - Role-specific links in the More menu, including roster and Admin Centre where authorised.
 - Birthday Studio, attendance, member directory, prayer, testimony review, consent and WhatsApp draft features from V87 remain connected.
-- GitHub Pages release validator: `python3 scripts/validate-v87.py`. The historical filename is retained, but the validator now checks the V88 app.
+- GitHub Pages release validator: `python3 scripts/validate-v87.py`. The historical filename is retained, but the validator now checks the current layout release.
 - CSS/JS resources are versioned so a device can refresh the new layout instead of reusing an old cached script.
 
 ## Safeguarding and delivery
@@ -24,3 +24,8 @@ Source deployment: `.github/workflows/pages.yml`. The GitHub Pages build must su
 
 ## V91 layout delivery
 The web shell provides the recommended visual hierarchy; the Android V90 test wrapper opens the online site, so a fresh app restart refreshes the V91 layout without rebuilding the native APK. The device push-notifications implementation is not yet available; in-app alerts remain usable while the app is open. Android device verification is still required.
+
+## V92: reliable phone layout
+- Android handset detection overrides Chrome's desktop-sized viewport; the signed-in app uses Home, Events, Ministry, News, More bottom navigation even if Chrome reports more than 760 CSS pixels.
+- The old 12-button main menu and decorative footer are hidden on detected handsets, with the full Admin menu still available under More. The official emblem is cropped to a circle without replacing the EFGC artwork.
+- Current Supabase data at repair time: one active member and no events; the dashboard correctly reports what is stored rather than fabricating attendance or meetings.
