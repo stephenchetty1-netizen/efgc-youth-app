@@ -77,3 +77,8 @@ body.v88-ready.v92-phone #v88RoleBadge{
  }
  body.v88-ready.v92-phone .v91-hero-emblem{width:103px!important;height:103px!important}
 }
+
+/* The three Admin overview tiles should not leave a half-empty row. */
+body.v88-ready.v92-phone #v87LiveOverview > .v87-mini-stat:last-child:nth-child(odd){
+  grid-column:1 / -1!important;
+}
