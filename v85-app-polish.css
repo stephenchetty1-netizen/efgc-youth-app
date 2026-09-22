@@ -1,0 +1,68 @@
+/* EFGC Youth V85: accessible login controls + admin-only Birthday Studio. */
+#passwordField { margin: 12px 0 8px; }
+#passwordField > label { margin-bottom: 5px; }
+.efgc-password-row { position: relative; width: 100%; }
+.efgc-password-row #loginPassword {
+  width: 100%; min-width: 0; padding-right: 84px !important;
+}
+#efgcTogglePassword {
+  position: absolute; top: 50%; right: 5px; transform: translateY(-50%);
+  min-width: 70px; min-height: 40px; border: 0; border-radius: 9px;
+  color: #064f93; background: #e7f3ff; font: 800 13px/1.1 system-ui,sans-serif;
+  cursor: pointer; touch-action: manipulation; z-index: 2;
+}
+#efgcTogglePassword:focus-visible, #rememberDevice:focus-visible {
+  outline: 3px solid #34c9ff; outline-offset: 2px;
+}
+#rememberField.efgc-remember-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  margin: 12px 0 18px; cursor: pointer; font-size: 14px; line-height: 1.35;
+}
+#rememberField.efgc-remember-row.hidden { display: none !important; }
+#rememberDevice {
+  flex: 0 0 20px; display: block !important; width: 20px !important;
+  height: 20px !important; margin: 1px 0 0 !important; padding: 0 !important;
+  accent-color: #0b89ec; cursor: pointer;
+}
+#rememberField small { display: block; margin-top: 3px; font-size: 11px; font-weight: 500; line-height: 1.4; color: #6583a1; }
+body:not(.mock-authenticated) #rememberField small { color: #d2e9ff !important; }
+
+#birthdayStudio { margin: 15px 0 22px; border: 1px solid #9bcaff; background: linear-gradient(145deg,#f9fcff,#edf6ff); border-radius: 22px; padding: 18px; color: #12345d; }
+#birthdayStudio h2, #birthdayStudio h3 { color: #093c78 !important; margin: 6px 0 10px; }
+#birthdayStudio p { line-height: 1.5; }
+.efgc-birthday-kicker { font-size: 11px; color: #1767b9; letter-spacing: 2px; font-weight: 900; }
+.efgc-birthday-upcoming { margin: 12px 0; font-size: 13px; color: #164b83; }
+.efgc-birthday-control { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: end; }
+.efgc-birthday-control label { font-size: 13px; color: #123b66; margin: 8px 0; }
+#birthdayStudio select, #birthdayStudio textarea {
+  display: block; width: 100%; margin-top: 6px;
+  background: white; color: #102e51; border: 1px solid #a6c9e9;
+  border-radius: 12px; padding: 12px; font: 500 15px system-ui,sans-serif;
+}
+#birthdayStudio textarea { min-height: 110px; resize: vertical; }
+.efgc-birthday-actions { display: flex; gap: 9px; flex-wrap: wrap; margin: 15px 0 6px; }
+.efgc-birthday-actions button { padding: 11px 14px; border: 1px solid #1a75cf; border-radius: 11px; background: #086abd; color: #fff; font: 800 13px system-ui,sans-serif; cursor: pointer; }
+.efgc-birthday-actions button:disabled { opacity: .55; cursor: not-allowed; }
+.efgc-birthday-actions button.efgc-outline { background: #fff; color: #0b559a; }
+.efgc-birthday-poster {
+  max-width: 430px; margin: 18px auto; padding: 32px 22px 36px; min-height: 490px;
+  border: 2px solid #e1ba57; border-radius: 22px;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  background: radial-gradient(circle at 50% 14%,#1968ac 0%,#053563 55%,#03132f 100%);
+  box-shadow: 0 16px 36px rgba(2,25,55,.24); text-align: center; color: #fff;
+}
+.efgc-birthday-poster img { display: block; object-fit: contain; width: 84px; height: 84px; margin: 0 auto 15px; border-radius: 50%; background: #fff; }
+.efgc-birthday-poster small { color: #ffda6d !important; font-weight: 900; letter-spacing: 2px; }
+.efgc-birthday-poster h3 { color: #fff !important; font-size: clamp(30px,8vw,42px); margin: 16px 0 6px !important; line-height: 1; }
+.efgc-birthday-poster strong { font-size: clamp(24px,6vw,36px); line-height: 1.2; color: #ffdb76; overflow-wrap: anywhere; }
+.efgc-birthday-poster p { font-size: 14px; color: #f1f8ff; max-width: 345px; margin: 17px 0; }
+.efgc-birthday-poster .efgc-birthday-verse { color: #ffda6d; font: italic 16px Georgia,serif; }
+#birthdayStudio .efgc-birthday-consent { display: flex; gap: 9px; align-items: flex-start; font-size: 12px; line-height: 1.5; margin: 14px 0; }
+#birthdayStudio .efgc-birthday-consent input { width: 19px; height: 19px; flex: 0 0 19px; margin: 1px 0; padding: 0; accent-color: #0b76c8; }
+#birthdayStudioMessage { min-height: 22px; font-size: 13px; line-height: 1.5; color: #164b83; }
+@media (max-width: 570px) {
+ .efgc-birthday-control { grid-template-columns: 1fr; gap: 0; }
+ #birthdayStudio { padding: 14px; border-radius: 18px; }
+ .efgc-birthday-poster { min-height: 430px; padding: 25px 15px; }
+ .efgc-birthday-actions button { flex: 1 1 44%; }
+}
