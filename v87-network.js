@@ -43,6 +43,7 @@
         notice('Check your internet connection, then use Sign In again. No account details were changed.');
         return;
       }
+      clearCache();
       const current = await window.EFGCAuth.getMyProfile();
       if (!current?.id) throw new Error('Unable to confirm your account. Please sign in again.');
       if (current.archived_at) throw new Error('This account is archived. Contact an EFGC Youth Admin.');
@@ -58,19 +59,31 @@
       if (button?.isConnected) { button.disabled = false; button.textContent = 'Retry connection'; }
     }
   }
+  const getCache = new Map();
+  function clearCache() { getCache.clear(); }
   if (window.EFGCAuth?.rest) {
     const originalRest = window.EFGCAuth.rest.bind(window.EFGCAuth);
     window.EFGCAuth.rest = async (path, options = {}) => {
-      try { return await originalRest(path, options); }
-      catch (error) {
+      const method = String(options?.method || 'GET').toUpperCase();
+      if (method !== 'GET') clearCache();
+      const userId = window.EFGCAuth.userId?.() || '';
+      const key = userId + '|' + path;
+      if (method === 'GET' && userId) {
+        const existing = getCache.get(key);
+        if (existing && existing.expires > Date.now()) return existing.promise;
+      }
+      const run = originalRest(path, options).catch(error => {
+        getCache.delete(key);
         if (networkError(error)) {
           notice('EFGC could not reach the server. Check your connection and tap Retry. Your last action may not have completed.');
         }
         throw error;
-      }
+      });
+      if (method === 'GET' && userId) getCache.set(key, {promise:run,expires:Date.now()+5000});
+      return run;
     };
   }
-  window.EFGCNetwork = { notice, clear, retry, networkError };
+  window.EFGCNetwork = { notice, clear, retry, networkError, clearCache };
   const boot = () => {
     banner();
     if (location.protocol !== 'https:' && !['http:', 'capacitor:'].includes(location.protocol)) {
