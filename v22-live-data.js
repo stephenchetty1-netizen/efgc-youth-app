@@ -125,7 +125,7 @@
       if (!recorded_by) throw new Error('Authentication required.');
       if (!Array.isArray(entries) || !entries.length) throw new Error('No Youth attendance entries to save.');
       const rows = entries.map((e) => {
-        if (!['present', 'absent'].includes(e.status)) throw new Error('Every Youth must be marked Present or Absent.');
+        if (!['present', 'absent', 'excused'].includes(e.status)) throw new Error('Every Youth must be marked Present or Absent.');
         return { event_id: Number(eventId), youth_id: e.youth_id, status: e.status, recorded_by };
       });
       return window.EFGCAuth.rest('attendance?on_conflict=event_id,youth_id', {
