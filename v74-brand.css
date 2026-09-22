@@ -62,7 +62,7 @@ body.v74-signed-out #login{
   position:absolute;
   inset:-24px;
   z-index:0;
-  background: url("assets/efgc-login-2026-09-20.webp?v=84.0") center center / cover no-repeat;
+  background: url("assets/v74-login-poster.webp?v=87.0") center center / cover no-repeat;
   filter:blur(18px) brightness(.72);
   pointer-events:none;
 }
@@ -136,9 +136,9 @@ body.v74-form-open .login-card textarea{
 .v74-back{margin-bottom:12px!important}
 
 .v74-official-logo,
-.brand-logo[src*="v76-efgc-logo"],
-.hero-logo[src*="v76-efgc-logo"],
-.official-footer-logo[src*="v76-efgc-logo"]{
+.brand-logo[src*="v74-efgc-logo"],
+.hero-logo[src*="v74-efgc-logo"],
+.official-footer-logo[src*="v74-efgc-logo"]{
   object-fit:contain!important;
   object-position:center!important;
   background:transparent!important;
@@ -146,16 +146,16 @@ body.v74-form-open .login-card textarea{
   border-radius:50%!important;
   filter:drop-shadow(0 0 7px rgba(66,193,255,.28)) drop-shadow(0 5px 12px rgba(0,15,40,.22))!important;
 }
-.mock-authenticated .brand-logo[src*="v76-efgc-logo"]{
+.mock-authenticated .brand-logo[src*="v74-efgc-logo"]{
   width:62px!important;
   height:62px!important;
   flex:0 0 62px!important;
 }
-.mock-authenticated .hero-logo[src*="v76-efgc-logo"]{
+.mock-authenticated .hero-logo[src*="v74-efgc-logo"]{
   width:132px!important;
   height:132px!important;
 }
-.official-footer-logo[src*="v76-efgc-logo"]{
+.official-footer-logo[src*="v74-efgc-logo"]{
   width:110px!important;
   height:110px!important;
 }
@@ -183,34 +183,34 @@ body.v74-form-open .login-card textarea{
 }
 
 /* EFGC responsive logo sizing — keep the complete official artwork visible. */
-.mock-authenticated header .brand-logo[src*="v76-efgc-logo"]{
+.mock-authenticated header .brand-logo[src*="v74-efgc-logo"]{
   width:44px!important;
   height:44px!important;
   flex:0 0 44px!important;
   object-fit:contain!important;
 }
-.mock-authenticated .hero-logo[src*="v76-efgc-logo"]{
+.mock-authenticated .hero-logo[src*="v74-efgc-logo"]{
   width:98px!important;
   height:98px!important;
   max-width:100%!important;
   object-fit:contain!important;
 }
-.official-footer-logo[src*="v76-efgc-logo"]{
+.official-footer-logo[src*="v74-efgc-logo"]{
   width:78px!important;
   height:78px!important;
   object-fit:contain!important;
 }
 @media(max-width:699px){
-  .mock-authenticated header .brand-logo[src*="v76-efgc-logo"]{
+  .mock-authenticated header .brand-logo[src*="v74-efgc-logo"]{
     width:38px!important;
     height:38px!important;
     flex:0 0 38px!important;
   }
-  .mock-authenticated .hero-logo[src*="v76-efgc-logo"]{
+  .mock-authenticated .hero-logo[src*="v74-efgc-logo"]{
     width:70px!important;
     height:70px!important;
   }
-  .official-footer-logo[src*="v76-efgc-logo"]{
+  .official-footer-logo[src*="v74-efgc-logo"]{
     width:64px!important;
     height:64px!important;
   }
