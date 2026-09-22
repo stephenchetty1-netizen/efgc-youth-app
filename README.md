@@ -2,7 +2,7 @@
 
 A mobile-first EFGC Youth website with a unified Youth / approved Leader / Admin sign-in, an official church identity, and a safeguarded ministry experience.
 
-## Current layout release: V92 phone navigation
+## Current layout release: V93 handset polish
 - The V91 home is rendered in the initial HTML: Shalom greeting after sign-in, authentic EFGC emblem, next event, role-specific overview, four quick actions, then compact Scripture and Youth news. This layout is never conditional on prior Admin/network calls.
 - Five-destination mobile navigation: Home, Events, Journey / Leader Hub / Ministry, News and More.
 - Role-specific links in the More menu, including roster and Admin Centre where authorised.
@@ -29,3 +29,6 @@ The web shell provides the recommended visual hierarchy; the Android V90 test wr
 - Android handset detection overrides Chrome's desktop-sized viewport; the signed-in app uses Home, Events, Ministry, News, More bottom navigation even if Chrome reports more than 760 CSS pixels.
 - The old 12-button main menu and decorative footer are hidden on detected handsets, with the full Admin menu still available under More. The official emblem is cropped to a circle without replacing the EFGC artwork.
 - Current Supabase data at repair time: one active member and no events; the dashboard correctly reports what is stored rather than fabricating attendance or meetings.
+
+## V93 visual QA
+The V93 style increases text and tap targets, arranges three Admin overview cards in one balanced row on ordinary phones, and reduces excess bottom clearance. Its Chromium smoke test exercises a 393px Android handset and a phone reporting a 980px desktop-sized viewport. The test injects synthetic Admin data only for presentation checks; it does not use real member credentials or certify a particular Android device.
