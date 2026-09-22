@@ -116,6 +116,7 @@ function adminProfileCard(p){
       : approvedLeader
         ? `<button class="ghost-login" type="button" onclick="adminRevokeLeader('${p.id}')">Remove Leader Access</button>`
         : '';
+  const titleAction = approvedLeader ? `<label class="efgc-admin-title-edit">Leader title (Admin only)<select id="leaderTitle-${escapeHtml(p.id)}"><option value="EFGC Youth Leader" ${p.leader_role === 'EFGC Youth Leader' || !p.leader_role ? 'selected' : ''}>Youth Leader</option><option value="Assistant Youth Leader" ${p.leader_role === 'Assistant Youth Leader' ? 'selected' : ''}>Assistant Youth Leader</option><option value="Praise and Worship Leader" ${p.leader_role === 'Praise and Worship Leader' ? 'selected' : ''}>Praise and Worship Leader</option></select></label><button class="ghost-login" type="button" onclick="adminUpdateLeaderTitle('${p.id}')">Save Leader title</button>` : '';
   const resetAction = !isArchived && p.role !== 'admin' ? `<button class="ghost-login member-password-reset" type="button" data-user-id="${escapeHtml(p.id)}" data-user-name="${escapeHtml(p.full_name)}">Reset Password</button>` : '';
   const archiveAction = p.role !== 'admin'
     ? isArchived
@@ -125,7 +126,7 @@ function adminProfileCard(p){
   return `<article class="card v87-member-card" data-member-search="${escapeHtml((p.full_name+' '+(p.phone||'')+' '+p.role+' '+p.approval_status).toLowerCase())}" data-member-archived="${isArchived}">
     <h3>${escapeHtml(p.full_name)}</h3><small>${escapeHtml(p.leader_role || '')}</small>
     <p>${escapeHtml(p.role + ' • ' + (isArchived ? 'Archived' : p.approval_status))}</p>
-    <div class="admin-actions">${approvalActions}${resetAction}${archiveAction}</div>
+    <div class="admin-actions">${approvalActions}${titleAction}${resetAction}${archiveAction}</div>
   </article>`;
 }
 
@@ -161,6 +162,24 @@ window.adminApproveAsLeader = async (id) => {
   } catch (e) {
     setAdminMessage('Leader approval failed: ' + (e.message || 'Check Admin permissions.'));
   }
+};
+
+window.adminUpdateLeaderTitle = async (id) => {
+  if(session?.role!=='admin'||session?.approval_status!=='approved') return;
+  if(!/^[0-9a-f-]{36}$/i.test(String(id||''))) return;
+  const title=document.getElementById('leaderTitle-'+id)?.value;
+  const allowed=['EFGC Youth Leader','Assistant Youth Leader','Praise and Worship Leader'];
+  if(!allowed.includes(title)) return setAdminMessage('Choose a valid Leader title.');
+  try {
+    setAdminMessage('Saving Leader title…');
+    const rows=await EFGCAuth.rest('profiles?id=eq.'+encodeURIComponent(id)+'&role=eq.leader&approval_status=eq.approved&archived_at=is.null',{
+      method:'PATCH',headers:{'Content-Type':'application/json',Prefer:'return=representation'},
+      body:JSON.stringify({leader_role:title})
+    });
+    if(!Array.isArray(rows)||rows.length!==1) throw new Error('Leader title was not updated. Check Admin access.');
+    await renderLiveData();
+    setAdminMessage('Leader title saved.');
+  }catch(e){setAdminMessage('Could not save Leader title: '+(e.message||'Try again.'));}
 };
 
 window.adminRevokeLeader = async (id) => {
@@ -260,7 +279,7 @@ async function renderLiveData(){
       const profiles = await EFGCLive.adminProfiles();
     if (!stillCurrent()) return;
       const pending = profiles.filter(p => p.role === 'leader' && p.approval_status === 'pending').length;
-      $('#adminPanel').innerHTML = `<h2>Admin Centre</h2><article class="card"><h3>${profiles.length} account${profiles.length===1?'':'s'}</h3><p>${pending} pending Leader application${pending===1?'':'s'}.</p></article>${adminTools()}<h2>Member Directory</h2><label class="v87-search">Search members<input id="v87MemberSearch" type="search" placeholder="Search name, role or cellphone" autocomplete="off"></label><label class="v87-archive-check"><input id="v87ShowArchived" type="checkbox"> Show archived accounts</label><div id="v87MemberSearchStatus" aria-live="polite"></div><div id="v87MemberList">` + profiles.map(adminProfileCard).join('') + '</div>';
+      $('#adminPanel').innerHTML = `<h2>Admin Centre</h2><article class="card"><h3>${profiles.length} account${profiles.length===1?'':'s'}</h3><p>${pending} pending Leader application${pending===1?'':'s'}.</p></article>${adminTools()}<h2>Member Directory</h2><p>New registrations are Youth accounts. Use “Approve as Leader” to add an approved Leader to the directory and enable Leader access.</p><label class="v87-search">Search members<input id="v87MemberSearch" type="search" placeholder="Search name, role or cellphone" autocomplete="off"></label><label class="v87-archive-check"><input id="v87ShowArchived" type="checkbox"> Show archived accounts</label><div id="v87MemberSearchStatus" aria-live="polite"></div><div id="v87MemberList">` + profiles.map(adminProfileCard).join('') + '</div>';
     } catch(e){ errors.push(`Admin: ${e.message}`); }
   } else {
     $('#adminPanel').innerHTML='';
