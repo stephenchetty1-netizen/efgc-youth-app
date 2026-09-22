@@ -93,9 +93,10 @@ function card(title, body, meta='') {
 }
 
 function adminProfileCard(p){
-  const pendingLeader = p.role === 'leader' && p.approval_status === 'pending';
-  const approvedLeader = p.role === 'leader' && p.approval_status === 'approved';
-  const eligibleYouth = p.role === 'youth' && p.approval_status === 'approved';
+  const isArchived = Boolean(p.archived_at);
+  const pendingLeader = !isArchived && p.role === 'leader' && p.approval_status === 'pending';
+  const approvedLeader = !isArchived && p.role === 'leader' && p.approval_status === 'approved';
+  const eligibleYouth = !isArchived && p.role === 'youth' && p.approval_status === 'approved';
   const approvalActions = pendingLeader
     ? `<button class="primary-login" type="button" onclick="adminSetLeaderApproval('${p.id}','approved')">Approve Leader</button><button class="ghost-login" type="button" onclick="adminSetLeaderApproval('${p.id}','rejected')">Reject</button>`
     : eligibleYouth
@@ -103,9 +104,17 @@ function adminProfileCard(p){
       : approvedLeader
         ? `<button class="ghost-login" type="button" onclick="adminRevokeLeader('${p.id}')">Remove Leader Access</button>`
         : '';
-  const resetAction = p.role !== 'admin' ? `<button class="ghost-login member-password-reset" type="button" data-user-id="${escapeHtml(p.id)}" data-user-name="${escapeHtml(p.full_name)}">Reset Password</button>` : '';
-  const actions = approvalActions || resetAction ? `<div class="admin-actions">${approvalActions}${resetAction}</div>` : '';
-  return `<article class="card"><h3>${escapeHtml(p.full_name)}</h3><small>${escapeHtml(p.leader_role || '')}</small><p>${escapeHtml(`${p.role} • ${p.approval_status}`)}</p>${actions}</article>`;
+  const resetAction = !isArchived && p.role !== 'admin' ? `<button class="ghost-login member-password-reset" type="button" data-user-id="${escapeHtml(p.id)}" data-user-name="${escapeHtml(p.full_name)}">Reset Password</button>` : '';
+  const archiveAction = p.role !== 'admin'
+    ? isArchived
+      ? `<button class="ghost-login" type="button" onclick="adminArchiveMember('${p.id}',false)">Restore account</button>`
+      : `<button class="ghost-login" type="button" onclick="adminArchiveMember('${p.id}',true)">Archive account</button>`
+    : '';
+  return `<article class="card v87-member-card" data-member-search="${escapeHtml((p.full_name+' '+(p.phone||'')+' '+p.role+' '+p.approval_status).toLowerCase())}" data-member-archived="${isArchived}">
+    <h3>${escapeHtml(p.full_name)}</h3><small>${escapeHtml(p.leader_role || '')}</small>
+    <p>${escapeHtml(p.role + ' • ' + (isArchived ? 'Archived' : p.approval_status))}</p>
+    <div class="admin-actions">${approvalActions}${resetAction}${archiveAction}</div>
+  </article>`;
 }
 
 function adminTools(){
@@ -231,7 +240,7 @@ async function renderLiveData(){
     try {
       const profiles = await EFGCLive.adminProfiles();
       const pending = profiles.filter(p => p.role === 'leader' && p.approval_status === 'pending').length;
-      $('#adminPanel').innerHTML = `<h2>Admin Centre</h2><article class="card"><h3>${profiles.length} account${profiles.length===1?'':'s'}</h3><p>${pending} pending Leader application${pending===1?'':'s'}.</p></article>${adminTools()}<h2>Accounts</h2>` + profiles.slice(0,50).map(adminProfileCard).join('');
+      $('#adminPanel').innerHTML = `<h2>Admin Centre</h2><article class="card"><h3>${profiles.length} account${profiles.length===1?'':'s'}</h3><p>${pending} pending Leader application${pending===1?'':'s'}.</p></article>${adminTools()}<h2>Member Directory</h2><label class="v87-search">Search members<input id="v87MemberSearch" type="search" placeholder="Search name, role or cellphone" autocomplete="off"></label><label class="v87-archive-check"><input id="v87ShowArchived" type="checkbox"> Show archived accounts</label><div id="v87MemberSearchStatus" aria-live="polite"></div><div id="v87MemberList">` + profiles.map(adminProfileCard).join('') + '</div>';
     } catch(e){ errors.push(`Admin: ${e.message}`); }
   } else {
     $('#adminPanel').innerHTML='';
