@@ -25,7 +25,7 @@
     'Thank you for your faithfulness and commitment to EFGC Youth!',
     '',
     'One team. One mission. Serving Jesus together! 🙌'
-  ].join('\\n');
+  ].join('\n');
   const FIXED_REMINDER = Object.freeze({id:'efgc-leaders-duty-weekly-v1',
     content:LEADERS_DUTY_REMINDER,preset:true});
   let requestId = 0, approved = [], verifiedFor = '';
