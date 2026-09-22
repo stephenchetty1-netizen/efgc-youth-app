@@ -20,6 +20,9 @@
     sessionStorage.removeItem(K);
     if (v) (remembersDevice() ? localStorage : sessionStorage).setItem(K, JSON.stringify(v));
   };
+  // Remove any legacy persistent token when the user has not opted in.
+  if (!remembersDevice()) localStorage.removeItem(K);
+  else sessionStorage.removeItem(K);
 
   async function req(url, options = {}) {
     const r = await fetch(url, options);
