@@ -6,9 +6,20 @@
   const R = `${c.url}/rest/v1`;
   const S = `${c.url}/storage/v1`;
   const K = 'efgcSupabaseAuth';
+  const REMEMBER_KEY = 'efgcRememberDevice';
+  const remembersDevice = () => localStorage.getItem(REMEMBER_KEY) === '1';
   const H = (token, extra = {}) => ({ apikey: c.publishableKey, ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra });
-  const read = () => { try { return JSON.parse(localStorage.getItem(K) || 'null'); } catch { return null; } };
-  const write = (v) => v ? localStorage.setItem(K, JSON.stringify(v)) : localStorage.removeItem(K);
+  // Persist auth tokens only after the member explicitly opts into Remember me.
+  // Never write the password to either storage area.
+  const read = () => {
+    try { return JSON.parse((remembersDevice() ? localStorage : sessionStorage).getItem(K) || 'null'); }
+    catch { return null; }
+  };
+  const write = (v) => {
+    localStorage.removeItem(K);
+    sessionStorage.removeItem(K);
+    if (v) (remembersDevice() ? localStorage : sessionStorage).setItem(K, JSON.stringify(v));
+  };
 
   async function req(url, options = {}) {
     const r = await fetch(url, options);
@@ -76,6 +87,12 @@
     restoreCallback: restoreSession,
     refresh,
     normalizeZA,
+    remembersDevice,
+    setRememberDevice(enabled) {
+      const previous = read();
+      localStorage.setItem(REMEMBER_KEY, enabled ? '1' : '0');
+      write(previous);
+    },
     setSession(data) {
       if (!data?.access_token || !data?.user?.id) throw new Error('Invalid authentication session.');
       write(data);
@@ -142,6 +159,7 @@
       }
       write(null);
       localStorage.removeItem('efgcYouthSession');
+      sessionStorage.removeItem('efgcYouthSession');
     },
   };
 })();
