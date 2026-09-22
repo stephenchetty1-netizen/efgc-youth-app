@@ -163,19 +163,20 @@
       if (version !== loadVersion || !isAdmin() || !$('#birthdayStudio')) return;
       members = (Array.isArray(rows) ? rows : [])
         .filter((row) => ['youth', 'leader', 'admin'].includes(row.role)
-          && row.approval_status === 'approved' && birthdayParts(row.birthday))
+          && row.approval_status === 'approved')
         .map((row) => ({ ...row, next: nextBirthday(row.birthday) }))
-        .sort((a, b) => a.next.days - b.next.days || String(a.full_name || '').localeCompare(String(b.full_name || '')));
+        .sort((a, b) => (a.next?.days ?? 999) - (b.next?.days ?? 999) || String(a.full_name || '').localeCompare(String(b.full_name || '')));
       const select = $('#birthdayMember');
       select.innerHTML = '<option value="">Custom greeting</option>'
         + members.map((row) => '<option value="' + esc(row.id) + '">'
-          + esc(row.full_name) + ' — ' + esc(dayLabel(row.next.date)) + '</option>').join('');
-      const soon = members.filter((row) => row.next.days <= 30);
+          + esc(row.full_name) + ' — ' + esc(row.next ? dayLabel(row.next.date) : 'Add birthday date') + '</option>').join('');
+      const soon = members.filter((row) => row.next && row.next.days <= 30);
       $('#birthdayUpcoming').textContent = soon.length
         ? 'Upcoming (30 days): ' + soon.slice(0, 6).map((row) =>
           row.full_name + ' (' + (row.next.days === 0 ? 'Today' : dayLabel(row.next.date)) + ')').join(' • ')
         : 'No registered birthdays in the next 30 days. You can still choose any member or make a custom greeting.';
-      if (!members.length) showMessage('No approved profiles with birthdays were found. Custom birthday greetings remain available.');
+      if (!members.length) showMessage('No approved member profiles were found. Custom birthday greetings remain available.');
+      else if (!members.some((row) => row.next)) showMessage('No dates of birth are recorded yet. Choose a member, set the date or generate a custom greeting.');
     } catch (error) {
       if (version !== loadVersion || !$('#birthdayStudio')) return;
       members = [];
@@ -189,9 +190,10 @@
     const member = members.find((row) => String(row.id) === String(id));
     if (member) {
       $('#birthdayName').value = member.full_name;
-      const d = member.next.date;
-      $('#birthdayDate').value = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
-        + '-' + String(d.getDate()).padStart(2, '0');
+      const d = member.next?.date;
+      $('#birthdayDate').value = d
+        ? d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0')
+        : '';
     } else {
       $('#birthdayName').value = '';
       $('#birthdayDate').value = '';
