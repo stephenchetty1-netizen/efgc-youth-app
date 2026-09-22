@@ -64,7 +64,8 @@
     if(box)box.innerHTML=audit.length?audit.slice(0,20).map(item=>
       '<div class="v87-entry"><strong>'+esc(item.target_name)+'</strong><p>'+
       esc(item.action.replace('_',' '))+' • '+esc(item.previous_role||'—')+' → '+esc(item.new_role||'—')+
-      '</p><small>'+esc(new Date(item.changed_at).toLocaleString('en-ZA'))+'</small></div>').join(''):
+      '</p><small>By '+esc(people.find(p=>p.id===item.actor_id)?.full_name||'Admin (account unavailable)')+
+      ' • '+esc(new Date(item.changed_at).toLocaleString('en-ZA'))+'</small></div>').join(''):
       '<p class="v87-muted">No access changes recorded since the audit was enabled.</p>';
     if(results.some(r=>r.status==='rejected'))say('Some Admin details could not be loaded. Use Retry connection.');
     else say('Account roles and guardian permissions are protected by database access controls.');
