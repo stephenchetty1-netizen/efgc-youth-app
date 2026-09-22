@@ -43,14 +43,36 @@
       menu.classList.remove('hidden');
       menu.lastElementChild.textContent = admin ? 'Ministry Centre' : isStaff ? 'Leader Hub' : 'My Journey';
     }
-    root.innerHTML = '<article class="v87-intro"><small>ONE CHURCH • ONE YOUTH FAMILY</small><h2>Shalom, ' +
-      esc((s.name || 'EFGC Member').split(/\s+/)[0]) + '!</h2><p>' +
-      (admin ? 'Your EFGC Admin overview.' : isStaff ? 'Thank you for serving our youth.' : 'Build your faith. Belong to the family. Be a light.') +
-      '</p><span class="v87-pill">' + (admin ? 'ADMIN' : isStaff ? 'APPROVED LEADER' : 'EFGC YOUTH') + '</span></article>' +
+    root.innerHTML = '<article class="v87-intro v88-home-hero">' +
+      '<div class="v88-hero-content">' +
+      '<div class="v88-hero-eyebrow"><span class="v88-cross" aria-hidden="true">✦</span> EMMANUEL FULL GOSPEL CHURCH</div>' +
+      '<h2>Shalom, <span>' + esc((s.name || 'EFGC Member').split(/\s+/)[0]) + '!</span></h2><p>' +
+      (admin ? 'Lead with purpose. Keep our Youth family connected and cared for.' :
+       isStaff ? 'Serve, inspire and help the next generation shine.' :
+       'A place to belong, grow in faith and shine for Jesus.') +
+      '</p><span class="v87-pill">' +
+      (admin ? 'ADMIN CENTRE' : isStaff ? 'YOUTH LEADER' : 'EFGC YOUTH FAMILY') +
+      '</span><p class="v88-hero-verse">“Let your light shine” <b>Matthew 5:16</b></p></div>' +
+      '</article>' +
+      '<div class="v88-content-heading"><div><small>NEXT UP</small><h3>Your next gathering</h3></div>' +
+      '<button type="button" data-v87-go="events">All events <span aria-hidden="true">→</span></button></div>' +
+      '<div id="v88NextEvent" class="v88-next-event"><span class="v88-skeleton">Checking the next youth gathering…</span></div>' +
+      '<div class="v88-content-heading"><div><small>AT A GLANCE</small><h3>' +
+      (admin ? 'Your ministry today' : isStaff ? 'Your serving overview' : 'Your faith journey') +
+      '</h3></div></div>' +
       '<div id="v87LiveOverview" class="v87-stat-row"><article class="v87-mini-stat"><strong>Loading…</strong><span>Your latest ministry information</span></article></div>' +
-      '<div class="v87-quick-actions"><button type="button" data-v87-go="events">Upcoming Events</button>' +
-      '<button type="button" data-v87-go="ministry">' + (isStaff ? 'My Ministry' : 'My Journey') + '</button>' +
-      '<button type="button" data-v87-go="' + (admin ? 'admin' : 'profile') + '">' + (admin ? 'Admin Centre' : 'My Profile') + '</button></div>';
+      '<div class="v88-content-heading"><div><small>QUICK LINKS</small><h3>Your space</h3></div></div>' +
+      '<div class="v87-quick-actions v88-quick-actions">' +
+      '<button type="button" data-v87-go="scripture"><span class="v88-link-icon" aria-hidden="true">✦</span><span>Daily Scripture</span><span aria-hidden="true">↗</span></button>' +
+      '<button type="button" data-v87-go="ministry"><span class="v88-link-icon" aria-hidden="true">♡</span><span>' +
+      (admin ? 'Ministry Hub' : isStaff ? 'Leader Hub' : 'My Journey') +
+      '</span><span aria-hidden="true">↗</span></button>' +
+      '<button type="button" data-v87-go="' + (admin ? 'admin' : isStaff ? 'plannerRoster' : 'mine') +
+      '"><span class="v88-link-icon" aria-hidden="true">' + (admin ? '⚙' : isStaff ? '≡' : '✓') +
+      '</span><span>' + (admin ? 'Admin Centre' : isStaff ? 'My Roster' : 'My Attendance') +
+      '</span><span aria-hidden="true">↗</span></button>' +
+      '<button type="button" data-v87-go="news"><span class="v88-link-icon" aria-hidden="true">▤</span><span>Youth News</span><span aria-hidden="true">↗</span></button>' +
+      '</div>';
     try {
       const [eventsResponse, plansResponse, dutiesResponse, profilesResponse] = await Promise.allSettled([
         EFGCLive.events(),
@@ -69,9 +91,20 @@
         duty: item, week: plans.find(plan => Number(plan.id) === Number(item.planner_id))
       })).filter(row => row.week && new Date(row.week.week_start + 'T23:59:59').getTime() >= Date.now())
         .sort((a,b) => a.week.week_start.localeCompare(b.week.week_start));
+      const eventPanel = $('#v88NextEvent');
+      if (eventPanel) {
+        if (!next) eventPanel.innerHTML = '<article class="v88-event-content"><div class="v88-date-tile"><strong>EFGC</strong><span>YOUTH</span></div><div class="v88-event-body"><small>COMING TOGETHER</small><h4>See you at Youth!</h4><p>New event details will appear here as soon as they are published.</p></div><button type="button" data-v87-go="events" aria-label="View EFGC events">→</button></article>';
+        else {
+          const when = new Date(next.event_date);
+          eventPanel.innerHTML = '<article class="v88-event-content"><div class="v88-date-tile"><strong>' +
+            esc(when.toLocaleDateString('en-ZA',{day:'2-digit'})) +
+            '</strong><span>' + esc(when.toLocaleDateString('en-ZA',{month:'short'}).toUpperCase()) +
+            '</span></div><div class="v88-event-body"><small>UPCOMING YOUTH EVENT</small><h4>' +
+            esc(next.title) + '</h4><p>' + esc(fmt(next.event_date)) +
+            '</p></div><button type="button" data-v87-go="events" aria-label="View this event">→</button></article>';
+        }
+      }
       const tiles = [];
-      tiles.push('<article class="v87-mini-stat"><strong>' + (next ? esc(next.title) : 'No event scheduled') + '</strong><span>' +
-        (next ? esc(fmt(next.event_date)) : 'Check back for the next Youth meeting') + '</span></article>');
       if (admin) {
         tiles.push('<article class="v87-mini-stat"><strong>' + profiles.filter(p => !p.archived_at).length +
           '</strong><span>Active members</span></article>');
@@ -88,8 +121,8 @@
           mine.filter(item => item.status === 'pending').length +
           '</strong><span>Your duties awaiting reply</span></article>');
       } else {
-        tiles.push('<article class="v87-mini-stat"><strong>Matthew 5:16</strong><span>Let your light shine</span></article>');
-        tiles.push('<article class="v87-mini-stat"><strong>Prayer & growth</strong><span>Your private ministry journey</span></article>');
+        tiles.push('<article class="v87-mini-stat"><span class="v88-stat-icon" aria-hidden="true">✦</span><strong>Faith</strong><span>Daily Scripture & Bible reading</span></article>');
+        tiles.push('<article class="v87-mini-stat"><span class="v88-stat-icon" aria-hidden="true">♡</span><strong>Fellowship</strong><span>Prayer, testimonies & Youth news</span></article>');
       }
       $('#v87LiveOverview').innerHTML = tiles.join('');
     } catch (error) {
