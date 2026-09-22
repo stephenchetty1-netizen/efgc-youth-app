@@ -120,7 +120,7 @@
   function whatsappHtml(drafts) {
     const upcoming=lastEvents.filter(e=>new Date(e.event_date).getTime()>=Date.now()).slice(0,30);
     return panel('WhatsApp communication drafts',
-      '<p class="v87-muted">Create a meeting reminder. Only an Admin-approved draft can be shared from this screen. Opening WhatsApp does not send a message automatically.</p>'+
+      '<p class="v87-muted">Create a meeting reminder. Only an Admin-approved draft can be shared from this screen. Opening WhatsApp does not send a message automatically. Send direct updates only to members who opted in, with guardian permission where required.</p>'+
       '<label>Upcoming event<select id="v87DraftEvent"><option value="">Select a meeting (optional)</option>'+
       upcoming.map(e=>'<option value="'+Number(e.id)+'">'+esc(e.title)+' • '+esc(stamp(e.event_date))+'</option>').join('')+
       '</select></label>'+
