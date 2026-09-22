@@ -102,6 +102,10 @@ def run() -> int:
     share = (ROOT / "v98-whatsapp-share.js").read_text("utf-8")
     check("getMyProfile()" in share and "status=eq.approved" in share and "https://wa.me/?text=" in share,
           "Direct sharing must verify staff role and use only approved messages")
+    check("const LEADERS_DUTY_REMINDER" in share and "Object.freeze({id:" in share and "PRE-AUTHORISED • FIXED WORDING" in share,
+          "The single immutable weekly duty reminder must remain explicitly pre-authorised")
+    check("approved = [FIXED_REMINDER,...rows.filter" in share,
+          "Only the fixed preset may bypass the per-draft review workflow")
     check("v65-whatsapp-admin.js?v=" not in html and "v67-whatsapp-otp-admin.js?v=" not in html,
           "Inactive Meta API controls must not appear in direct-only mode")
     check('id="staffDirectory"' in html and 'id="staffDirectoryMenu"' in html,

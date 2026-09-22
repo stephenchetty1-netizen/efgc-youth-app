@@ -52,3 +52,8 @@ The V93 style increases text and tap targets, arranges three Admin overview card
 - Messages remain visible according to Supabase RLS (Admin: all; Leader: own drafts). No Facebook or Meta developer setup is needed for this human-confirmed method.
 - Inactive Meta Cloud API and OTP Admin setup cards are not loaded in direct-only mode; admin-assisted password recovery is shown instead of a non-functional WhatsApp code button. The backend's disabled API settings are untouched.
 - The website release does **not** rebuild an installed Android APK. The native WebView's external-HTTPS handler can open wa.me through Android.
+
+## V99 reusable Leaders duty reminder
+- Stephen's exact WhatsApp Leaders duty reminder is a code-defined, immutable pre-authorised preset available to approved Admins and Leaders under More → WhatsApp. No fresh draft approval is needed when reusing this exact wording.
+- Other draft messages still require ordinary Admin review. App has no automatic WhatsApp sending; user picks intended group/contact and presses Send in WhatsApp. Use preset only on meeting weeks.
+- Monday ChatGPT reminder separately checks whether a confirmed EFGC Youth meeting is scheduled; it cannot itself send to the WhatsApp group.

@@ -1,4 +1,4 @@
-name: Validate and deploy EFGC Youth V98
+name: Validate and deploy EFGC Youth V99
 
 on:
   push:
@@ -45,7 +45,7 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Validate V98 source, logout privacy, manifest and safeguarding gates
+      - name: Validate V99 source, logout privacy, manifest and safeguarding gates
         run: python3 scripts/validate-v87.py
 
       - name: Smoke-test static site and app entrypoints
@@ -88,16 +88,16 @@ jobs:
             if curl --fail --silent http://127.0.0.1:8081/index.html >/dev/null; then break; fi
             sleep 1
           done
-          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=95" EFGC_SCREENSHOT_DIR="v98-qa" python3 scripts/test-v93-phone-layout.py
-          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=97" EFGC_SCREENSHOT_DIR="v98-qa" python3 scripts/test-v97-staff-directory.py
-          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=98" EFGC_SCREENSHOT_DIR="v98-qa" python3 scripts/test-v98-whatsapp-share.py
+          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=95" EFGC_SCREENSHOT_DIR="v99-qa" python3 scripts/test-v93-phone-layout.py
+          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=97" EFGC_SCREENSHOT_DIR="v99-qa" python3 scripts/test-v97-staff-directory.py
+          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=99" EFGC_SCREENSHOT_DIR="v99-qa" python3 scripts/test-v98-whatsapp-share.py
 
       - name: Preserve visual smoke-test screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: EFGC-V98-Phone-Layout-Checks
-          path: v98-qa/*.png
+          name: EFGC-V99-Phone-Layout-Checks
+          path: v99-qa/*.png
           if-no-files-found: ignore
           retention-days: 14
 
