@@ -50,6 +50,21 @@
       }
       return rows[0];
     },
+    async adminDemoteLeader(userId) {
+      // Revoke access through the same Admin-protected Supabase RLS policy.
+      if (!/^[0-9a-f-]{36}$/i.test(String(userId || ''))) throw new Error('Choose a valid Leader account.');
+      const rows = await window.EFGCAuth.rest(
+        `profiles?id=eq.${esc(userId)}&role=eq.leader&approval_status=eq.approved`, {
+          method: 'PATCH',
+          headers: jsonHeaders,
+          body: JSON.stringify({ role: 'youth', approval_status: 'approved', leader_role: null }),
+        },
+      );
+      if (!Array.isArray(rows) || rows.length !== 1 || rows[0].role !== 'youth') {
+        throw new Error('Leader access was not removed. Check Admin permissions.');
+      }
+      return rows[0];
+    },
     async adminSetLeaderApproval(userId, status) {
       if (!['approved', 'rejected'].includes(status)) throw new Error('Invalid Leader approval status.');
       const rows = await window.EFGCAuth.rest(`profiles?id=eq.${esc(userId)}&role=eq.leader`, {
