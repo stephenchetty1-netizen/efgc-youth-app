@@ -111,6 +111,45 @@
     await render();
   }
 
+  // Refresh role changes made by an Admin while a member already has the app open.
+  // No local role selector or cached role can grant permissions.
+  let roleRefreshBusy = false;
+  async function refreshAccountAccess() {
+    if (roleRefreshBusy || !session?.uid || !EFGCAuth.accessToken()) return;
+    roleRefreshBusy = true;
+    try {
+      const fresh = await EFGCAuth.getMyProfile();
+      if (!fresh || fresh.id !== session.uid) {
+        await EFGCAuth.signOut();
+        session = null;
+        renderShell();
+        return;
+      }
+      const updated = sessionFromProfile(fresh, EFGCAuth.session()?.user);
+      if (updated.role !== session.role
+        || updated.approval_status !== session.approval_status
+        || updated.name !== session.name
+        || updated.phone !== session.phone) {
+        session = updated;
+        localStorage.removeItem('efgcYouthSession');
+        sessionStorage.removeItem('efgcYouthSession');
+        (EFGCAuth.remembersDevice() ? localStorage : sessionStorage)
+          .setItem('efgcYouthSession', JSON.stringify(session));
+        await render();
+      }
+    } catch (error) {
+      // Temporary network errors do not change the member's stored role.
+      console.warn('EFGC account refresh could not complete', error.message || error);
+    } finally {
+      roleRefreshBusy = false;
+    }
+  }
+  window.refreshEFGCSessionRole = refreshAccountAccess;
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshAccountAccess();
+  });
+  window.addEventListener('pageshow', refreshAccountAccess);
+
   function readForm() {
     return {
       name: $('#loginName')?.value.trim() || '',
