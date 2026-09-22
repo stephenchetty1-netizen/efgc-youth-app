@@ -84,7 +84,12 @@
     const host=$('#eventList'); if(!host||!currentSession()?.uid) return;
     try{
       const rows=await EFGCLive.events();
-      if(!rows.length){ host.innerHTML='<article class="card"><h3>No events published yet</h3><p>Approved EFGC Youth events will appear here.</p></article>'; return; }
+      if(!rows.length){
+        const create = currentSession()?.role==='admin' ?
+          '<button class="v94-create" type="button" data-v87-go="admin" data-v94-target="adminEventTitle">Create Youth Event →</button>' : '';
+        host.innerHTML='<article class="card v94-empty-panel"><span class="v94-empty-icon" aria-hidden="true">▦</span><small>YOUTH CALENDAR</small><h3>No events published yet</h3><p>When an EFGC Youth meeting is published, its date and details will appear here.</p>'+create+'</article>';
+        return;
+      }
       host.innerHTML=`<div class="event-feed">${rows.map(e=>{ const img=e.image_path?`<img class="event-cover" src="${esc(eventImageUrl(e.image_path))}" alt="${esc(e.title)} event image">`:''; const post=e.post_content?`<p class="event-post">${esc(e.post_content)}</p>`:''; const details=[e.theme,e.scripture].filter(Boolean).join(' • '); return `<article class="card event-card">${img}<div class="event-card-body"><span class="module-kicker">${esc(fmtEvent(e.event_date))}</span><h3>${esc(e.title)}</h3>${details?`<div class="planner-meta">${esc(details)}</div>`:''}${post}</div></article>`;}).join('')}</div>`;
     }catch(e){ host.innerHTML=`<article class="card"><p>${esc(`Could not load events: ${e.message}`)}</p></article>`; }
   }

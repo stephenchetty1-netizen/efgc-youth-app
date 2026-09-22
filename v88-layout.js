@@ -73,10 +73,19 @@
     setActive(currentTab);
     if (returnFocus) lastTrigger?.focus?.();
   }
+  // Never derive labels from badge counts: the hidden planner menu contains "0".
+  const routeLabels = Object.freeze({
+    scripture:'Daily Scripture', leaders:'Leaders', profile:'Profile',
+    security:'Security', plannerRoster:'Planner & Roster',
+    attendanceAdmin:'Attendance Register', admin:'Admin Centre',
+    mine:'My Attendance', birthdayStudio:'Birthday Studio'
+  });
   function labelFor(button) {
     if (button.id==='v87MinistryMenu') return state()?.role==='admin'?'Ministry Centre':
       state()?.role==='leader'?'Leader Hub':'My Journey';
-    return (button.textContent||'').replace(/^[^a-zA-Z]*/,'').trim().replace(/\s+/g,' ') || button.dataset.tab;
+    return routeLabels[button.dataset.tab] ||
+      (button.textContent||'').replace(/^[^a-zA-Z]*/,'').trim().replace(/\s*\d+$/,'').replace(/\s+/g,' ') ||
+      button.dataset.tab;
   }
   function fillMore() {
     const s=state(), list=$('#v88MoreLinks');
@@ -91,6 +100,14 @@
       '<span class="v88-more-symbol" aria-hidden="true">'+
       (b.querySelector('.nav-glyph')?.textContent||'✦')+'</span>'+
       '<span>'+esc(labelFor(b))+'</span><span class="v88-more-arrow" aria-hidden="true">→</span></button>').join('');
+    // Birthday Studio uses an Admin-only menu handler without data-tab. Expose it
+    // explicitly instead of dropping it from the bottom sheet.
+    const birthday=$('#birthdayStudioMenu');
+    if(s.role==='admin' && birthday && !birthday.classList.contains('hidden')){
+      list.insertAdjacentHTML('beforeend',
+        '<button type="button" data-v88-route="birthdayStudio"><span class="v88-more-symbol" aria-hidden="true">✦</span>'+
+        '<span>Birthday Studio</span><span class="v88-more-arrow" aria-hidden="true">→</span></button>');
+    }
   }
   function openMore(button) {
     if(!state())return;
@@ -139,11 +156,13 @@
     const s=state();
     if(!s)return;
     if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(tab))return;
-    const source=$('#mainMenu button[data-tab="'+tab+'"]');
+    const source=tab==='birthdayStudio' ? $('#birthdayStudioMenu') :
+      $('#mainMenu button[data-tab="'+tab+'"]');
     if (!source || source.classList.contains('hidden'))return;
+    if (tab==='birthdayStudio' && s.role!=='admin')return;
     closeMore(false);
     source.click();
-    setActive(tab);
+    setActive(tab==='birthdayStudio'?'admin':tab);
     // The original menu click already routes through the existing EFGC handlers.
     // Do not duplicate prayer requests or Admin fetches by rendering each screen twice.
     if(tab==='plannerRoster')window.renderPlannerRoster?.();
@@ -166,6 +185,16 @@
     if(nav) {
       const tab=nav.dataset.tab||nav.dataset.v87Go||nav.dataset.mockTab;
       if(tab)setActive(tab);
+      const target=nav.dataset.v94Target;
+      if(target && state()?.role==='admin' && /^admin(?:EventTitle|NewsContent)$/.test(target)){
+        setTimeout(()=>{
+          const field=document.getElementById(target);
+          if(field && !document.getElementById('admin')?.classList.contains('hidden')){
+            field.scrollIntoView({block:'center',behavior:'smooth'});
+            field.focus({preventScroll:true});
+          }
+        },150);
+      }
     }
   });
   document.addEventListener('keydown',e=>{

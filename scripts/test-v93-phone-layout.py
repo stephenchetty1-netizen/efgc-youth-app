@@ -83,15 +83,34 @@ def verify(browser, width: int, screen_width: int, screenshot: str) -> None:
         page.locator("#v88MobileNav [data-v88-more]").click()
         assert page.locator("#v88MoreBackdrop").is_visible()
         assert page.locator("#v88MoreLinks").get_by_text("Admin Centre").count() > 0
+        assert page.locator("#v88MoreLinks").get_by_text("Planner & Roster", exact=True).count() == 1
+        assert page.locator("#v88MoreLinks").get_by_text("Birthday Studio", exact=True).count() == 1
+        assert page.locator("#v88MoreLinks").get_by_text("Planner & Roster0").count() == 0
         page.locator("#v88MoreClose").click()
+        page.locator("#v88MobileNav [data-v88-more]").click()
+        page.locator("#v88MoreLinks [data-v88-route='birthdayStudio']").click()
+        assert page.locator("#admin").is_visible()
+        page.locator("#birthdayStudio").wait_for(state="attached", timeout=5000)
+        page.locator("#v88MobileNav [data-v88-more]").click()
+        page.locator("#v88MoreLinks [data-v88-route='scripture']").click()
+        assert page.locator("#scripture").is_visible()
+        gallery = page.locator("#scripture .scripture-theme-grid")
+        assert gallery.count() == 1
+        assert gallery.evaluate("(el) => getComputedStyle(el).gridTemplateColumns.split(' ').length") == 2
+        page.evaluate("window.scrollTo(0, document.documentElement.scrollHeight)")
+        page.wait_for_timeout(220)
+        download = page.locator("#scriptureDownloadButton").bounding_box()
+        dock = page.locator("#v88MobileNav").bounding_box()
+        assert download and dock and download["y"]+download["height"] < dock["y"], (download,dock)
+        page.screenshot(path=str(OUTPUT / "efgc-v94-scripture-handset.png"), full_page=True)
         assert not page.locator("#v88MoreBackdrop").is_visible()
-    print(f"V93 CHROMIUM PASS width={width} deviceScreen={screen_width} {checks}")
+    print(f"V94 CHROMIUM PASS width={width} deviceScreen={screen_width} {checks}")
     context.close()
 
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True, args=["--no-sandbox"])
-    verify(browser, width=393, screen_width=393, screenshot="efgc-v93-handset.png")
+    verify(browser, width=393, screen_width=393, screenshot="efgc-v94-handset.png")
     verify(browser, width=980, screen_width=393,
-           screenshot="efgc-v93-desktop-viewport-on-handset.png")
+           screenshot="efgc-v94-desktop-viewport-on-handset.png")
     browser.close()

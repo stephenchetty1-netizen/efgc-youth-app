@@ -198,14 +198,14 @@ async function renderLiveData(){
   const errors=[];
   try {
     const events = await EFGCLive.events();
-    $('#eventList').innerHTML = events.length ? events.map(e => card(e.title, [e.theme,e.scripture].filter(Boolean).join(' • ') || 'EFGC Youth event', fmtDate(e.event_date))).join('') : card('No events published yet','Approved EFGC Youth events will appear here.');
+    $('#eventList').innerHTML = events.length ? events.map(e => card(e.title, [e.theme,e.scripture].filter(Boolean).join(' • ') || 'EFGC Youth event', fmtDate(e.event_date))).join('') : '<article class="card v94-empty-panel"><span class="v94-empty-icon" aria-hidden="true">▦</span><small>YOUTH CALENDAR</small><h3>No events published yet</h3><p>When an EFGC Youth meeting is published, its date and details will appear here.</p>'+ (session.role==='admin' ? '<button class="v94-create" type="button" data-v87-go="admin" data-v94-target="adminEventTitle">Create Youth Event →</button>' : '') + '</article>';
   } catch(e){ errors.push(`Events: ${e.message}`); }
 
   try {
     const news = await EFGCLive.news();
-    const html = news.length ? news.map(n => card('EFGC Youth Update', n.content, fmtDate(n.published_at))).join('') : card('Welcome to EFGC Youth','News and approved announcements will appear here.');
+    const html = news.length ? news.map(n => card('EFGC Youth Update', n.content, fmtDate(n.published_at))).join('') : '<article class="card v94-empty-panel"><span class="v94-empty-icon" aria-hidden="true">▤</span><small>EFGC YOUTH NEWS</small><h3>No announcements published yet</h3><p>Approved ministry notices and Youth updates will be displayed here.</p>'+ (session.role==='admin' ? '<button class="v94-create" type="button" data-v87-go="admin" data-v94-target="adminNewsContent">Publish announcement →</button>' : '') + '</article>';
     $('#newsList').innerHTML = html;
-    $('#homeNews').innerHTML = news.length ? news.slice(0,3).map(n => card('EFGC Youth Update', n.content, fmtDate(n.published_at))).join('') : card('Welcome to EFGC Youth','Build • Belong • Be a Light.');
+    $('#homeNews').innerHTML = news.length ? news.slice(0,3).map(n => card('EFGC Youth Update', n.content, fmtDate(n.published_at))).join('') : card('Stay connected','No announcements have been published yet. New EFGC Youth updates will appear here.');
   } catch(e){ errors.push(`News: ${e.message}`); }
 
   try {

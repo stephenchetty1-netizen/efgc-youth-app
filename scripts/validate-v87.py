@@ -76,7 +76,7 @@ def run() -> int:
             check(result.returncode == 0, f"JavaScript syntax: {file.name}: {result.stderr.strip()}")
 
     manifest = json.loads((ROOT / "manifest.webmanifest").read_text("utf-8"))
-    check(str(manifest.get("start_url", "")).startswith("./?v=93"), "Manifest must open the V93 app")
+    check(str(manifest.get("start_url", "")).startswith("./?v=94"), "Manifest must open the V94 app")
     for icon in manifest.get("icons", []):
         target = local_asset(icon.get("src", ""), "manifest")
         check(bool(target and target.is_file()), f"Manifest icon missing: {icon.get('src')}")
@@ -94,6 +94,7 @@ def run() -> int:
     check(ROOT / "v91.css" in parser.styles, "V91 designed dashboard stylesheet is not loaded")
     check(ROOT / "v92.css" in parser.styles, "V92 handset fallback stylesheet is not loaded")
     check(ROOT / "v93.css" in parser.styles, "V93 readable handset layout is not loaded")
+    check(ROOT / "v94.css" in parser.styles, "V94 More and Scripture styling is not loaded")
     check('id="v87Today"' in html and 'class="v91-hero-emblem"' in html,
           "Recommended home layout must be present in HTML even before JavaScript runs")
     dashboard = (ROOT / "v87-dashboard.js").read_text("utf-8")
@@ -118,6 +119,18 @@ def run() -> int:
           "v92-phone .v88-mobile-nav:not(.hidden)" in handset_style,
           "Phone navigation must not depend solely on the browser viewport")
     check("clip-path:circle" in handset_style, "EFGC emblem still has square background")
+    app = (ROOT / "app.js").read_text("utf-8")
+    events = (ROOT / "v44-updates.js").read_text("utf-8")
+    more = (ROOT / "v88-layout.js").read_text("utf-8")
+    studio = (ROOT / "v94.css").read_text("utf-8")
+    check("plannerRoster:'Planner & Roster'" in more and
+          "birthdayStudio" in more,
+          "More drawer missing roster label or Birthday Studio")
+    check("v94-empty-panel" in app and "v94-empty-panel" in events,
+          "News or Event empty-state enhancements are missing")
+    check("#scripture .scripture-theme-grid" in studio and
+          "grid-template-columns:repeat(2,minmax(0,1fr))" in studio,
+          "Scripture background choices are not sized for phones")
     check("v88MobileNav" in layout and "v88MoreBackdrop" in layout,
           "Responsive role-aware navigation is incomplete")
     check("body.v88-ready .v88-mobile-nav" in style,
@@ -163,7 +176,7 @@ def run() -> int:
         for message in ERRORS:
             print(" - " + message)
         return 1
-    print(f"EFGC V93 static release checks PASS: {len(parser.scripts)} JS, "
+    print(f"EFGC V94 static release checks PASS: {len(parser.scripts)} JS, "
           f"{len(parser.styles)} CSS, {len(parser.assets)} HTML assets checked.")
     return 0
 
