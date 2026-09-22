@@ -181,3 +181,37 @@ body.v74-form-open .login-card textarea{
 @media(prefers-reduced-motion:reduce){
   .v74-art-button{transition:none!important}
 }
+
+/* EFGC responsive logo sizing — keep the complete official artwork visible. */
+.mock-authenticated header .brand-logo[src*="v76-efgc-logo"]{
+  width:44px!important;
+  height:44px!important;
+  flex:0 0 44px!important;
+  object-fit:contain!important;
+}
+.mock-authenticated .hero-logo[src*="v76-efgc-logo"]{
+  width:98px!important;
+  height:98px!important;
+  max-width:100%!important;
+  object-fit:contain!important;
+}
+.official-footer-logo[src*="v76-efgc-logo"]{
+  width:78px!important;
+  height:78px!important;
+  object-fit:contain!important;
+}
+@media(max-width:699px){
+  .mock-authenticated header .brand-logo[src*="v76-efgc-logo"]{
+    width:38px!important;
+    height:38px!important;
+    flex:0 0 38px!important;
+  }
+  .mock-authenticated .hero-logo[src*="v76-efgc-logo"]{
+    width:70px!important;
+    height:70px!important;
+  }
+  .official-footer-logo[src*="v76-efgc-logo"]{
+    width:64px!important;
+    height:64px!important;
+  }
+}
