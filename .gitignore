@@ -1,0 +1,7 @@
+# Generated Android/Capacitor build artifacts
+node_modules/
+www/
+android/
+.gradle/
+*.apk
+*.aab
