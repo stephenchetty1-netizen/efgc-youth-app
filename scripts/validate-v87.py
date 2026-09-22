@@ -76,7 +76,7 @@ def run() -> int:
             check(result.returncode == 0, f"JavaScript syntax: {file.name}: {result.stderr.strip()}")
 
     manifest = json.loads((ROOT / "manifest.webmanifest").read_text("utf-8"))
-    check(str(manifest.get("start_url", "")).startswith("./?v=98"), "Manifest must open the V95 app")
+    check(str(manifest.get("start_url", "")).startswith("./?v=99"), "Manifest must open the V99 app")
     for icon in manifest.get("icons", []):
         target = local_asset(icon.get("src", ""), "manifest")
         check(bool(target and target.is_file()), f"Manifest icon missing: {icon.get('src')}")
@@ -102,6 +102,10 @@ def run() -> int:
     share = (ROOT / "v98-whatsapp-share.js").read_text("utf-8")
     check("getMyProfile()" in share and "status=eq.approved" in share and "https://wa.me/?text=" in share,
           "Direct sharing must verify staff role and use only approved messages")
+    check("const LEADERS_DUTY_REMINDER" in share and "Object.freeze({id:" in share and "PRE-AUTHORISED • FIXED WORDING" in share,
+          "The single immutable weekly duty reminder must remain explicitly pre-authorised")
+    check("approved = [FIXED_REMINDER,...rows.filter" in share,
+          "Only the fixed preset may bypass the per-draft review workflow")
     check("v65-whatsapp-admin.js?v=" not in html and "v67-whatsapp-otp-admin.js?v=" not in html,
           "Inactive Meta API controls must not appear in direct-only mode")
     check('id="staffDirectory"' in html and 'id="staffDirectoryMenu"' in html,

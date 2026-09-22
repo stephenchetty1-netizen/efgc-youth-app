@@ -46,12 +46,16 @@ with sync_playwright() as p:
     assert page.locator('#whatsappShareMenu').is_visible() or 'hidden' not in page.locator('#whatsappShareMenu').get_attribute('class')
     page.locator('#v88MobileNav [data-v88-more]').click()
     page.locator('#v88MoreLinks [data-v88-route="whatsappShare"]').click()
-    page.wait_for_function("() => document.querySelectorAll('#v98WhatsAppApproved .v98-whatsapp-message').length===2")
+    page.wait_for_function("() => document.querySelectorAll('#v98WhatsAppApproved .v98-whatsapp-message').length===3")
     assert page.locator('#whatsappShare').is_visible()
     assert page.locator('#v98WhatsAppApproved').get_by_text('UNAPPROVED draft').count()==0
     links=page.locator('#v98WhatsAppApproved a.v98-whatsapp-action')
-    assert links.count()==2
+    assert links.count()==3
     assert links.first.get_attribute('href').startswith('https://wa.me/?text=')
+    assert page.locator('#v98WhatsAppApproved [data-kind="preset"]').count()==1
+    assert 'LEADERS’ DUTY REMINDER' in page.locator('[data-kind="preset"]').inner_text()
+    assert 'One team. One mission. Serving Jesus together!' in page.locator('[data-kind="preset"]').inner_text()
+    assert page.locator('[data-kind="preset"] textarea, [data-kind="preset"] input').count()==0
     assert links.first.get_attribute('target')=='_self'
     assert 'status=eq.approved' in page.evaluate('() => window.__v98LastQuery')
     assert page.locator('#efgcWhatsAppAdminCard').count()==0
@@ -60,8 +64,9 @@ with sync_playwright() as p:
       session={uid:L,role:'leader',name:'Test Leader',approval_status:'approved'};
       renderShell();showTab('whatsappShare');
     }""",[LEADER])
-    page.wait_for_function("() => document.querySelectorAll('#v98WhatsAppApproved .v98-whatsapp-message').length===1")
+    page.wait_for_function("() => document.querySelectorAll('#v98WhatsAppApproved .v98-whatsapp-message').length===2")
     assert page.locator('#v98WhatsAppApproved').get_by_text('Meeting 18h30 @ EFGC').count()==1
+    assert page.locator('#v98WhatsAppApproved [data-kind="preset"]').count()==1
     page.evaluate("""()=>{window.__v98BackendRole='youth';renderShell();showTab('whatsappShare');}""")
     page.wait_for_function("() => document.querySelector('#whatsappShare').classList.contains('hidden')")
     assert page.locator('#v98WhatsAppApproved .v98-whatsapp-message').count()==0
@@ -75,5 +80,5 @@ with sync_playwright() as p:
     page.evaluate("""()=>{session=null;renderShell();}""")
     assert page.locator('#v98WhatsAppApproved .v98-whatsapp-message').count()==0
     assert page.evaluate('() => document.documentElement.scrollWidth <= innerWidth+2')
-    print('V98 WHATSAPP SHARE PASS: approved-only, staff-only, Android links, no Meta, logout privacy')
+    print('V99 WHATSAPP SHARE PASS: immutable pre-authorised duty reminder, approved drafts, staff-only, Android links, no Meta, logout privacy')
     browser.close()

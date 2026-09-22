@@ -7,6 +7,27 @@
   const state = () => { try { return session?.uid ? session : null; } catch { return null; } };
   const staff = s => Boolean(s && s.approval_status === 'approved' &&
     (s.role === 'admin' || s.role === 'leader'));
+  // Stephen approved this exact recurring copy. Only code updates can change it.
+  // It must never be built from editable draft text or from a profile field.
+  const LEADERS_DUTY_REMINDER = [
+    '📢 EFGC YOUTH – LEADERS’ DUTY REMINDER',
+    '',
+    'Shalom Team! 🙏',
+    '',
+    'A friendly reminder to all Youth Leaders to please check the duty roster and confirm your assigned responsibilities for our upcoming Youth meeting.',
+    '',
+    'Let’s prepare prayerfully, arrive on time and serve with excellence. Every role matters as we work together to create a welcoming environment where our Youth can grow in Christ. 💙',
+    '',
+    'If you are unable to fulfil your duty, please inform the leadership team as early as possible so alternative arrangements can be made.',
+    '',
+    '“Whatsoever ye do, do it heartily, as to the Lord.” — Colossians 3:23 KJV',
+    '',
+    'Thank you for your faithfulness and commitment to EFGC Youth!',
+    '',
+    'One team. One mission. Serving Jesus together! 🙌'
+  ].join('\n');
+  const FIXED_REMINDER = Object.freeze({id:'efgc-leaders-duty-weekly-v1',
+    content:LEADERS_DUTY_REMINDER,preset:true});
   let requestId = 0, approved = [], verifiedFor = '';
   const visible = () => !$('#whatsappShare')?.classList.contains('hidden');
   const status = msg => { const el = $('#v98WhatsAppStatus'); if (el) el.textContent = msg; };
@@ -25,8 +46,8 @@
   function approvedHtml(row) {
     const text = escape(row.content);
     const link = 'https://wa.me/?text=' + encodeURIComponent(row.content);
-    return '<article class="v98-whatsapp-message"><span class="v98-whatsapp-approved">'+
-      '✓ ADMIN APPROVED</span><p class="v98-whatsapp-text">'+text+'</p>'+
+    return '<article class="v98-whatsapp-message" data-kind="'+(row.preset?'preset':'approved')+'"><span class="v98-whatsapp-approved">'+
+      (row.preset?'✓ PRE-AUTHORISED • FIXED WORDING':'✓ ADMIN APPROVED')+'</span><p class="v98-whatsapp-text">'+text+'</p>'+
       '<a class="v98-whatsapp-action" href="'+escape(link)+'" '+
       'target="_self" rel="noreferrer" aria-label="Share approved message to WhatsApp">'+
       '<span aria-hidden="true">↗</span> Share to WhatsApp</a></article>';
@@ -39,8 +60,9 @@
       ? approved.map(approvedHtml).join('')
       : '<article class="v98-whatsapp-empty"><h3>No approved messages yet</h3>'+
         '<p>Compose a message in the Ministry Centre or Leader Hub. An Admin must approve it before it appears here.</p></article>';
-    status(approved.length + ' approved message' + (approved.length === 1 ? '' : 's') +
-      ' available to this account. WhatsApp opens only when you tap Share.');
+    status('Weekly Leaders duty reminder is pre-authorised with fixed wording. ' +
+      (approved.length - 1) + ' additional Admin-approved message(s). ' +
+      'Use the weekly reminder only when Youth meets that week. Share opens WhatsApp; it does not send.');
   }
   async function load() {
     const me = state();
@@ -64,8 +86,8 @@
         '&status=eq.approved&order=created_at.desc&limit=50');
       if (request !== requestId || state()?.uid !== uid || !visible()) return;
       if (!Array.isArray(rows)) throw new Error('Unexpected message list.');
-      approved = rows.filter(row => row?.status === 'approved' &&
-        typeof row.content === 'string' && row.content.trim());
+      approved = [FIXED_REMINDER,...rows.filter(row => row?.status === 'approved' &&
+        typeof row.content === 'string' && row.content.trim())];
       verifiedFor = uid;
       render();
     } catch (error) {
