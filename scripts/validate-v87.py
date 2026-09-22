@@ -76,7 +76,7 @@ def run() -> int:
             check(result.returncode == 0, f"JavaScript syntax: {file.name}: {result.stderr.strip()}")
 
     manifest = json.loads((ROOT / "manifest.webmanifest").read_text("utf-8"))
-    check(str(manifest.get("start_url", "")).startswith("./?v=95"), "Manifest must open the V95 app")
+    check(str(manifest.get("start_url", "")).startswith("./?v=97"), "Manifest must open the V95 app")
     for icon in manifest.get("icons", []):
         target = local_asset(icon.get("src", ""), "manifest")
         check(bool(target and target.is_file()), f"Manifest icon missing: {icon.get('src')}")
@@ -85,7 +85,7 @@ def run() -> int:
     required = (
         "v87-network.js", "v87-dashboard.js", "v87-ministry.js", "v87-admin.js", "v88-layout.js",
         "v85-app-polish.js", "v66-whatsapp-otp.js", "v75-roster-multi.js",
-        "v62-notifications.js", "v63-duty-ack.js"
+        "v62-notifications.js", "v63-duty-ack.js", "v97-directory.js"
     )
     for name in required:
         check(ROOT / name in parser.scripts, f"Required feature is not included: {name}")
@@ -95,6 +95,12 @@ def run() -> int:
     check(ROOT / "v92.css" in parser.styles, "V92 handset fallback stylesheet is not loaded")
     check(ROOT / "v93.css" in parser.styles, "V93 readable handset layout is not loaded")
     check(ROOT / "v94.css" in parser.styles, "V94 More and Scripture styling is not loaded")
+    check(ROOT / "v97-directory.css" in parser.styles, "Staff directory and mobile fixes are missing")
+    check('id="staffDirectory"' in html and 'id="staffDirectoryMenu"' in html,
+          "Staff-only Members route is missing")
+    directory = (ROOT / "v97-directory.js").read_text("utf-8")
+    check("EFGCAuth.getMyProfile()" in directory and "approved" in directory and "archived_at=is.null" in directory,
+          "Staff directory must verify role server-side and exclude archived members")
     check('id="v87Today"' in html and 'class="v91-hero-emblem"' in html,
           "Recommended home layout must be present in HTML even before JavaScript runs")
     dashboard = (ROOT / "v87-dashboard.js").read_text("utf-8")

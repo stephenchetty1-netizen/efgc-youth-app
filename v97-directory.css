@@ -1,0 +1,44 @@
+/* EFGC V97: safeguarded member lists + screenshot-reported mobile issues. */
+#staffDirectory {width:100%;max-width:1080px;min-width:0;margin-inline:auto;padding-bottom:calc(88px + env(safe-area-inset-bottom));}
+#staffDirectory.hidden {display:none!important;}
+.v97-directory-hero {
+  border-radius:22px;padding:22px 20px;margin:8px 0 16px;
+  color:#fff;background:linear-gradient(122deg,#061b3b,#12457e 70%,#0b68ae);
+  border:1px solid #3b83b9;box-shadow:0 14px 27px #0d346426;
+}
+.v97-directory-hero small {color:#f5d68d;display:block;font-weight:800;letter-spacing:.09em;}
+.v97-directory-hero h2 {color:#fff!important;font-size:clamp(25px,5vw,36px);margin:8px 0;}
+.v97-directory-hero p {color:#f0f6ff!important;line-height:1.45;margin:0;}
+.v97-directory-panel {border-radius:20px;padding:18px;background:#fff;color:#14304f;border:1px solid #d7e4f3;box-shadow:0 8px 24px #143a6010;}
+.v97-directory-tabs {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-bottom:16px;}
+.v97-directory-tabs button {border:1px solid #bfd3ed;border-radius:14px;padding:11px 7px;min-height:57px;font-weight:800;font-size:16px;line-height:1.2;background:#f0f6ff;color:#16385a;}
+.v97-directory-tabs button.active {background:#0c56ab;color:#fff;border-color:#0c56ab;}
+.v97-directory-tabs button span {display:inline-block;margin-left:4px;font-variant-numeric:tabular-nums;}
+.v97-directory-tabs button:focus-visible,#v97DirectoryRetry:focus-visible{outline:3px solid #ca972e;outline-offset:3px;}
+.v97-directory-search {display:block;font-size:14px;font-weight:750;color:#1c3a61;}
+.v97-directory-search input {display:block;width:100%;max-width:100%;min-width:0;margin:8px 0 12px;min-height:49px;padding:12px;border:1px solid #abc7e8;border-radius:12px;background:#fff;color:#102c4d;font-size:16px;}
+.v97-directory-status {margin:10px 0;font-size:13px;color:#435e7a;line-height:1.4;overflow-wrap:anywhere;}
+.v97-directory-rows{display:grid;grid-template-columns:1fr;gap:10px;}
+.v97-person{display:flex;align-items:center;gap:12px;min-width:0;padding:13px;border:1px solid #d4e3f2;background:#f8fbff;border-radius:15px;}
+.v97-person-avatar{display:grid;place-items:center;width:48px;height:48px;flex:0 0 48px;border-radius:50%;color:#104d92;background:#dcecff;border:1px solid #abcaeb;font-size:16px;font-weight:850;}
+.v97-person-details{flex:1;min-width:0;}
+.v97-person-details strong{display:block;color:#122c4f;font-size:16px;line-height:1.28;overflow-wrap:anywhere;}
+.v97-person-details small{display:block;color:#536e8a;font-size:13px;margin-top:4px;overflow-wrap:anywhere;}
+.v97-person-badge{flex:0 0 auto;font-size:10px;font-weight:850;padding:6px;border-radius:8px;color:#0b4c89;background:#e3f2ff;}
+.v97-empty{padding:18px;background:#f5f9ff;border-radius:12px;color:#314b65;}
+.v97-empty h3{margin:0 0 6px;color:#17355c;font-size:16px;}
+.v97-empty p{margin:0;font-size:14px;}
+.v97-directory-footer{font-size:12px;line-height:1.4;color:#4f6580;margin-top:14px;}
+#v97DirectoryRetry{min-height:44px;margin-top:8px;border:1px solid #b1c6e5;background:#f0f6ff;border-radius:11px;padding:10px 16px;color:#123d78;font-weight:750;}
+/* Screenshot QA: never allow an original-resolution portrait to expand the form. */
+#login .login-card,#login .login-card *{min-width:0;}
+#login #photoPreview.photo-preview{width:100%;max-width:100%;max-height:170px;overflow:hidden;}
+#login #photoPreview.photo-preview img{display:block;max-width:100%!important;width:auto!important;max-height:145px!important;height:auto!important;object-fit:contain!important;margin:8px auto!important;}
+#login #photoPreview.hidden{display:none!important;}
+/* My Faith Journey title must contrast with its navy header, including late theme overrides. */
+body.v88-ready #ministry .v87-journey-head h2 {color:#fff!important;opacity:1!important;-webkit-text-fill-color:#fff!important;text-shadow:0 1px 3px #001b33;}
+body.v88-ready #ministry .v87-journey-head p {color:#f1f6ff!important;}
+body.v88-ready #ministry .v87-journey-head small {color:#f8dc96!important;}
+#profileCard .leader-profile-top>div {min-width:0;overflow-wrap:anywhere;}
+@media(min-width:800px){.v97-directory-rows{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:450px){.v97-person{padding:11px;gap:9px;}.v97-person-avatar{width:42px;height:42px;flex-basis:42px;}.v97-person-badge{font-size:9px;}.v97-directory-panel{padding:13px;}.v97-directory-hero{padding:19px 16px;}}
