@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '79.0';
+  const VERSION = '87.0';
   const LOGO_SRC = 'assets/v74-efgc-logo.webp?v=87.0';
   const VERSES = [
     { ref:'Matthew 5:16', text:'Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven.' },
@@ -31,21 +31,10 @@
   ];
 
   const THEMES = [
-    { id:'open-bible-church', label:'Open Bible & Church', image:'assets/scripture-v74/bible-light.jpg?v=79.0', accent:'#ffd45e', tagline:'WORD • TRUTH • LIFE' },
-    { id:'bible-lamp', label:'Bible & Lamp', image:'assets/scripture-v74/open-bible.jpg?v=79.0', accent:'#ffd45e', tagline:'THY WORD IS A LAMP' },
-    { id:'bible-study', label:'Bible Study', image:'assets/scripture-v74/bible-devotion.jpg?v=79.0', accent:'#8be9ff', tagline:'READ • RECEIVE • LIVE' },
-    { id:'prayer-bible', label:'Prayer & Bible', image:'assets/scripture-v74/bible-sunrise.jpg?v=79.0', accent:'#ffd45e', tagline:'PRAY • TRUST • BELIEVE' },
-    { id:'bible-cross', label:'Bible & Cross', image:'assets/scripture-v74/scripture-pages.jpg?v=79.0', accent:'#8be9ff', tagline:'SCRIPTURE • FAITH • HOPE' },
-    { id:'cross-sunset', label:'Cross at Sunset', image:'assets/scripture-v74/quiet-time.jpg?v=79.0', accent:'#ffd45e', tagline:'JESUS • OUR HOPE' },
-    { id:'sanctuary', label:'Church Sanctuary', image:'assets/scripture-v74/blue-cross.jpg?v=79.0', accent:'#8be9ff', tagline:'BE STILL • KNOW GOD' },
-    { id:'faith-word', label:'Faith & The Word', image:'assets/scripture-v74/sunrise-cross.jpg?v=79.0', accent:'#ffd45e', tagline:'FAITH • WORD • LIFE' },
-    { id:'child-bible', label:'Growing in the Word', image:'assets/scripture-v74/bible-community.jpg?v=79.0', accent:'#8be9ff', tagline:'PASS ON THE BATON' },
-    { id:'worship-service', label:'Worship Service', image:'assets/scripture-v74/prayer-bible.jpg?v=79.0', accent:'#ffd45e', tagline:'WORSHIP • PRAISE • GLORY' },
-    { id:'worship-cross', label:'Worship & Cross', image:'assets/scripture-v74/youth-worship.jpg?v=79.0', accent:'#8be9ff', tagline:'JESUS • CENTRE • ALWAYS' },
-    { id:'worship-crowd', label:'Worship Crowd', image:'assets/scripture-v74/sunrise-faith.jpg?v=79.0', accent:'#ffd45e', tagline:'ONE BODY • ONE FAITH' },
-    { id:'worship-lights', label:'Worship Lights', image:'assets/scripture-v74/church-light.jpg?v=79.0', accent:'#8be9ff', tagline:'LET YOUR LIGHT SHINE' },
-    { id:'praise-gathering', label:'Praise Gathering', image:'assets/scripture-v74/prayer-hands.jpg?v=79.0', accent:'#ffd45e', tagline:'PRAISE • PRAY • GROW' },
-    { id:'blue-worship', label:'Blue Worship', image:'assets/scripture-v74/cross-sky.jpg?v=79.0', accent:'#8be9ff', tagline:'A GENERATION FOR HIS GLORY' }
+    { id:'sunrise-faith', label:'Sunrise & Faith', image:'assets/v49-sunrise.webp?v=87.0', accent:'#ffd45e', tagline:'FAITH • WORD • LIFE' },
+    { id:'youth-fellowship', label:'Youth Fellowship', image:'assets/v49-youth-fellowship.webp?v=87.0', accent:'#8be9ff', tagline:'PASS ON THE BATON' },
+    { id:'efgc-welcome', label:'EFGC Welcome', image:'assets/v74-login-poster.webp?v=87.0', accent:'#ffd45e', tagline:'GOD WITH US' },
+    { id:'blue-light', label:'Blue Light', image:'assets/efgc-home-hero.webp?v=87.0', accent:'#8be9ff', tagline:'LET YOUR LIGHT SHINE' }
   ];
 
   const state = { verseIndex: 0, themeIndex: 0, busy: false, imageCache: new Map() };
