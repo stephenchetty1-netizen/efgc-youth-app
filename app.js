@@ -218,7 +218,7 @@ async function renderLiveData(){
       const rows = await EFGCLive.myAttendance(session.uid);
       const approved = rows.filter(r => r.events?.attendance_approved);
       const attended = approved.filter(r => r.status === 'present').length;
-      $('#mineList').innerHTML = `<article class="card"><h3>${attended} / ${approved.length}</h3><p>Approved meetings attended / held</p></article>` + approved.map(r => card(r.events?.title || 'Youth meeting', r.status === 'present' ? 'Present' : 'Absent', fmtDate(r.events?.event_date))).join('');
+      $('#mineList').innerHTML = `<article class="card"><h3>${attended} / ${approved.length}</h3><p>Approved meetings attended / held</p></article>` + approved.map(r => card(r.events?.title || 'Youth meeting', r.status === 'present' ? 'Present' : r.status === 'excused' ? 'Excused' : 'Absent', fmtDate(r.events?.event_date))).join('');
     } catch(e){ errors.push(`Attendance: ${e.message}`); }
   } else {
     $('#mineList').innerHTML = card('Attendance','Personal youth attendance is shown only on Youth accounts.');
