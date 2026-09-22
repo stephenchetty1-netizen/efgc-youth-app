@@ -267,17 +267,18 @@
   };
 
   window.logoutUser = async () => {
-    try { await EFGCAuth.signOut(); }
-    finally {
-      session = null;
-      localStorage.removeItem('efgcYouthSession');
-      sessionStorage.removeItem('efgcYouthSession');
-      $('#loginPassword').value = '';
-      authMode = 'signin';
-      showLogin();
-      renderShell();
-      syncUi();
-    }
+    // Hide private data before any logout network round-trip. The auth
+    // adapter clears local tokens synchronously at the start of signOut().
+    const pendingLogout = EFGCAuth.signOut();
+    session = null;
+    localStorage.removeItem('efgcYouthSession');
+    sessionStorage.removeItem('efgcYouthSession');
+    $('#loginPassword').value = '';
+    authMode = 'signin';
+    showLogin();
+    renderShell();
+    syncUi();
+    await pendingLogout;
   };
 
   window.linkAdminCellphone = async () => {

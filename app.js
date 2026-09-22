@@ -75,7 +75,19 @@ function renderShell(){
   const authenticated = Boolean(session?.uid);
   document.querySelectorAll('#mainMenu, .userbar').forEach(el => el.classList.toggle('hidden', !authenticated));
   if (!authenticated) {
-    document.querySelectorAll('#home,#events,#news,#scripture,#mine,#leaders,#profile,#security,#admin').forEach(el => el.classList.add('hidden'));
+    // V95 privacy: dynamically added Ministry / Planner / Attendance tabs must
+    // disappear too. Do not leave an Admin's previous roster visible on logout.
+    document.querySelectorAll('main > section.tab').forEach(el => {
+      if (el.id !== 'login') el.classList.add('hidden');
+    });
+    for (const selector of [
+      '#adminPanel', '#leaderList', '#profileCard', '#plannerRosterHost',
+      '#attendanceAdminHost', '#leaderYearPlanner', '#v87MinistryHost',
+      '#mineList', '#v87MemberList'
+    ]) {
+      const host = $(selector);
+      if (host) host.replaceChildren();
+    }
     $('#currentUser').textContent = 'Not signed in';
     $('#adminMenu')?.classList.add('hidden');
     showLogin();
@@ -195,14 +207,18 @@ window.adminPublishNews = async () => {
 
 async function renderLiveData(){
   if (!session?.uid || !window.EFGCLive) return;
+  const uidAtStart = session.uid;
+  const stillCurrent = () => session?.uid === uidAtStart;
   const errors=[];
   try {
     const events = await EFGCLive.events();
+    if (!stillCurrent()) return;
     $('#eventList').innerHTML = events.length ? events.map(e => card(e.title, [e.theme,e.scripture].filter(Boolean).join(' • ') || 'EFGC Youth event', fmtDate(e.event_date))).join('') : '<article class="card v94-empty-panel"><span class="v94-empty-icon" aria-hidden="true">▦</span><small>YOUTH CALENDAR</small><h3>No events published yet</h3><p>When an EFGC Youth meeting is published, its date and details will appear here.</p>'+ (session.role==='admin' ? '<button class="v94-create" type="button" data-v87-go="admin" data-v94-target="adminEventTitle">Create Youth Event →</button>' : '') + '</article>';
   } catch(e){ errors.push(`Events: ${e.message}`); }
 
   try {
     const news = await EFGCLive.news();
+    if (!stillCurrent()) return;
     const html = news.length ? news.map(n => card('EFGC Youth Update', n.content, fmtDate(n.published_at))).join('') : '<article class="card v94-empty-panel"><span class="v94-empty-icon" aria-hidden="true">▤</span><small>EFGC YOUTH NEWS</small><h3>No announcements published yet</h3><p>Approved ministry notices and Youth updates will be displayed here.</p>'+ (session.role==='admin' ? '<button class="v94-create" type="button" data-v87-go="admin" data-v94-target="adminNewsContent">Publish announcement →</button>' : '') + '</article>';
     $('#newsList').innerHTML = html;
     $('#homeNews').innerHTML = news.length ? news.slice(0,3).map(n => card('EFGC Youth Update', n.content, fmtDate(n.published_at))).join('') : card('Stay connected','No announcements have been published yet. New EFGC Youth updates will appear here.');
@@ -210,12 +226,14 @@ async function renderLiveData(){
 
   try {
     const leaders = await EFGCLive.approvedLeaders();
+    if (!stillCurrent()) return;
     $('#leaderList').innerHTML = `<h2>Approved Youth Leaders</h2>` + (leaders.length ? leaders.map(l => card(l.full_name, l.leader_role || 'EFGC Youth Leader', l.phone || '')).join('') : card('Leader directory','Approved leaders will appear here.'));
   } catch(e){ errors.push(`Leaders: ${e.message}`); }
 
   if (session.role === 'youth') {
     try {
       const rows = await EFGCLive.myAttendance(session.uid);
+    if (!stillCurrent()) return;
       const approved = rows.filter(r => r.events?.attendance_approved);
       const attended = approved.filter(r => r.status === 'present').length;
       $('#mineList').innerHTML = `<article class="card"><h3>${attended} / ${approved.length}</h3><p>Approved meetings attended / held</p></article>` + approved.map(r => card(r.events?.title || 'Youth meeting', r.status === 'present' ? 'Present' : r.status === 'excused' ? 'Excused' : 'Absent', fmtDate(r.events?.event_date))).join('');
@@ -227,6 +245,7 @@ async function renderLiveData(){
   if (roleAllowed(session.role, session.approval_status)) {
     try {
       const planner = await EFGCLive.planner();
+    if (!stillCurrent()) return;
       $('#leaderYearPlanner').innerHTML = `<h2>Year Planner</h2>` + (planner.length ? planner.map(p => card(p.meeting_title || 'Youth meeting', [p.theme,p.scripture].filter(Boolean).join(' • ') || 'Planning item', p.week_start)).join('') : card('Year Planner','No published planner entries yet.'));
     } catch(e){
       $('#leaderYearPlanner').innerHTML='';
@@ -239,6 +258,7 @@ async function renderLiveData(){
   if (session.role === 'admin') {
     try {
       const profiles = await EFGCLive.adminProfiles();
+    if (!stillCurrent()) return;
       const pending = profiles.filter(p => p.role === 'leader' && p.approval_status === 'pending').length;
       $('#adminPanel').innerHTML = `<h2>Admin Centre</h2><article class="card"><h3>${profiles.length} account${profiles.length===1?'':'s'}</h3><p>${pending} pending Leader application${pending===1?'':'s'}.</p></article>${adminTools()}<h2>Member Directory</h2><label class="v87-search">Search members<input id="v87MemberSearch" type="search" placeholder="Search name, role or cellphone" autocomplete="off"></label><label class="v87-archive-check"><input id="v87ShowArchived" type="checkbox"> Show archived accounts</label><div id="v87MemberSearchStatus" aria-live="polite"></div><div id="v87MemberList">` + profiles.map(adminProfileCard).join('') + '</div>';
     } catch(e){ errors.push(`Admin: ${e.message}`); }
@@ -246,6 +266,7 @@ async function renderLiveData(){
     $('#adminPanel').innerHTML='';
   }
 
+  if (!stillCurrent()) return;
   $('#profileCard').innerHTML = `<article class="card"><h2>${escapeHtml(session.name || 'EFGC Member')}</h2><p>Role: ${escapeHtml(session.role || '')}</p><p>Status: ${escapeHtml(session.approval_status || 'approved')}</p></article>`;
   if (errors.length) console.warn('EFGC live-data notices', errors);
 }

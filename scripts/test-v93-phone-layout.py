@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright
 
-BASE = os.environ.get("EFGC_TEST_URL", "http://127.0.0.1:8080/index.html?v=93")
+BASE = os.environ.get("EFGC_TEST_URL", "http://127.0.0.1:8080/index.html?v=95")
 OUTPUT = Path(os.environ.get("EFGC_SCREENSHOT_DIR", "/tmp"))
 OUTPUT.mkdir(parents=True, exist_ok=True)
 
@@ -102,9 +102,43 @@ def verify(browser, width: int, screen_width: int, screenshot: str) -> None:
         download = page.locator("#scriptureDownloadButton").bounding_box()
         dock = page.locator("#v88MobileNav").bounding_box()
         assert download and dock and download["y"]+download["height"] < dock["y"], (download,dock)
-        page.screenshot(path=str(OUTPUT / "efgc-v94-scripture-handset.png"), full_page=True)
+        page.screenshot(path=str(OUTPUT / "efgc-v95-scripture-handset.png"), full_page=True)
         assert not page.locator("#v88MoreBackdrop").is_visible()
-    print(f"V94 CHROMIUM PASS width={width} deviceScreen={screen_width} {checks}")
+    if width == 393:
+        # Regression for V95: the Admin must not leave a private roster visible
+        # after signing out while that dynamic route is open.
+        page.evaluate("""() => {
+            document.querySelector('#plannerRosterHost').innerHTML =
+                '<article id="privateRosterSentinel">Private roster</article>';
+            document.querySelector('#attendanceAdminHost').innerHTML =
+                '<article id="privateAttendanceSentinel">Private attendance</article>';
+            window.showTab('plannerRoster');
+            window.EFGCAuth.setSession({
+                user:{id:'00000000-0000-4000-8000-000000000001'},
+                access_token:'synthetic-token-no-network',refresh_token:'synthetic-refresh'
+            });
+            const fetchBeforeLogout = window.fetch;
+            window.fetch = (input, options) => String(input).includes('/auth/v1/logout')
+                ? new Promise(() => {}) : fetchBeforeLogout(input,options);
+            window.logoutUser();
+        }""")
+        logout = page.evaluate("""() => ({
+            signedIn:document.body.classList.contains('v88-ready'),
+            tokenStillPresent:!!window.EFGCAuth.accessToken(),
+            loginHidden:document.querySelector('#login').classList.contains('hidden'),
+            exposed:[...document.querySelectorAll('main > section.tab')]
+                .filter(el => el.id !== 'login' && !el.classList.contains('hidden'))
+                .map(el => el.id),
+            roster:!!document.querySelector('#privateRosterSentinel'),
+            attendance:!!document.querySelector('#privateAttendanceSentinel'),
+            dockHidden:document.querySelector('#v88MobileNav').classList.contains('hidden')
+        })""")
+        assert not logout["signedIn"] and not logout["loginHidden"] and not logout["tokenStillPresent"], logout
+        assert not logout["exposed"] and not logout["roster"] and not logout["attendance"], logout
+        assert logout["dockHidden"], logout
+        print("V95 LOGOUT PRIVACY PASS", logout)
+
+    print(f"V95 CHROMIUM PASS width={width} deviceScreen={screen_width} {checks}")
     context.close()
 
 

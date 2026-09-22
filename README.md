@@ -2,7 +2,7 @@
 
 A mobile-first EFGC Youth website with a unified Youth / approved Leader / Admin sign-in, an official church identity, and a safeguarded ministry experience.
 
-## Current layout release: V94 complete mobile screens
+## Current privacy and layout release: V95
 - The V91 home is rendered in the initial HTML: Shalom greeting after sign-in, authentic EFGC emblem, next event, role-specific overview, four quick actions, then compact Scripture and Youth news. This layout is never conditional on prior Admin/network calls.
 - Five-destination mobile navigation: Home, Events, Journey / Leader Hub / Ministry, News and More.
 - Role-specific links in the More menu, including roster and Admin Centre where authorised.
@@ -38,3 +38,10 @@ The V93 style increases text and tap targets, arranges three Admin overview card
 - Scripture backgrounds have readable two-column mobile choices; controls remain reachable above the fixed app navigation even on a phone reporting a desktop-sized viewport.
 - News and Events display useful, accurate empty states. Only an authenticated Admin sees the event/news publishing shortcuts; the app does not fabricate published content.
 - Chromium smoke checks exercise the signed-in phone navigation, Admin More links, Birthday Studio and Scripture controls with synthetic session data.
+
+## V95 deep-scan and privacy repair
+- Every authenticated tab is hidden on logout, including dynamically injected Planner, Attendance and Ministry routes; private Admin/roster DOM hosts are cleared.
+- Late Supabase live-data responses from a previous account do not render after a sign-out or account switch.
+- Auth tokens and the visible UI clear **before** the remote logout response returns, including on an offline phone. A late logout response cannot clear a newly signed-in account.
+- Chromium uses a deliberately stalled synthetic logout response to verify immediate token/roster clearance.
+- [Full audit and remaining launch gates](AUDIT-V95.md).

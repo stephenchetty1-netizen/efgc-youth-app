@@ -1,4 +1,4 @@
-name: Validate and deploy EFGC Youth V94
+name: Validate and deploy EFGC Youth V95
 
 on:
   push:
@@ -43,7 +43,7 @@ jobs:
         with:
           node-version: "22"
 
-      - name: Validate V94 source, More/Scripture, manifest and safeguarding gates
+      - name: Validate V95 source, logout privacy, manifest and safeguarding gates
         run: python3 scripts/validate-v87.py
 
       - name: Smoke-test static site and app entrypoints
@@ -86,14 +86,14 @@ jobs:
             if curl --fail --silent http://127.0.0.1:8081/index.html >/dev/null; then break; fi
             sleep 1
           done
-          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=94" EFGC_SCREENSHOT_DIR="v94-qa" python3 scripts/test-v93-phone-layout.py
+          EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=95" EFGC_SCREENSHOT_DIR="v95-qa" python3 scripts/test-v93-phone-layout.py
 
       - name: Preserve visual smoke-test screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: EFGC-V94-Phone-Layout-Checks
-          path: v94-qa/*.png
+          name: EFGC-V95-Phone-Layout-Checks
+          path: v95-qa/*.png
           if-no-files-found: ignore
           retention-days: 14
 

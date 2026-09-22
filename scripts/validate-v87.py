@@ -76,7 +76,7 @@ def run() -> int:
             check(result.returncode == 0, f"JavaScript syntax: {file.name}: {result.stderr.strip()}")
 
     manifest = json.loads((ROOT / "manifest.webmanifest").read_text("utf-8"))
-    check(str(manifest.get("start_url", "")).startswith("./?v=94"), "Manifest must open the V94 app")
+    check(str(manifest.get("start_url", "")).startswith("./?v=95"), "Manifest must open the V95 app")
     for icon in manifest.get("icons", []):
         target = local_asset(icon.get("src", ""), "manifest")
         check(bool(target and target.is_file()), f"Manifest icon missing: {icon.get('src')}")
@@ -126,6 +126,14 @@ def run() -> int:
     check("plannerRoster:'Planner & Roster'" in more and
           "birthdayStudio" in more,
           "More drawer missing roster label or Birthday Studio")
+    check("main > section.tab" in app and "stillCurrent()" in app,
+          "Logout privacy: all dynamically inserted tabs must be hidden and stale responses dropped")
+    auth_adapter = (ROOT / "v60-auth-adapter.js").read_text("utf-8")
+    login_flow = (ROOT / "v60-no-email-auth.js").read_text("utf-8")
+    check(auth_adapter.index("write(null);",auth_adapter.index("async signOut()")) < auth_adapter.index("await fetch(",auth_adapter.index("async signOut()")),
+          "Device auth token must be cleared before network logout")
+    check(login_flow.index("session = null;",login_flow.index("window.logoutUser = async")) < login_flow.index("await pendingLogout;",login_flow.index("window.logoutUser = async")),
+          "Signed-out UI must not wait for the network")
     check("v94-empty-panel" in app and "v94-empty-panel" in events,
           "News or Event empty-state enhancements are missing")
     check("#scripture .scripture-theme-grid" in studio and
@@ -176,7 +184,7 @@ def run() -> int:
         for message in ERRORS:
             print(" - " + message)
         return 1
-    print(f"EFGC V94 static release checks PASS: {len(parser.scripts)} JS, "
+    print(f"EFGC V95 static release checks PASS: {len(parser.scripts)} JS, "
           f"{len(parser.styles)} CSS, {len(parser.assets)} HTML assets checked.")
     return 0
 

@@ -157,12 +157,16 @@
     },
     async signOut() {
       const s = read();
-      if (s?.access_token) {
-        try { await fetch(`${A}/logout`, { method: 'POST', headers: H(s.access_token) }); } catch {}
-      }
+      // Clear device credentials immediately. A slow/offline logout endpoint
+      // must never leave a private signed-in screen or cached token accessible.
       write(null);
       localStorage.removeItem('efgcYouthSession');
       sessionStorage.removeItem('efgcYouthSession');
+      if (s?.access_token) {
+        try { await fetch(`${A}/logout`, { method: 'POST', headers: H(s.access_token) }); } catch {}
+      }
+      // Never clear storage *after* the await: another account might have
+      // signed in while the previous account's network logout was pending.
     },
   };
 })();
