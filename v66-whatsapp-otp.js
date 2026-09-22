@@ -17,9 +17,15 @@
     const headers = { apikey: c.publishableKey, 'Content-Type': 'application/json' };
     const token = window.EFGCAuth?.accessToken?.();
     if (token) headers.Authorization = `Bearer ${token}`;
-    const r = await fetch(`${c.url}/functions/v1/member-auth`, {
-      method: 'POST', headers, body: JSON.stringify(payload),
-    });
+    let r;
+    try {
+      r = await fetch(`${c.url}/functions/v1/member-auth`, {
+        method: 'POST', headers, body: JSON.stringify(payload),
+      });
+    } catch (error) {
+      window.EFGCNetwork?.notice?.('Could not reach EFGC verification. Check Wi-Fi or mobile data and try again.');
+      throw new Error('EFGC verification service could not be reached. Please try again.');
+    }
     const body = await r.json().catch(() => ({}));
     if (!r.ok) {
       const e = new Error(body?.error || 'Authentication request failed.');
