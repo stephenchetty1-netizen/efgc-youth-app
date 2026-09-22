@@ -36,7 +36,7 @@
       return get('safeguarding_contacts?select=youth_id,parent_name,parent_phone,emergency_name,emergency_phone,updated_at&order=updated_at.desc');
     },
     async auditLog() {
-      return get('role_audit_log?select=id,target_name,previous_role,new_role,action,changed_at&order=changed_at.desc&limit=40');
+      return get('role_audit_log?select=id,actor_id,target_name,previous_role,new_role,action,changed_at&order=changed_at.desc&limit=40');
     },
     async memberPreferences(id) {
       return get(`member_preferences?select=member_id,birthday_opt_in,photo_opt_in,whatsapp_opt_in&member_id=eq.${esc(id)}`);
