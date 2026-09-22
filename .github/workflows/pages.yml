@@ -1,4 +1,4 @@
-name: Validate and deploy EFGC Youth V88
+name: Validate and deploy EFGC Youth V89
 
 on:
   push:
@@ -21,12 +21,29 @@ jobs:
       - name: Checkout source
         uses: actions/checkout@v4
 
+      - name: Restore and validate complete official EFGC images
+        run: python3 scripts/restore-mobile-brand-assets.py
+
+      - name: Decode EFGC artwork fully (not only check file size)
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check "Pillow==11.3.0"
+          python3 - <<'PY'
+          from pathlib import Path
+          from PIL import Image
+          for file in ("assets/v74-login-poster.webp","assets/v74-efgc-logo.webp"):
+              with Image.open(file) as image:
+                  image.load()
+                  assert image.width >= 400 and image.height >= 400, (file,image.size)
+                  print("DECODE PASS:",file,image.size,Path(file).stat().st_size,"bytes")
+          PY
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "22"
 
-      - name: Validate V88 source, design layout, manifest and safeguarding gates
+      - name: Validate V89 source, design layout, manifest and safeguarding gates
         run: python3 scripts/validate-v87.py
 
       - name: Smoke-test static site and app entrypoints
@@ -41,6 +58,15 @@ jobs:
             sleep 1
           done
 
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct
+          for asset in ('assets/v74-login-poster.webp','assets/v74-efgc-logo.webp'):
+              data=Path(asset).read_bytes()
+              assert data[:4]==b'RIFF' and data[8:12]==b'WEBP'
+              assert len(data)==8+struct.unpack_from('<I',data,4)[0]
+              print('OK complete',asset,len(data),'bytes')
+          PY
           for file in index.html manifest.webmanifest v87-network.js v87-dashboard.js v87-ministry.js v87-admin.js v87.css v88-layout.js v88.css assets/v74-efgc-logo.webp assets/v74-login-poster.webp; do
             curl --fail --silent --show-error "http://127.0.0.1:8080/$file" -o /dev/null
             echo "OK $file"
@@ -55,6 +81,9 @@ jobs:
     steps:
       - name: Checkout validated source
         uses: actions/checkout@v4
+
+      - name: Restore complete official EFGC images for Pages artifact
+        run: python3 scripts/restore-mobile-brand-assets.py
 
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5

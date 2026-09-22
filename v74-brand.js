@@ -4,8 +4,8 @@
   window.EFGC_V74_ACTIVE = true;
 
   const $ = (s) => document.querySelector(s);
-  const LOGIN_ART = 'assets/v74-login-poster.webp?v=87.0';
-  const LOGO = 'assets/v74-efgc-logo.webp?v=87.0';
+  const LOGIN_ART = 'assets/v74-login-poster.webp?v=89.0';
+  const LOGO = 'assets/v74-efgc-logo.webp?v=89.0';
 
   function sessionActive() {
     try {
@@ -101,10 +101,39 @@
       welcome.innerHTML = `
         <div class="v74-poster-frame">
           <img class="v74-login-art" src="${LOGIN_ART}" alt="EFGC Youth — Build, Belong, Be a Light — Matthew 5:16">
+          <div id="v89WelcomeFallback" class="v89-welcome-fallback hidden" aria-live="polite">
+            <img src="${LOGO}" alt="Emmanuel Full Gospel Church">
+            <small>EMMANUEL FULL GOSPEL CHURCH</small>
+            <h1>EFGC YOUTH</h1>
+            <p>BUILD • BELONG • BE A LIGHT</p>
+            <blockquote>“Let your light shine before men.”<br>Matthew 5:16 (KJV)</blockquote>
+            <button type="button" id="v89FallbackLogin">Login</button>
+            <button type="button" id="v89FallbackCreate">Create Account</button>
+          </div>
           <button id="v74LoginButton" class="v74-art-button v74-login-button" type="button" aria-label="Login to EFGC Youth">Login</button>
           <button id="v74CreateButton" class="v74-art-button v74-create-button" type="button" aria-label="Create an EFGC Youth account">Create Account</button>
         </div>`;
       login.insertBefore(welcome, card);
+      const poster = welcome.querySelector('.v74-login-art');
+      const showFallback = () => {
+        welcome.querySelector('#v89WelcomeFallback')?.classList.remove('hidden');
+        if (poster) poster.style.display = 'none';
+        $('#v74LoginButton')?.style.setProperty('display','none','important');
+        $('#v74CreateButton')?.style.setProperty('display','none','important');
+      };
+      const showPoster = () => {
+        if (!poster || !poster.naturalWidth || !poster.naturalHeight) return showFallback();
+        welcome.querySelector('#v89WelcomeFallback')?.classList.add('hidden');
+        poster.style.removeProperty('display');
+        $('#v74LoginButton')?.style.removeProperty('display');
+        $('#v74CreateButton')?.style.removeProperty('display');
+        syncWelcomeViewport();
+      };
+      poster?.addEventListener('error',showFallback);
+      poster?.addEventListener('load',showPoster);
+      if (poster?.complete) poster.naturalWidth ? showPoster() : showFallback();
+      $('#v89FallbackLogin')?.addEventListener('click', () => openForm('signin'));
+      $('#v89FallbackCreate')?.addEventListener('click', () => openForm('register'));
       $('#v74LoginButton')?.addEventListener('click', (event) => {
         event.preventDefault();
         event.stopPropagation();

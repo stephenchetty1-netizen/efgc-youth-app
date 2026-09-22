@@ -1,10 +1,13 @@
-name: Build EFGC Youth V88 test APK
+name: Build EFGC Youth V89 test APK
 
 on:
   push:
     branches: ["main"]
     paths:
       - "android/**"
+      - "scripts/restore-mobile-brand-assets.py"
+      - "assets-src/v73/**"
+      - "assets-src/v74/logo.part*"
       - ".github/workflows/android-apk.yml"
   workflow_dispatch:
 
@@ -16,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
-      - name: Checkout EFGC Youth V88
+      - name: Checkout EFGC Youth V89
         uses: actions/checkout@v4
 
       - name: Java 17
@@ -38,7 +41,23 @@ jobs:
         with:
           gradle-version: "8.9"
 
-      - name: Add the authentic committed EFGC emblem as the APK icon
+      - name: Restore and validate full EFGC emblem and welcome poster
+        run: python3 scripts/restore-mobile-brand-assets.py
+
+      - name: Decode authentic EFGC artwork fully before Android packaging
+        shell: bash
+        run: |
+          python3 -m pip install --disable-pip-version-check "Pillow==11.3.0"
+          python3 - <<'PY'
+          from PIL import Image
+          for file in ("assets/v74-login-poster.webp","assets/v74-efgc-logo.webp"):
+              with Image.open(file) as image:
+                  image.load()
+                  assert image.width >= 400 and image.height >= 400, (file,image.size)
+                  print("Android image PASS:",file,image.size)
+          PY
+
+      - name: Add the authentic rebuilt EFGC emblem as the APK icon
         run: |
           mkdir -p android/app/src/main/res/drawable
           cp assets/v74-efgc-logo.webp android/app/src/main/res/drawable/efgc_logo.webp
@@ -56,7 +75,7 @@ jobs:
       - name: Upload EFGC Youth test APK
         uses: actions/upload-artifact@v4
         with:
-          name: EFGC-Youth-V88-Android-APK
+          name: EFGC-Youth-V89-Android-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30

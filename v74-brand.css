@@ -62,7 +62,7 @@ body.v74-signed-out #login{
   position:absolute;
   inset:-24px;
   z-index:0;
-  background: url("assets/v74-login-poster.webp?v=87.0") center center / cover no-repeat;
+  background: url("assets/v74-login-poster.webp?v=89.0") center center / cover no-repeat;
   filter:blur(18px) brightness(.72);
   pointer-events:none;
 }
@@ -215,3 +215,24 @@ body.v74-form-open .login-card textarea{
     height:64px!important;
   }
 }
+
+/* V89 resilient welcome. The normal approved poster remains first choice.
+   If its network request or image decoding fails, genuine Login/Create
+   buttons and the faith message remain visible instead of a navy page. */
+.v89-welcome-fallback.hidden{display:none!important}
+.v89-welcome-fallback{
+  position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;
+  justify-content:center;align-items:center;text-align:center;
+  gap:clamp(8px,2dvh,18px);padding:24px 22px;
+  box-sizing:border-box;color:#fff;
+  background:radial-gradient(circle at 50% 28%,#155aa2 0,#06274f 46%,#04142c 100%);
+}
+.v89-welcome-fallback img{width:min(34vw,138px);height:min(34vw,138px);object-fit:contain}
+.v89-welcome-fallback small{font-size:11px;font-weight:800;letter-spacing:.13em;color:#efca73}
+.v89-welcome-fallback h1{font-size:clamp(36px,11vw,64px);line-height:1;letter-spacing:.04em;margin:0;color:#fff}
+.v89-welcome-fallback p{font-weight:900;letter-spacing:.1em;color:#bdeaff;margin:0}
+.v89-welcome-fallback blockquote{font-size:17px;line-height:1.5;margin:10px 0 18px;color:#fff}
+.v89-welcome-fallback button{display:block!important;width:min(320px,90%)!important;min-height:54px!important;
+  background:linear-gradient(130deg,#19c0fe,#0569d2)!important;color:#fff!important;
+  font-weight:900;font-size:17px;border:1px solid #8ee2ff;border-radius:18px;cursor:pointer}
+.v89-welcome-fallback button+button{background:transparent!important;border:1px solid #dfbd6d;color:#ffe4a9!important}

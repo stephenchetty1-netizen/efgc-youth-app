@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import struct
 import re
 import subprocess
 import sys
@@ -75,7 +76,7 @@ def run() -> int:
             check(result.returncode == 0, f"JavaScript syntax: {file.name}: {result.stderr.strip()}")
 
     manifest = json.loads((ROOT / "manifest.webmanifest").read_text("utf-8"))
-    check(str(manifest.get("start_url", "")).startswith("./?v=88"), "Manifest must open the V88 app")
+    check(str(manifest.get("start_url", "")).startswith("./?v=89"), "Manifest must open the V88 app")
     for icon in manifest.get("icons", []):
         target = local_asset(icon.get("src", ""), "manifest")
         check(bool(target and target.is_file()), f"Manifest icon missing: {icon.get('src')}")
@@ -110,6 +111,14 @@ def run() -> int:
         check((ROOT / ref).is_file(), f"Missing EFGC visual asset: {ref}")
         if (ROOT / ref).is_file():
             check((ROOT / ref).stat().st_size > 2000, f"Visual asset too small: {ref}")
+            if ref in ("assets/v74-login-poster.webp", "assets/v74-efgc-logo.webp"):
+                data = (ROOT / ref).read_bytes()
+                expected = 8 + struct.unpack_from("<I", data, 4)[0]
+                check(data[:4] == b"RIFF" and data[8:12] == b"WEBP"
+                      and expected == len(data),
+                      f"Corrupted or truncated EFGC asset: {ref}; actual {len(data)}, RIFF {expected}")
+                min_bytes = 50000 if "login-poster" in ref else 20000
+                check(len(data) >= min_bytes, f"Incomplete original EFGC artwork: {ref}")
 
     for old in ("v21-auth-ui.js", "v36-password-recovery.js", "v61-smoke-login.js", "v73-brand.js"):
         check(old not in html, f"Legacy or development module was loaded: {old}")
@@ -132,7 +141,7 @@ def run() -> int:
         for message in ERRORS:
             print(" - " + message)
         return 1
-    print(f"EFGC V87 static release checks PASS: {len(parser.scripts)} JS, "
+    print(f"EFGC V89 static release checks PASS: {len(parser.scripts)} JS, "
           f"{len(parser.styles)} CSS, {len(parser.assets)} HTML assets checked.")
     return 0
 
