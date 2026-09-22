@@ -25,11 +25,15 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 public final class MainActivity extends Activity {
-    private static final String HOME = "https://stephenchetty1-netizen.github.io/efgc-youth-app/?apk=89";
+    private static final String HOME = "https://stephenchetty1-netizen.github.io/efgc-youth-app/?apk=90";
     private static final int PROFILE_IMAGE_REQUEST = 8801;
     private final Handler handler = new Handler(Looper.getMainLooper());
     private TextView statusTitle;
     private TextView statusHint;
+    private Button retryButton;
+    private Button browserButton;
+    private android.widget.ProgressBar loadingIndicator;
+    private boolean pageReady;
     private WebView webView;
     private LinearLayout errorPanel;
     private android.webkit.ValueCallback<Uri[]> fileCallback;
@@ -49,6 +53,9 @@ public final class MainActivity extends Activity {
         errorPanel.setOrientation(LinearLayout.VERTICAL);
         errorPanel.setPadding(50, 90, 50, 50);
         errorPanel.setBackgroundColor(Color.rgb(8, 34, 70));
+        loadingIndicator = new android.widget.ProgressBar(this);
+        loadingIndicator.setIndeterminate(true);
+        errorPanel.addView(loadingIndicator);
         TextView title = new TextView(this);
         title.setText("EFGC Youth is temporarily unavailable");
         title.setTextSize(21);
@@ -65,6 +72,7 @@ public final class MainActivity extends Activity {
         retry.setText("Retry");
         retry.setOnClickListener(v -> openCurrentApp());
         errorPanel.addView(retry);
+        retryButton = retry;
         Button browser = new Button(this);
         browser.setText("Open the EFGC Youth website");
         browser.setOnClickListener(v -> {
@@ -72,6 +80,7 @@ public final class MainActivity extends Activity {
             catch (ActivityNotFoundException ignored) { statusHint.setText("No browser available. Please retry."); }
         });
         errorPanel.addView(browser);
+        browserButton = browser;
         errorPanel.setVisibility(View.VISIBLE);
         root.addView(errorPanel, new FrameLayout.LayoutParams(-1, -1));
 
@@ -116,8 +125,15 @@ public final class MainActivity extends Activity {
                 pageFailed = false;
                 statusTitle.setText("Opening EFGC Youth");
                 statusHint.setText("Loading your church app…");
-                errorPanel.setVisibility(View.VISIBLE);
-                webView.setVisibility(View.INVISIBLE);
+                // A successful app session must not be covered by the retry screen
+                // every time WebView receives a main-frame navigation callback.
+                if (pageReady) {
+                    pageReady = true;
+                    errorPanel.setVisibility(View.GONE);
+                    webView.setVisibility(View.VISIBLE);
+                } else {
+                    setLoadingState();
+                }
             }
 
             @Override public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
@@ -130,7 +146,12 @@ public final class MainActivity extends Activity {
 
             @Override public void onPageFinished(WebView view, String url) {
                 if (pageFailed) return;
-                verifyVisibleWelcome(view, url, 0);
+                if (pageReady) {
+                    webView.setVisibility(View.VISIBLE);
+                    errorPanel.setVisibility(View.GONE);
+                } else {
+                    verifyVisibleWelcome(view, url, 0);
+                }
             }
         });
 
@@ -180,26 +201,38 @@ public final class MainActivity extends Activity {
                 if ("true".equals(result)) {
                     errorPanel.setVisibility(View.GONE);
                     webView.setVisibility(View.VISIBLE);
-                } else if (attempt < 2) {
+                } else if (attempt < 4) {
                     verifyVisibleWelcome(view, url, attempt + 1);
                 } else {
                     showLoadError("The welcome screen did not finish rendering. Retry or open the website.");
                 }
             });
-        }, attempt == 0 ? 2500 : attempt == 1 ? 4000 : 6000);
+        }, attempt == 0 ? 250 : attempt == 1 ? 650 : attempt == 2 ? 1250 : attempt == 3 ? 2000 : 3500);
+    }
+
+    private void setLoadingState() {
+        loadingIndicator.setVisibility(View.VISIBLE);
+        retryButton.setVisibility(View.GONE);
+        browserButton.setVisibility(View.GONE);
+        errorPanel.setVisibility(View.VISIBLE);
+        webView.setVisibility(View.INVISIBLE);
     }
 
     private void openCurrentApp() {
         pageFailed = false;
+        pageReady = false;
         statusTitle.setText("Opening EFGC Youth");
         statusHint.setText("Loading your church app…");
-        errorPanel.setVisibility(View.VISIBLE);
-        webView.setVisibility(View.INVISIBLE);
+        setLoadingState();
         webView.loadUrl(HOME);
     }
 
     private void showLoadError(String detail) {
         pageFailed = true;
+        pageReady = false;
+        loadingIndicator.setVisibility(View.GONE);
+        retryButton.setVisibility(View.VISIBLE);
+        browserButton.setVisibility(View.VISIBLE);
         statusTitle.setText("EFGC Youth needs your attention");
         statusHint.setText(detail);
         webView.setVisibility(View.INVISIBLE);
@@ -216,8 +249,11 @@ public final class MainActivity extends Activity {
     }
 
     @Override public void onBackPressed() {
-        if (errorPanel.getVisibility() == View.VISIBLE) {
+        if (pageFailed) {
             openCurrentApp();
+        } else if (errorPanel.getVisibility() == View.VISIBLE) {
+            // Do not restart the same page while its welcome/login is loading.
+            return;
         } else if (webView.canGoBack()) {
             webView.goBack();
         } else {

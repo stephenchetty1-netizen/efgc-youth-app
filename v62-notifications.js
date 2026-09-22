@@ -5,6 +5,7 @@
   const HISTORY_LIMIT = 25;
   const SNAPSHOT_LIMIT = 80;
   const KEY_PREFIX = 'efgcNotificationsV62';
+  const deviceSupported = () => ('Notification' in window) && window.isSecureContext;
   let timer = null;
   let busy = false;
   let initializedUser = null;
@@ -24,7 +25,7 @@
   }
 
   function permissionText() {
-    if (!('Notification' in window)) return 'Device notifications are not supported in this browser.';
+    if (!deviceSupported()) return 'In-app News and Event alerts are active while EFGC Youth is open. Device push notifications are not supported in this installation.';
     if (Notification.permission === 'granted') return 'Device notifications are enabled.';
     if (Notification.permission === 'denied') return 'Device notifications are blocked in browser settings.';
     return 'Enable device notifications to receive alerts while the app is open or running in the background.';
@@ -41,8 +42,8 @@
     if (status) status.textContent = permissionText();
     const enable = $('#efgcEnableNotifications');
     if (enable) {
-      enable.textContent = ('Notification' in window && Notification.permission === 'granted') ? 'Notifications Enabled' : 'Enable Notifications';
-      enable.disabled = ('Notification' in window && Notification.permission === 'granted');
+      enable.textContent = !deviceSupported() ? 'In-app alerts active' : Notification.permission === 'granted' ? 'Device notifications enabled' : 'Enable device notifications';
+      enable.disabled = !deviceSupported() || Notification.permission === 'granted';
     }
   }
 
@@ -108,7 +109,7 @@
   }
 
   async function deviceNotify(n) {
-    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    if (!deviceSupported() || Notification.permission !== 'granted') return;
     const options = {
       body: n.body,
       icon: 'assets/efgc-logo.svg?v=60.0',
@@ -239,8 +240,8 @@
   }
 
   async function enableDeviceNotifications() {
-    if (!('Notification' in window)) {
-      alert('This browser does not support device notifications. In-app alerts will still work.');
+    if (!deviceSupported()) {
+      updateBell();
       return;
     }
     try {
@@ -250,7 +251,8 @@
         addAlert({ id:`enabled-${Date.now()}`, kind:'news', title:'EFGC Youth Notifications Enabled', body:'You will receive alerts for new posts and events while the app is active.', target:'news', createdAt:new Date().toISOString(), timeLabel:labelTime(new Date().toISOString()) });
       }
     } catch (e) {
-      alert(`Notifications could not be enabled: ${e?.message || 'Unknown error'}`);
+      const text = $('#efgcNotifyPermission');
+      if (text) text.textContent = 'Device notifications could not be enabled. In-app alerts remain active while this app is open.';
     }
   }
 
@@ -290,17 +292,22 @@
     if (securityGrid) {
       const card = document.createElement('article');
       card.className = 'card efgc-notify-security-card';
-      card.innerHTML = '<h3>🔔 Post & Event Alerts</h3><p>Get an alert whenever EFGC Youth publishes a new post, birthday message or event.</p><button id="efgcEnableNotificationsSecurity" class="primary-login" type="button">Enable Notifications</button>';
+      card.innerHTML = '<h3>🔔 Post & Event Alerts</h3><p>In-app alerts appear while EFGC Youth is open. Device push is available only in supported installations.</p><button id="efgcEnableNotificationsSecurity" class="primary-login" type="button">Notification settings</button>';
       securityGrid.appendChild(card);
       $('#efgcEnableNotificationsSecurity')?.addEventListener('click', enableDeviceNotifications);
     }
 
     updateBell();
+    const securityButton = $('#efgcEnableNotificationsSecurity');
+    if (securityButton && !deviceSupported()) {
+      securityButton.disabled = true;
+      securityButton.textContent = 'In-app alerts active';
+    }
     renderHistory();
   }
 
   async function registerServiceWorker() {
-    if (!('serviceWorker' in navigator)) return;
+    if (!deviceSupported() || !('serviceWorker' in navigator)) return;
     try { await navigator.serviceWorker.register('notification-sw.js?v=62.0', { scope: './' }); } catch (e) { console.warn('Notification service worker unavailable:', e?.message || e); }
   }
 

@@ -76,7 +76,7 @@ def run() -> int:
             check(result.returncode == 0, f"JavaScript syntax: {file.name}: {result.stderr.strip()}")
 
     manifest = json.loads((ROOT / "manifest.webmanifest").read_text("utf-8"))
-    check(str(manifest.get("start_url", "")).startswith("./?v=89"), "Manifest must open the V88 app")
+    check(str(manifest.get("start_url", "")).startswith("./?v=90"), "Manifest must open the V90 app")
     for icon in manifest.get("icons", []):
         target = local_asset(icon.get("src", ""), "manifest")
         check(bool(target and target.is_file()), f"Manifest icon missing: {icon.get('src')}")
@@ -92,6 +92,10 @@ def run() -> int:
 
     check(ROOT / "v88.css" in parser.styles, "V88 responsive layout stylesheet is not loaded")
     dashboard = (ROOT / "v87-dashboard.js").read_text("utf-8")
+    notifications = (ROOT / "v62-notifications.js").read_text("utf-8")
+    check("scheduleBuild(0)" in dashboard and "finally {" in dashboard, "Home must render even if other modules fail")
+    check("deviceSupported()" in notifications and "In-app alerts active" in notifications,
+          "Unsupported WebView notification action is not disabled")
     layout = (ROOT / "v88-layout.js").read_text("utf-8")
     style = (ROOT / "v88.css").read_text("utf-8")
     check("v88NextEvent" in dashboard and "v88-quick-actions" in dashboard,
@@ -141,7 +145,7 @@ def run() -> int:
         for message in ERRORS:
             print(" - " + message)
         return 1
-    print(f"EFGC V89 static release checks PASS: {len(parser.scripts)} JS, "
+    print(f"EFGC V90 static release checks PASS: {len(parser.scripts)} JS, "
           f"{len(parser.styles)} CSS, {len(parser.assets)} HTML assets checked.")
     return 0
 

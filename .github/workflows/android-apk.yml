@@ -1,4 +1,4 @@
-name: Build EFGC Youth V89 test APK
+name: Build EFGC Youth V90 test APK
 
 on:
   push:
@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
-      - name: Checkout EFGC Youth V89
+      - name: Checkout EFGC Youth V90
         uses: actions/checkout@v4
 
       - name: Java 17
@@ -75,7 +75,7 @@ jobs:
       - name: Upload EFGC Youth test APK
         uses: actions/upload-artifact@v4
         with:
-          name: EFGC-Youth-V89-Android-APK
+          name: EFGC-Youth-V90-Android-APK
           path: android/app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 30

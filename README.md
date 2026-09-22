@@ -2,7 +2,7 @@
 
 A mobile-first EFGC Youth website with a unified Youth / approved Leader / Admin sign-in, an official church identity, and a safeguarded ministry experience.
 
-## Current release: V88 design
+## Current test release: V90 stabilization
 - Blue, white, silver and gold home dashboard with the EFGC emblem, the next published event, and relevant actions for each role.
 - Five-destination mobile navigation: Home, Events, Journey / Leader Hub / Ministry, News and More.
 - Role-specific links in the More menu, including roster and Admin Centre where authorised.
@@ -13,6 +13,11 @@ A mobile-first EFGC Youth website with a unified Youth / approved Leader / Admin
 ## Safeguarding and delivery
 The Supabase backend enforces member roles, prayer-sharing scopes, guardian verification and birthday publication permission. An approved message draft is **not** a sent WhatsApp message.
 
-This repository is a static web app, not an Android/iOS source project. Updating this website cannot rebuild an existing installed APK. Android packaging, installed-device WebView networking and Google Play release are separate steps and are **not** certified by the website validator.
+This repository contains the GitHub Pages website and a separate Android WebView test project under `android/`. Updating this website cannot rebuild an existing installed APK. Android packaging and installed-device WebView networking are separate tests; Google Play release signing is **not** certified by the website validator.
 
 Source deployment: `.github/workflows/pages.yml`. The GitHub Pages build must succeed before describing this version as live.
+
+## V90 handset repair
+- The homepage mounts on confirmed sign-in independently of other data requests.
+- Notifications correctly show in-app foreground alerts when native push is unavailable, without an unusable Enable button or JavaScript alert.
+- Android V90 has a loading spinner; Retry/Open Website appear only after an actual load failure, not during ordinary startup. V90 test APK uses a distinct application ID to keep V89 installed for comparison.

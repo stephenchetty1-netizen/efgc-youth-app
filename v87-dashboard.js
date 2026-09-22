@@ -28,7 +28,11 @@
     }
     return root;
   }
+  let scheduled = null;
+  let renderToken = 0;
   function reset() {
+    renderToken++;
+    if (scheduled !== null) { clearTimeout(scheduled); scheduled = null; }
     $('#v87Today')?.replaceChildren();
     $('#v87MinistryMenu')?.classList.add('hidden');
   }
@@ -36,6 +40,7 @@
     const root = ensure();
     const s = state();
     if (!s || !root) return reset();
+    const token = ++renderToken;
     const admin = s.role === 'admin';
     const isStaff = staff(s);
     const menu = $('#v87MinistryMenu');
@@ -80,7 +85,7 @@
         isStaff ? EFGCLive.duties() : Promise.resolve([]),
         admin ? EFGCLive.adminProfiles() : Promise.resolve([])
       ]);
-      if (!state() || state().uid !== s.uid || !$('#v87LiveOverview')) return;
+      if (!state() || state().uid !== s.uid || token !== renderToken || !$('#v87LiveOverview')) return;
       const events = eventsResponse.status === 'fulfilled' ? eventsResponse.value || [] : [];
       const next = events.find(event => new Date(event.event_date).getTime() >= Date.now()) || null;
       const plans = plansResponse.status === 'fulfilled' ? plansResponse.value || [] : [];
@@ -137,11 +142,29 @@
     if (typeof window.showTab === 'function') window.showTab(tab);
     if (tab === 'ministry') window.EFGCV87Ministry?.render?.();
   });
+  // V90: Never make the main dashboard contingent on the preceding Admin or
+  // live-data waterfall succeeding. Start its static layout immediately when
+  // the member session becomes available; load counts independently.
+  function scheduleBuild(delay = 0) {
+    if (!state()) return;
+    ensure();
+    if (scheduled !== null) clearTimeout(scheduled);
+    scheduled = setTimeout(() => {
+      scheduled = null;
+      build().catch(error => {
+        console.warn('EFGC dashboard refresh failed', error?.message || error);
+      });
+    }, delay);
+  }
   const previousLive = window.renderLiveData;
   if (typeof previousLive === 'function') {
     window.renderLiveData = async function (...args) {
-      const result = await previousLive.apply(this, args);
-      await build();
+      let result;
+      try { result = await previousLive.apply(this, args); }
+      finally {
+        // The member must still see Home when an unrelated module fails.
+        scheduleBuild(0);
+      }
       return result;
     };
   }
@@ -150,11 +173,19 @@
     window.renderShell = function (...args) {
       const result = previousShell.apply(this, args);
       if (!state()) reset();
-      else ensure();
+      else scheduleBuild(0);
       return result;
     };
   }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', ensure, {once:true});
-  else ensure();
-  window.EFGCV87Dashboard = { build };
+  document.addEventListener('click', event => {
+    if (event.target.closest?.('[data-tab="home"], [data-v88-route="home"], [data-mock-tab="home"]'))
+      scheduleBuild(0);
+  });
+  const init = () => { ensure(); if (state()) scheduleBuild(0); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init, {once:true});
+  else init();
+  window.addEventListener('pageshow', () => {
+    if (state() && !$('#v87Today .v88-home-hero')) scheduleBuild(0);
+  });
+  window.EFGCV87Dashboard = { build, scheduleBuild };
 })();
