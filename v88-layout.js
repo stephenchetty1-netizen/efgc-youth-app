@@ -127,10 +127,10 @@
     closeMore(false);
     source.click();
     setActive(tab);
-    if(tab==='ministry')window.EFGCV87Ministry?.render?.();
+    // The original menu click already routes through the existing EFGC handlers.
+    // Do not duplicate prayer requests or Admin fetches by rendering each screen twice.
     if(tab==='plannerRoster')window.renderPlannerRoster?.();
     if(tab==='attendanceAdmin')window.renderAttendanceAdmin?.();
-    if(tab==='admin')window.EFGCV87Admin?.render?.();
     window.scrollTo?.({top:0,behavior:'auto'});
   }
   document.addEventListener('click',e=>{
