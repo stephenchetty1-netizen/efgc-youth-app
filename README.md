@@ -2,7 +2,7 @@
 
 A mobile-first EFGC Youth website with a unified Youth / approved Leader / Admin sign-in, an official church identity, and a safeguarded ministry experience.
 
-## Current privacy and layout release: V95
+## Current privacy and layout release: V98
 - The V91 home is rendered in the initial HTML: Shalom greeting after sign-in, authentic EFGC emblem, next event, role-specific overview, four quick actions, then compact Scripture and Youth news. This layout is never conditional on prior Admin/network calls.
 - Five-destination mobile navigation: Home, Events, Journey / Leader Hub / Ministry, News and More.
 - Role-specific links in the More menu, including roster and Admin Centre where authorised.
@@ -45,3 +45,10 @@ The V93 style increases text and tap targets, arranges three Admin overview card
 - Auth tokens and the visible UI clear **before** the remote logout response returns, including on an offline phone. A late logout response cannot clear a newly signed-in account.
 - Chromium uses a deliberately stalled synthetic logout response to verify immediate token/roster clearance.
 - [Full audit and remaining launch gates](AUDIT-V95.md).
+
+## V98 Facebook-free WhatsApp sharing
+- Approved Admin/Leader accounts: More → WhatsApp. Messages are loaded from the existing Supabase `whatsapp_message_drafts` review workflow; only approved text is linkable.
+- Staff can draft in Ministry Centre/Leader Hub, Admin approves in the existing review queue, then staff refreshes the sharing screen and opens WhatsApp to pick the intended group/contact and press Send. A WhatsApp click is **not** a delivery confirmation.
+- Messages remain visible according to Supabase RLS (Admin: all; Leader: own drafts). No Facebook or Meta developer setup is needed for this human-confirmed method.
+- Inactive Meta Cloud API and OTP Admin setup cards are not loaded in direct-only mode; admin-assisted password recovery is shown instead of a non-functional WhatsApp code button. The backend's disabled API settings are untouched.
+- The website release does **not** rebuild an installed Android APK. The native WebView's external-HTTPS handler can open wa.me through Android.

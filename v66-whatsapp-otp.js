@@ -2,6 +2,7 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   const originalLoginUser = window.loginUser;
+  const directSharingOnly = () => window.EFGC_DIRECT_SHARE_ONLY === true;
   let resetToken = '';
   let resetPhone = '';
   let pendingRegistration = null;
@@ -46,7 +47,9 @@
       btn.id = 'v66ForgotPassword';
       btn.type = 'button';
       btn.className = 'v66-forgot-button';
-      btn.innerHTML = '<span>💬</span> Forgot Password? WhatsApp or Admin Help';
+      btn.innerHTML = directSharingOnly()
+        ? '<span>🔐</span> Forgot Password? Contact EFGC Admin'
+        : '<span>💬</span> Forgot Password? WhatsApp or Admin Help';
       $('#continueButton')?.insertAdjacentElement('afterend', btn);
       btn.addEventListener('click', openResetModal);
     }
@@ -110,8 +113,22 @@
     $('#v66ConfirmPassword').value = '';
     resetMessage('');
     showResetStep(1);
+    if (directSharingOnly()) {
+      [1,2,3].forEach(n => $(`#v66ResetStep${n}`)?.classList.add('hidden'));
+      modal.querySelector('small')?.replaceChildren(document.createTextNode('ACCOUNT RECOVERY'));
+      let help = $('#v98PasswordAdminHelp');
+      if (!help) {
+        help = document.createElement('p');
+        help.id = 'v98PasswordAdminHelp';
+        help.textContent = 'Direct WhatsApp sharing cannot deliver verification codes. Please ask an EFGC Youth Admin to reset your password after verifying your identity.';
+        $('#v66ResetMessage')?.insertAdjacentElement('beforebegin',help);
+      }
+      help.classList.remove('hidden');
+    } else {
+      $('#v98PasswordAdminHelp')?.classList.add('hidden');
+      setTimeout(() => $('#v66ResetPhone')?.focus(), 0);
+    }
     modal.classList.remove('hidden');
-    setTimeout(() => $('#v66ResetPhone')?.focus(), 0);
   }
 
   async function withDisabled(button, fn) {
