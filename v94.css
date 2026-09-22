@@ -124,3 +124,13 @@ body.v88-ready.v92-phone :is(#scripture,#events,#news,#admin,#profile,#plannerRo
  outline:3px solid #c18d2a!important;
  outline-offset:3px!important;
 }
+
+
+/* V96: bound photo preview within registration card on small devices. */
+#photoPreview.photo-preview { width:100%;max-width:100%;min-width:0;overflow:hidden; }
+#photoPreview.photo-preview img {
+  display:block;width:auto;max-width:100%;height:auto;max-height:180px;
+  margin:12px auto;border-radius:14px;object-fit:contain;
+}
+.efgc-admin-title-edit { display:block;width:100%;min-width:0; }
+.efgc-admin-title-edit select { display:block;width:100%;max-width:100%;min-height:44px; }
