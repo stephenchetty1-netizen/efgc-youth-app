@@ -68,11 +68,17 @@
     const headers = { apikey: c.publishableKey, 'Content-Type': 'application/json' };
     const token = window.EFGCAuth?.accessToken?.();
     if (token) headers.Authorization = `Bearer ${token}`;
-    const r = await fetch(`${c.url}/functions/v1/member-auth`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(payload),
-    });
+    let r;
+    try {
+      r = await fetch(`${c.url}/functions/v1/member-auth`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+      });
+    } catch (error) {
+      window.EFGCNetwork?.notice?.('Could not reach EFGC sign-in. Check mobile data or Wi-Fi, then retry. If the installed APK keeps failing, use the secure EFGC website.');
+      throw new Error('EFGC sign-in could not reach the server. Check your connection and try again.');
+    }
     const body = await r.json().catch(() => ({}));
     if (!r.ok) {
       const e = new Error(body?.error || 'Authentication request failed.');
@@ -119,7 +125,7 @@
     roleRefreshBusy = true;
     try {
       const fresh = await EFGCAuth.getMyProfile();
-      if (!fresh || fresh.id !== session.uid) {
+      if (!fresh || fresh.id !== session.uid || fresh.archived_at) {
         await EFGCAuth.signOut();
         session = null;
         renderShell();
