@@ -235,6 +235,54 @@
     }
   };
 
+  window.linkAdminCellphone = async () => {
+    const note = $('#adminLinkMessage');
+    const button = $('#adminLinkButton');
+    const phone = EFGCAuth.normalizeZA($('#adminLinkPhone')?.value || '');
+    const passwordInput = $('#adminLinkConfirmPassword');
+    const password = passwordInput?.value || '';
+    const say = (value) => { if (note) note.textContent = value; };
+    if (session?.role !== 'admin' || session?.approval_status !== 'approved') return;
+    if (!/^\+27\d{9}$/.test(phone)) return say('Enter a valid South African cellphone number.');
+    if (!password) return say('Confirm your current Admin password to link the number.');
+    if (button) button.disabled = true;
+    try {
+      say('Verifying your Admin password and linking the number…');
+      // Re-authenticate with the existing Admin account. Never trust a name or role
+      // typed in the form to determine access.
+      const verified = await authBridge({ action: 'admin-login', password });
+      if (verified?.session?.user?.id !== session.uid
+        || verified?.profile?.role !== 'admin'
+        || verified?.profile?.approval_status !== 'approved') {
+        throw new Error('The Admin password does not match your account.');
+      }
+      const rows = await EFGCAuth.rest(
+        'profiles?id=eq.' + encodeURIComponent(session.uid) + '&role=eq.admin&approval_status=eq.approved',
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json', Prefer: 'return=representation' },
+          body: JSON.stringify({ phone }),
+        }
+      );
+      if (!Array.isArray(rows) || rows.length !== 1 || rows[0].phone !== phone) {
+        throw new Error('Your account was not updated. Check Admin access.');
+      }
+      session.phone = phone;
+      localStorage.removeItem('efgcYouthSession');
+      sessionStorage.removeItem('efgcYouthSession');
+      (EFGCAuth.remembersDevice() ? localStorage : sessionStorage)
+        .setItem('efgcYouthSession', JSON.stringify(session));
+      if (passwordInput) passwordInput.value = '';
+      await renderLiveData();
+      setAdminMessage('Admin cellphone linked. You can now sign in with that number and your existing password.');
+    } catch (error) {
+      say(error.message || 'Could not link the cellphone number.');
+    } finally {
+      if (passwordInput) passwordInput.value = '';
+      if (button && button.isConnected) button.disabled = false;
+    }
+  };
+
   function injectAdminPasswordCard() {
     const panel = $('#adminPanel');
     if (!panel || session?.role !== 'admin' || $('#v60AdminPasswordCard')) return;
