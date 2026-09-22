@@ -195,7 +195,7 @@
 
       if (authMode === 'register') {
         validateRegistration(d);
-        if (!/^\\+27\\d{9}$/.test(EFGCAuth.normalizeZA(d.phone))) {
+        if (!/^\+27\d{9}$/.test(EFGCAuth.normalizeZA(d.phone))) {
           throw new Error('Enter a valid South African cellphone number to register.');
         }
         const result = await authBridge({
