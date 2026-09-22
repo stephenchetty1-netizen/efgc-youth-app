@@ -2,7 +2,7 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   const esc = (v='') => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  const logoAsset = 'assets/v76-efgc-logo.png?v=76.0';
+  const logoAsset = 'assets/v74-efgc-logo.webp?v=87.0';
   const heroAsset = 'assets/efgc-home-hero.webp?v=45';
 
   function activeSession(){ try { return session || null; } catch { return null; } }
