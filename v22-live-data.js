@@ -24,10 +24,10 @@
       return get('duty_assignments?select=id,planner_id,duty_type,leader_id,status,replacement_note,updated_at&order=planner_id.asc');
     },
     async adminProfiles() {
-      return get('profiles?select=id,full_name,phone,role,approval_status,leader_role,created_at&order=created_at.desc');
+      return get('profiles?select=id,full_name,phone,birthday,role,approval_status,leader_role,archived_at,created_at&order=created_at.desc');
     },
     async adminYouthProfiles() {
-      return get('profiles?select=id,full_name&role=eq.youth&approval_status=eq.approved&order=full_name.asc');
+      return get('profiles?select=id,full_name&role=eq.youth&approval_status=eq.approved&archived_at=is.null&order=full_name.asc');
     },
     async adminAttendance(eventId) {
       return get(`attendance?select=event_id,youth_id,status,recorded_at&event_id=eq.${esc(eventId)}&order=youth_id.asc`);
@@ -35,11 +35,42 @@
     async safeguardingDirectory() {
       return get('safeguarding_contacts?select=youth_id,parent_name,parent_phone,emergency_name,emergency_phone,updated_at&order=updated_at.desc');
     },
+    async auditLog() {
+      return get('role_audit_log?select=id,target_name,previous_role,new_role,action,changed_at&order=changed_at.desc&limit=40');
+    },
+    async memberPreferences(id) {
+      return get(`member_preferences?select=member_id,birthday_opt_in,photo_opt_in,whatsapp_opt_in&member_id=eq.${esc(id)}`);
+    },
+    async guardianPermission(id) {
+      return get(`member_guardian_permissions?select=member_id,birthday_and_photo_authorized,whatsapp_authorized,verified_at&member_id=eq.${esc(id)}`);
+    },
+    async adminArchiveMember(id, archive) {
+      if (!/^[0-9a-f-]{36}$/i.test(String(id||''))) throw new Error('Invalid member.');
+      const rows = await window.EFGCAuth.rest(`profiles?id=eq.${esc(id)}&role=neq.admin`, {
+        method:'PATCH', headers:jsonHeaders,
+        body:JSON.stringify({archived_at:archive?new Date().toISOString():null}),
+      });
+      if (!Array.isArray(rows) || rows.length!==1) throw new Error('Account was not updated.');
+      return rows[0];
+    },
+    async adminSaveGuardianPermission(id, birthday, whatsapp) {
+      const rows = await window.EFGCAuth.rest('member_guardian_permissions?on_conflict=member_id',{
+        method:'POST',
+        headers:{...jsonHeaders,Prefer:'resolution=merge-duplicates,return=representation'},
+        body:JSON.stringify({
+          member_id:id,birthday_and_photo_authorized:!!birthday,
+          whatsapp_authorized:!!whatsapp,verified_by:window.EFGCAuth.userId(),
+          verified_at:new Date().toISOString(),
+        }),
+      });
+      if(!rows?.length) throw new Error('Guardian permission was not saved.');
+      return rows[0];
+    },
     async adminPromoteYouth(userId) {
       // Server RLS permits only an approved Admin to change another member's role.
       if (!/^[0-9a-f-]{36}$/i.test(String(userId || ''))) throw new Error('Choose a valid Youth account.');
       const rows = await window.EFGCAuth.rest(
-        `profiles?id=eq.${esc(userId)}&role=eq.youth&approval_status=eq.approved`, {
+        `profiles?id=eq.${esc(userId)}&role=eq.youth&approval_status=eq.approved&archived_at=is.null`, {
           method: 'PATCH',
           headers: jsonHeaders,
           body: JSON.stringify({ role: 'leader', approval_status: 'approved', leader_role: 'EFGC Youth Leader' }),
@@ -54,7 +85,7 @@
       // Revoke access through the same Admin-protected Supabase RLS policy.
       if (!/^[0-9a-f-]{36}$/i.test(String(userId || ''))) throw new Error('Choose a valid Leader account.');
       const rows = await window.EFGCAuth.rest(
-        `profiles?id=eq.${esc(userId)}&role=eq.leader&approval_status=eq.approved`, {
+        `profiles?id=eq.${esc(userId)}&role=eq.leader&approval_status=eq.approved&archived_at=is.null`, {
           method: 'PATCH',
           headers: jsonHeaders,
           body: JSON.stringify({ role: 'youth', approval_status: 'approved', leader_role: null }),
