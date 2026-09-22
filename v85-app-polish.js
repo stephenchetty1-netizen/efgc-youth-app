@@ -165,7 +165,7 @@
         .filter((row) => ['youth', 'leader', 'admin'].includes(row.role)
           && row.approval_status === 'approved' && birthdayParts(row.birthday))
         .map((row) => ({ ...row, next: nextBirthday(row.birthday) }))
-        .sort((a, b) => a.next.days - b.next.days || a.full_name.localeCompare(b.full_name));
+        .sort((a, b) => a.next.days - b.next.days || String(a.full_name || '').localeCompare(String(b.full_name || '')));
       const select = $('#birthdayMember');
       select.innerHTML = '<option value="">Custom greeting</option>'
         + members.map((row) => '<option value="' + esc(row.id) + '">'
@@ -314,19 +314,24 @@
         ctx.font = 'bold 30px sans-serif'; ctx.fillStyle = '#f1dfaa';
         ctx.fillText(latestPreview.dateLabel, 540, y + 10); y += 56;
       }
+      const textStart = Math.max(y + 34, 834);
+      const available = 1152 - textStart;
       let fontSize = 31;
       let blessingLines = [];
+      let lineHeight = 39;
       do {
         ctx.font = fontSize + 'px sans-serif';
         blessingLines = wrapLines(ctx, latestPreview.blessing, 895);
-        if (blessingLines.length <= 6) break;
-        fontSize -= 2;
-      } while (fontSize > 22);
+        lineHeight = Math.round(fontSize * 1.24);
+        if (blessingLines.length * lineHeight <= available) break;
+        fontSize -= 1;
+      } while (fontSize >= 19);
+      if (blessingLines.length * lineHeight > available) {
+        throw new Error('This blessing is too long for the poster layout. Please shorten it and regenerate the preview.');
+      }
       ctx.fillStyle = '#f2f8ff';
-      y = Math.max(y + 54, 850);
-      const available = 1120 - y;
-      const lineHeight = Math.min(43, available / Math.max(blessingLines.length, 1));
-      blessingLines.slice(0, 10).forEach((line) => {
+      y = textStart;
+      blessingLines.forEach((line) => {
         ctx.fillText(line, 540, y); y += lineHeight;
       });
       ctx.fillStyle = '#ffe29a'; ctx.font = 'italic 32px Georgia, serif';
