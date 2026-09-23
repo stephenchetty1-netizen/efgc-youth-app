@@ -73,19 +73,45 @@ with sync_playwright() as pw:
     page.locator('#v88MobileNav [data-v88-more]').click()
     page.locator('#v88MoreLinks [data-v88-route="attendanceAdmin"]').click()
     page.wait_for_function("() => !!document.querySelector('#v101CreateEvent')",timeout=18000)
-    page.locator('#attendanceNewDate').fill('2026-09-25T18:30')
+    page.locator('#attendanceNewDate').fill('2099-09-25T18:30')
     page.locator('#v101CreateEvent').click()
     page.wait_for_function("() => !!document.querySelector('#v101SaveAttendance')",timeout=18000)
     assert page.locator('#attendanceRegisterHost .attendance-page-status').count()==1
     page.locator('#attendanceRegisterHost .attendance-page-status').select_option('present')
     page.locator('#v101SaveAttendance').click()
     page.wait_for_function("() => window.__v101Saved.length===1",timeout=18000)
-    page.wait_for_function("() => !document.querySelector('#v101FinalizeAttendance').disabled",timeout=18000)
+    page.wait_for_function("() => !document.querySelector('#v101SaveAttendance').disabled",timeout=18000)
+    # The real server rejects future meeting finalization; the UI must agree.
+    assert page.locator('#v101FinalizeAttendance').is_disabled()
+    page.evaluate("() => {window.__v101Events[0].event_date='2020-01-01T18:30:00Z';return renderAttendanceAdmin(42);}")
+    page.wait_for_function("() => !document.querySelector('#v101FinalizeAttendance').disabled")
     page.locator('#v101FinalizeAttendance').click()
     page.wait_for_function("() => !!document.querySelector('#attendanceRegisterHost .finalized')",timeout=18000)
     assert page.locator('#attendanceRegisterHost .attendance-page-status').is_disabled()
     assert page.evaluate('() => window.__v101CreateCount')==1
     page.screenshot(path=str(OUT/'efgc-v101-attendance-finalized-mobile.png'),full_page=True)
+    # Switching meetings while saving must never finalize the newly selected one.
+    page.evaluate("""async()=>{
+      window.__v101Events=[{id:42,title:'Meeting A',event_date:'2020-01-01T18:30:00Z'},
+        {id:43,title:'Meeting B',event_date:'2020-01-02T18:30:00Z'}];
+      window.__finalizedIds=[];
+      window.EFGCLive.adminSaveAttendance=async(id,rows)=>{
+        await new Promise(resolve=>window.__releaseAttendanceSave=resolve);
+        return rows.map(r=>({...r,event_id:id}));
+      };
+      window.EFGCLive.adminFinalizeAttendance=async id=>{window.__finalizedIds.push(id);return {id};};
+      await renderAttendanceAdmin(42);
+    }""")
+    page.locator('#attendanceRegisterHost .attendance-page-status').select_option('present')
+    page.locator('#v101FinalizeAttendance').click()
+    page.wait_for_function("() => !!window.__releaseAttendanceSave")
+    page.locator('#attendanceEventSelect').select_option('43')
+    page.get_by_role('button',name='Open register',exact=True).click()
+    page.wait_for_function("() => document.querySelector('#attendanceRegisterHost h3')?.textContent==='Meeting B'")
+    page.evaluate("() => window.__releaseAttendanceSave()")
+    page.wait_for_function("() => window.__finalizedIds.length===1")
+    assert page.evaluate("() => window.__finalizedIds[0]")==42
+    assert page.locator('#attendanceRegisterHost h3').first.text_content()=='Meeting B'
     page.evaluate("""([Y])=>{
       session={uid:Y,role:'youth',approval_status:'approved',name:'Test Youth'};
       renderShell();showTab('attendanceAdmin');

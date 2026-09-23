@@ -123,12 +123,15 @@
   async function refreshAccountAccess() {
     if (roleRefreshBusy || !session?.uid || !EFGCAuth.accessToken()) return;
     roleRefreshBusy = true;
+    const account = session.uid;
     try {
       const fresh = await EFGCAuth.getMyProfile();
+      if (session?.uid !== account || EFGCAuth.userId() !== account) return;
       if (!fresh || fresh.id !== session.uid || fresh.archived_at) {
-        await EFGCAuth.signOut();
+        const signingOut = EFGCAuth.signOut();
         session = null;
         renderShell();
+        await signingOut;
         return;
       }
       const updated = sessionFromProfile(fresh, EFGCAuth.session()?.user);

@@ -1,4 +1,4 @@
-name: Validate and deploy EFGC Youth V101
+name: Validate and deploy EFGC Youth V102
 
 on:
   push:
@@ -50,6 +50,9 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+
+      - name: Verify session refresh and account switching
+        run: node --test scripts/test-session-refresh.cjs
 
       - name: Validate V101 source, logout privacy, manifest and safeguarding gates
         run: python3 scripts/validate-v87.py

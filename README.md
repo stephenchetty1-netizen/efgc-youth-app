@@ -66,3 +66,12 @@ Six photographic Scripture backgrounds (cross at sunrise, prayer over the Word, 
 - Attendance first verifies the current approved Admin profile, retrieves actual events and approved, active Youth with Supabase RLS, and displays the separate Youth Register even when no meeting has been created. The More menu also links to Youth & Leaders Register.
 - New meetings must be explicitly created by the Admin before recording attendance. Save checks that every expected record is returned from the server before permitting finalization. Finalized registers are locked. Empty event tables are not fabricated.
 - Automated mobile Chromium test uses synthetic accounts and records to exercise More navigation, zero-event state, member access, creating a meeting, recording/finalizing attendance and sign-out privacy. This does not sign in on the actual phone or rebuild the installed APK.
+
+## V102 Session and attendance reliability repair
+
+- Parallel expired requests share one token refresh. A late refresh or startup response cannot restore a signed-out account or replace a new account. Temporary network errors preserve saved credentials.
+- Attendance save/finalize keeps the meeting selected when Save was pressed, even when the user opens another meeting while the request is pending. Old responses do not replace a different account's form.
+- Future meetings can save draft attendance; finalization is disabled until the meeting begins, matching the database rule.
+- Regression coverage: Node tests for refresh, logout, account switching and offline startup; mobile tests for future meetings and switching meetings during a save.
+
+Verification on 23 September 2026: database role checks returned one approved Youth and two leadership entries for both Admin and approved Leader. A rollback-only test saved and finalized a past meeting through authenticated Admin RLS; no test meeting or attendance was retained. Real handset login remains a separate device check.

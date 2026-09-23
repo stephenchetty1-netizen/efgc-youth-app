@@ -7,6 +7,8 @@
   const S = `${c.url}/storage/v1`;
   const K = 'efgcSupabaseAuth';
   const REMEMBER_KEY = 'efgcRememberDevice';
+  let sessionVersion = 0;
+  let pendingRefresh = null;
   const remembersDevice = () => localStorage.getItem(REMEMBER_KEY) === '1';
   const H = (token, extra = {}) => ({ apikey: c.publishableKey, ...(token ? { Authorization: `Bearer ${token}` } : {}), ...extra });
   // Persist auth tokens only after the member explicitly opts into Remember me.
@@ -16,6 +18,7 @@
     catch { return null; }
   };
   const write = (v) => {
+    sessionVersion++;
     localStorage.removeItem(K);
     sessionStorage.removeItem(K);
     if (v) (remembersDevice() ? localStorage : sessionStorage).setItem(K, JSON.stringify(v));
@@ -36,16 +39,25 @@
     return body;
   }
 
-  async function refresh() {
+  function refresh() {
     const s = read();
-    if (!s?.refresh_token) return null;
-    const data = await req(`${A}/token?grant_type=refresh_token`, {
+    if (!s?.refresh_token) return Promise.resolve(null);
+    const version = sessionVersion;
+    if (pendingRefresh?.version === version) return pendingRefresh.promise;
+    const operation = { version, promise: null };
+    operation.promise = req(`${A}/token?grant_type=refresh_token`, {
       method: 'POST',
       headers: { ...H(null), 'Content-Type': 'application/json' },
       body: JSON.stringify({ refresh_token: s.refresh_token }),
+    }).then(data => {
+      if (sessionVersion !== version) return null;
+      write(data);
+      return data;
+    }).finally(() => {
+      if (pendingRefresh === operation) pendingRefresh = null;
     });
-    write(data);
-    return data;
+    pendingRefresh = operation;
+    return operation.promise;
   }
 
   async function authed(url, options = {}) {
@@ -55,7 +67,10 @@
       return await req(url, { ...options, headers: { ...H(s.access_token), ...(options.headers || {}) } });
     } catch (e) {
       if (e.status !== 401 || !s.refresh_token) throw e;
-      s = await refresh();
+      const current = read();
+      if (!current || current.user?.id !== s.user?.id) throw e;
+      // Another request may already have refreshed this account's token.
+      s = current.access_token !== s.access_token ? current : await refresh();
       if (!s?.access_token) throw e;
       return req(url, { ...options, headers: { ...H(s.access_token), ...(options.headers || {}) } });
     }
@@ -71,15 +86,19 @@
 
   async function restoreSession() {
     const existing = read();
+    const version = sessionVersion;
     if (!existing?.access_token) return null;
     try {
       const user = await req(`${A}/user`, { headers: H(existing.access_token) });
+      if (sessionVersion !== version) return null;
       const next = { ...existing, user };
       write(next);
       return next;
     } catch (e) {
+      if (sessionVersion !== version) return null;
       if (e.status === 401 && existing.refresh_token) return refresh();
-      write(null);
+      // A connection failure is not evidence that saved credentials are invalid.
+      if (e.status === 401 || e.status === 403) write(null);
       return null;
     }
   }

@@ -322,7 +322,8 @@
         '<div class="inline-actions"><button class="mini-button primary" type="button" id="v101SaveAttendance" onclick="saveAttendancePage(false)" '+
         (!youthCache.length?'disabled':'')+'>Save register</button>'+
         '<button class="mini-button success" type="button" id="v101FinalizeAttendance" onclick="saveAttendancePage(true)" '+
-        (!youthCache.length?'disabled':'')+'>Save & finalize</button></div>';
+        (!youthCache.length || new Date(event.event_date).getTime()>Date.now()?'disabled':'')+'>Save & finalize</button></div>'+
+        (new Date(event.event_date).getTime()>Date.now()?'<p class="section-note">You can save a draft now. Finalization becomes available after the meeting starts; reopen the register then.</p>':'');
       host.innerHTML='<article class="module-card"><div class="planner-week-head"><div>'+
         '<span class="module-kicker">Attendance</span><h3>'+esc(event.title)+'</h3>'+
         '<div class="planner-meta">'+esc(formatEventDate(event.event_date))+
@@ -355,22 +356,29 @@
     if(!isAdmin()||currentSession()?.approval_status!=='approved'||!activeAttendanceEventId||attendanceMutationBusy)return;
     const event=eventCache.find(e=>Number(e.id)===Number(activeAttendanceEventId));
     if(!event || event.attendance_approved)return setLine('#attendanceSaveMessage','This register is already finalized and locked.','error');
+    if(finalize && new Date(event.event_date).getTime()>Date.now())
+      return setLine('#attendanceSaveMessage','Attendance can only be finalized after the meeting starts.','error');
+    const eventId=activeAttendanceEventId, uid=currentSession().uid, request=attendanceLoadVersion;
+    const current=()=>currentSession()?.uid===uid && isAdmin() && currentSession()?.approval_status==='approved';
+    const sameForm=()=>current() && request===attendanceLoadVersion && activeAttendanceEventId===eventId;
     attendanceMutationBusy=true;
     const btns=[...document.querySelectorAll('#v101SaveAttendance,#v101FinalizeAttendance')];
     btns.forEach(b=>b.disabled=true);
     try{
       const entries=collectAttendance();
       setLine('#attendanceSaveMessage',finalize?'Saving and finalizing…':'Saving attendance…');
-      const saved=await EFGCLive.adminSaveAttendance(activeAttendanceEventId,entries);
+      const saved=await EFGCLive.adminSaveAttendance(eventId,entries);
       if(!Array.isArray(saved)||saved.length!==entries.length)
         throw new Error('Not every attendance record was confirmed by the server. Register not finalized.');
-      if(finalize)await EFGCLive.adminFinalizeAttendance(activeAttendanceEventId);
-      const id=activeAttendanceEventId;
-      await window.renderAttendanceAdmin(id);
+      if(!current())return;
+      if(finalize)await EFGCLive.adminFinalizeAttendance(eventId);
+      if(!sameForm())return;
+      await window.renderAttendanceAdmin(eventId);
+      if(!current() || activeAttendanceEventId!==eventId)return;
       setLine('#attendanceSaveMessage',
         finalize?'Attendance finalized and locked.':'Attendance saved. You can continue editing before finalizing.','ok');
-    }catch(e){setLine('#attendanceSaveMessage','Could not save attendance: '+(e?.message||'Check your connection.'),'error');}
-    finally{attendanceMutationBusy=false;btns.forEach(b=>{if(b.isConnected)b.disabled=false;});}
+    }catch(e){if(sameForm())setLine('#attendanceSaveMessage','Could not save attendance: '+(e?.message||'Check your connection.'),'error');}
+    finally{attendanceMutationBusy=false;btns.forEach(b=>{if(b.isConnected)b.disabled=b.id==='v101FinalizeAttendance' && new Date(event.event_date).getTime()>Date.now();});}
   };
 
   window.createAttendanceEvent = async() => {
@@ -384,14 +392,16 @@
     if(!Number.isFinite(date.getTime()))
       return setLine('#attendanceCreateMessage','Choose a valid meeting date.','error');
     attendanceMutationBusy=true;
+    const uid=currentSession().uid, request=attendanceLoadVersion;
     const button=$('#v101CreateEvent');if(button)button.disabled=true;
     try{
       setLine('#attendanceCreateMessage','Creating meeting…');
       const event=await EFGCLive.adminCreateEvent({title,event_date:date.toISOString(),theme,scripture});
       if(!event?.id)throw new Error('The server did not confirm a new meeting.');
+      if(currentSession()?.uid!==uid || request!==attendanceLoadVersion)return;
       await window.renderAttendanceAdmin(event.id);
       setLine('#attendanceCreateMessage','Meeting created. The Youth register is ready to record attendance.','ok');
-    }catch(e){setLine('#attendanceCreateMessage','Could not create meeting: '+(e?.message||'Check your connection.'),'error');}
+    }catch(e){if(currentSession()?.uid===uid && request===attendanceLoadVersion)setLine('#attendanceCreateMessage','Could not create meeting: '+(e?.message||'Check your connection.'),'error');}
     finally{attendanceMutationBusy=false;if(button?.isConnected)button.disabled=false;}
   };
 
