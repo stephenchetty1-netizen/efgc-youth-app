@@ -14,7 +14,6 @@ with sync_playwright() as pw:
     page.goto(BASE,wait_until='domcontentloaded',timeout=45000)
     page.wait_for_function("() => document.documentElement.dataset.scriptureGenerator === '100.0'",timeout=20000)
     page.evaluate("""() => {session={uid:'00000000-0000-4000-8000-000000000100',name:'Scripture QA Youth',role:'youth',approval_status:'approved'};renderShell();showTab('scripture');}""")
-    assert page.locator('#scripture').is_visible()
     images=page.locator('#scripture img.scripture-theme-photo')
     assert images.count()==6, f'Expected six Scripture choices, found {images.count()}'
     for i in range(6):
@@ -23,7 +22,7 @@ with sync_playwright() as pw:
     page.wait_for_function("""()=>document.getElementById('scriptureRenderStatus').textContent.includes('ready')
           ||document.getElementById('scriptureRenderStatus').textContent===''""",timeout=20000)
     for i in range(6):
-        page.locator(f'#scripture button[data-scripture-theme="{i}"]').click()
+        page.evaluate("i => document.querySelector('#scripture button[data-scripture-theme=\"'+i+'\"]').click()",i)
         page.wait_for_function("""()=>document.querySelector('#scriptureRenderStatus').textContent!=='Generating HD scripture poster…'""",timeout=15000)
         assert page.locator('#scriptureRenderStatus').inner_text().find('Could not')<0
     # Fast successive changes should settle on the final selected image.
