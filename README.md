@@ -60,3 +60,9 @@ The V93 style increases text and tap targets, arranges three Admin overview card
 
 ## V100 Scripture photography refresh
 Six photographic Scripture backgrounds (cross at sunrise, prayer over the Word, mountain cross, blue-sky cross, morning Bible devotion and chapel cross) replace the old 4-item mixed-poster gallery. Source licensing and photographer credits: [`assets/scripture/README.md`](assets/scripture/README.md). The publish workflow downloads/crops each image into a local 1080×1350 WebP file, then validates images and smoke-tests the mobile gallery before deployment. Canvas text, downloadable PNG and official EFGC logo remain local; a failed photo download fails the release rather than presenting a blank gallery. The website update does not rebuild Android APK.
+
+## V101 Attendance Register and Youth directory repair
+- Android-style mobile More → Record Attendance opens a persistent, labelled Admin screen immediately. While the server is responding, show loading text rather than an empty page; on failure show a retry action. Route/account switches discard prior Admin register DOM.
+- Attendance first verifies the current approved Admin profile, retrieves actual events and approved, active Youth with Supabase RLS, and displays the separate Youth Register even when no meeting has been created. The More menu also links to Youth & Leaders Register.
+- New meetings must be explicitly created by the Admin before recording attendance. Save checks that every expected record is returned from the server before permitting finalization. Finalized registers are locked. Empty event tables are not fabricated.
+- Automated mobile Chromium test uses synthetic accounts and records to exercise More navigation, zero-event state, member access, creating a meeting, recording/finalizing attendance and sign-out privacy. This does not sign in on the actual phone or rebuild the installed APK.

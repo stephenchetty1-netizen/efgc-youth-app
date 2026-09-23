@@ -12,6 +12,8 @@
   let eventCache = [];
   let youthCache = [];
   let activeAttendanceEventId = null;
+  let attendanceLoadVersion = 0;
+  let attendanceMutationBusy = false;
   let activeRosterPlannerId = null;
 
   function currentSession(){ try { return typeof session !== 'undefined' ? session : null; } catch { return null; } }
@@ -196,87 +198,215 @@
   };
 
   function attendanceCreateCard(){
-    return `<article class="module-card"><span class="module-kicker">Meeting record</span><h3>Create attendance event</h3><div class="control-grid"><label>Event title<input id="attendanceNewTitle" type="text" value="Youth Meeting"></label><label>Date & time<input id="attendanceNewDate" type="datetime-local"></label><label>Theme<input id="attendanceNewTheme" type="text" placeholder="Optional"></label><label>Scripture<input id="attendanceNewScripture" type="text" placeholder="Optional"></label></div><div class="inline-actions"><button class="mini-button primary" type="button" onclick="createAttendanceEvent()">Create event</button></div><div id="attendanceCreateMessage" class="toast-line"></div></article>`;
+    return '<article class="module-card v101-attendance-create"><span class="module-kicker">Start the attendance register</span>'+
+      '<h3>Create a Youth meeting</h3><p>Attendance can only be recorded against a saved Youth meeting. Creating a meeting does not mark anybody present or send invitations.</p>'+
+      '<div class="control-grid"><label>Meeting title<input id="attendanceNewTitle" type="text" value="Youth Meeting" maxlength="100"></label>'+
+      '<label>Date & time<input id="attendanceNewDate" type="datetime-local" required></label>'+
+      '<label>Theme<input id="attendanceNewTheme" type="text" placeholder="Optional" maxlength="160"></label>'+
+      '<label>Scripture<input id="attendanceNewScripture" type="text" placeholder="Optional" maxlength="160"></label></div>'+
+      '<div class="inline-actions"><button class="mini-button primary" type="button" id="v101CreateEvent" onclick="createAttendanceEvent()">Create Youth meeting</button></div>'+
+      '<p id="attendanceCreateMessage" role="status" class="toast-line" aria-live="polite"></p></article>';
+  }
+
+  function attendanceYouthRegister(){
+    const youth=(Array.isArray(youthCache)?youthCache:[]);
+    return '<article class="module-card v101-youth-register"><span class="module-kicker">Approved members • Attendance eligibility</span>'+
+      '<h3>Youth Register <span class="v101-count">'+youth.length+'</span></h3>'+
+      '<p>These are registered, approved Youth accounts from the secure EFGC database. Only these Youth appear in meeting attendance. Leaders are listed separately in Members.</p>'+
+      (youth.length ?
+        '<div class="v101-youth-rows">'+youth.map(p=>
+          '<div class="v101-youth-row"><span aria-hidden="true">✓</span><strong>'+esc(p.full_name||'Youth member')+'</strong><small>YOUTH</small></div>'
+        ).join('')+'</div>' :
+        '<div class="empty-state"><strong>No approved Youth in this register</strong><div>Check member registration and account status in Admin Centre.</div></div>')+
+      '<div class="inline-actions"><button type="button" class="mini-button" data-tab="staffDirectory">View Youth & Leaders directory</button>'+
+      '<button type="button" class="mini-button" data-tab="admin">Open Admin Centre</button></div></article>';
   }
 
   window.renderAttendanceAdmin = async (preferredEventId=null) => {
-    const host=$('#attendanceAdminHost'); if(!host) return;
-    if(!isAdmin()){ host.innerHTML=staffEmpty('Admin only','Only an authorised Admin can record or finalise attendance.'); return; }
-    host.innerHTML='<article class="module-card"><p>Loading attendance records…</p></article>';
+    const host=$('#attendanceAdminHost');
+    if(!host) return;
+    const s=currentSession(), request=++attendanceLoadVersion;
+    if(!s || s.role!=='admin' || s.approval_status!=='approved'){
+      eventCache=[];youthCache=[];activeAttendanceEventId=null;
+      host.innerHTML=staffEmpty('Admin only','Only approved EFGC Admins can record or finalize Youth attendance.');
+      return;
+    }
+    const uid=s.uid;
+    // Show meaningful content before any network promise settles: never a white/blank tab.
+    host.innerHTML='<div class="module-heading"><div><span class="module-kicker">EFGC • SAFEGUARDED</span>'+
+      '<h2>Attendance Register</h2><p>Checking meeting records and approved Youth…</p></div></div>'+
+      '<article class="module-card" role="status">Loading your Youth register…</article>';
     try{
-      [eventCache,youthCache] = await Promise.all([EFGCLive.events(),EFGCLive.adminYouthProfiles()]);
+      const profile=await EFGCAuth.getMyProfile();
+      if(request!==attendanceLoadVersion || currentSession()?.uid!==uid) return;
+      if(!profile || profile.id!==uid || profile.archived_at ||
+         profile.role!=='admin' || profile.approval_status!=='approved'){
+        host.innerHTML=staffEmpty('Admin access could not be verified',
+          'Sign in again with your approved Admin account to open protected attendance records.');
+        return;
+      }
+      const [eventRows,youthRows] = await Promise.all([
+        EFGCLive.events(),EFGCLive.adminYouthProfiles()
+      ]);
+      if(request!==attendanceLoadVersion || currentSession()?.uid!==uid ||
+          $('#attendanceAdmin')?.classList.contains('hidden')) return;
+      if(!Array.isArray(eventRows)||!Array.isArray(youthRows))
+        throw new Error('Invalid records received. Try refreshing.');
+      eventCache=eventRows;
+      youthCache=youthRows;
       const events=[...eventCache].sort((a,b)=>new Date(b.event_date)-new Date(a.event_date));
       if(preferredEventId) activeAttendanceEventId=Number(preferredEventId);
       if(!activeAttendanceEventId && events.length) activeAttendanceEventId=Number(events[0].id);
-      if(activeAttendanceEventId && !events.some(e=>Number(e.id)===activeAttendanceEventId)) activeAttendanceEventId=events.length?Number(events[0].id):null;
-      const eventSelect=events.length?`<div class="attendance-toolbar"><label>Select meeting<select id="attendanceEventSelect">${events.map(e=>`<option value="${Number(e.id)}" ${Number(e.id)===activeAttendanceEventId?'selected':''}>${esc(e.title)} — ${esc(formatEventDate(e.event_date))}${e.attendance_approved?' • Finalized':''}</option>`).join('')}</select></label><button class="mini-button primary" type="button" onclick="openAttendanceEvent()">Open register</button></div>`:staffEmpty('No attendance events yet','Create the first meeting event below.');
-      host.innerHTML=`<div class="module-heading"><div><span class="module-kicker">Record • complete • approve</span><h2>Attendance Register</h2><p>This is an official record system, not an RSVP system.</p></div></div><div class="summary-strip"><div class="summary-box"><strong>${events.length}</strong><span>MEETINGS</span></div><div class="summary-box"><strong>${youthCache.length}</strong><span>REGISTERED YOUTH</span></div><div class="summary-box"><strong>${events.filter(e=>e.attendance_approved).length}</strong><span>FINALIZED</span></div></div>${eventSelect}<div id="attendanceRegisterHost"></div>${attendanceCreateCard()}`;
-      if(activeAttendanceEventId) await renderAttendanceRegister(activeAttendanceEventId);
-    }catch(e){ host.innerHTML=staffEmpty('Attendance could not load',e.message); }
+      if(activeAttendanceEventId && !events.some(e=>Number(e.id)===activeAttendanceEventId))
+        activeAttendanceEventId=events.length?Number(events[0].id):null;
+      const eventSelect=events.length?
+        '<div class="attendance-toolbar"><label>Select meeting<select id="attendanceEventSelect">'+
+        events.map(e=>'<option value="'+Number(e.id)+'" '+
+          (Number(e.id)===activeAttendanceEventId?'selected':'')+'>'+esc(e.title)+
+          ' — '+esc(formatEventDate(e.event_date))+
+          (e.attendance_approved?' • Finalized':'')+'</option>').join('')+
+        '</select></label><button class="mini-button primary" type="button" onclick="openAttendanceEvent()">Open register</button></div>':
+        staffEmpty('No Youth meetings are in the app yet',
+          'Create a Youth meeting below, then choose Present, Absent or Excused for each approved Youth.');
+      host.innerHTML='<div class="module-heading"><div><span class="module-kicker">Record • complete • approve</span>'+
+        '<h2>Attendance Register</h2><p>Select a saved meeting, mark each Youth, then Save. Finalize only when the register is correct.</p></div></div>'+
+        '<div class="summary-strip"><div class="summary-box"><strong>'+events.length+'</strong><span>MEETINGS</span></div>'+
+        '<div class="summary-box"><strong>'+youthCache.length+'</strong><span>REGISTERED YOUTH</span></div>'+
+        '<div class="summary-box"><strong>'+events.filter(e=>e.attendance_approved).length+
+        '</strong><span>FINALIZED</span></div></div>'+
+        eventSelect+'<div id="attendanceRegisterHost"></div>'+
+        attendanceYouthRegister()+attendanceCreateCard();
+      if(activeAttendanceEventId) await renderAttendanceRegister(activeAttendanceEventId,request,uid);
+    }catch(e){
+      if(request!==attendanceLoadVersion || currentSession()?.uid!==uid) return;
+      host.innerHTML='<div class="module-heading"><h2>Attendance Register</h2></div>'+
+        staffEmpty('Attendance could not refresh',e?.message||'Check your connection.')+
+        '<button id="v101AttendanceRetry" type="button" class="mini-button primary">Retry loading</button>';
+    }
   };
 
   window.openAttendanceEvent = async () => {
-    const id=Number($('#attendanceEventSelect')?.value); if(!id) return;
-    activeAttendanceEventId=id; await renderAttendanceRegister(id);
+    if(!isAdmin()||currentSession()?.approval_status!=='approved')return;
+    const id=Number($('#attendanceEventSelect')?.value);
+    if(!id)return;
+    activeAttendanceEventId=id;
+    await renderAttendanceRegister(id,attendanceLoadVersion,currentSession()?.uid);
   };
 
-  async function renderAttendanceRegister(eventId){
-    const host=$('#attendanceRegisterHost'); if(!host) return;
-    const event=eventCache.find(e=>Number(e.id)===Number(eventId)); if(!event) return;
-    host.innerHTML='<article class="module-card"><p>Opening register…</p></article>';
+  async function renderAttendanceRegister(eventId,request=attendanceLoadVersion,uid=currentSession()?.uid){
+    const host=$('#attendanceRegisterHost');
+    if(!host)return;
+    const event=eventCache.find(e=>Number(e.id)===Number(eventId));
+    if(!event)return;
+    host.innerHTML='<article class="module-card"><p>Opening Youth attendance…</p></article>';
     try{
       const existing=await EFGCLive.adminAttendance(eventId);
-      const byYouth=new Map((existing||[]).map(r=>[r.youth_id,r.status]));
+      if(request!==attendanceLoadVersion||currentSession()?.uid!==uid ||
+        Number(activeAttendanceEventId)!==Number(eventId) || !host.isConnected)return;
+      if(!Array.isArray(existing))throw new Error('Attendance records were not returned.');
+      const byYouth=new Map(existing.map(r=>[r.youth_id,r.status]));
       const present=[...byYouth.values()].filter(v=>v==='present').length;
-      const rows=youthCache.length?youthCache.map(y=>{const st=byYouth.get(y.id)||'';return `<div class="attendance-row"><h3>${esc(y.full_name)}</h3><select class="attendance-page-status" data-youth-id="${esc(y.id)}" ${event.attendance_approved?'disabled':''}><option value="" ${!st?'selected':''}>Select status…</option><option value="present" ${st==='present'?'selected':''}>Present</option><option value="absent" ${st==='absent'?'selected':''}>Absent</option><option value="excused" ${st==='excused'?'selected':''}>Excused</option></select></div>`;}).join(''):staffEmpty('No Youth accounts yet','Youth must register and be approved before they appear in the attendance register.');
-      const controls=event.attendance_approved?`<div class="inline-actions"><span class="status-pill finalized">Finalized & locked</span><span class="attendance-count">${present} present</span></div>`:`<div class="inline-actions"><button class="mini-button primary" type="button" onclick="saveAttendancePage(false)">Save register</button><button class="mini-button success" type="button" onclick="saveAttendancePage(true)">Save & finalize</button></div><div id="attendanceSaveMessage" class="toast-line"></div>`;
-      host.innerHTML=`<article class="module-card"><div class="planner-week-head"><div><span class="module-kicker">Attendance</span><h3>${esc(event.title)}</h3><div class="planner-meta">${esc(formatEventDate(event.event_date))}${event.theme?` • ${esc(event.theme)}`:''}</div></div><span class="status-pill ${event.attendance_approved?'finalized':'pending'}">${event.attendance_approved?'Finalized':'Open'}</span></div><div style="margin-top:10px">${rows}</div>${controls}</article>`;
-    }catch(e){ host.innerHTML=staffEmpty('Register could not open',e.message); }
+      const rows=youthCache.length?youthCache.map(y=>{
+        const st=byYouth.get(y.id)||'';
+        return '<div class="attendance-row"><h3>'+esc(y.full_name)+
+          '</h3><label>Status<select class="attendance-page-status" data-youth-id="'+esc(y.id)+
+          '" '+(event.attendance_approved?'disabled':'')+'>'+
+          '<option value="" '+(!st?'selected':'')+'>Select status…</option>'+
+          '<option value="present" '+(st==='present'?'selected':'')+'>Present</option>'+
+          '<option value="absent" '+(st==='absent'?'selected':'')+'>Absent</option>'+
+          '<option value="excused" '+(st==='excused'?'selected':'')+'>Excused</option></select></label></div>';
+      }).join(''):staffEmpty('No approved Youth yet','Youth accounts must be approved before recording attendance.');
+      const controls=event.attendance_approved?
+        '<div class="inline-actions"><span class="status-pill finalized">Finalized & locked</span>'+
+        '<span class="attendance-count">'+present+' present</span></div>':
+        '<div class="inline-actions"><button class="mini-button primary" type="button" id="v101SaveAttendance" onclick="saveAttendancePage(false)" '+
+        (!youthCache.length?'disabled':'')+'>Save register</button>'+
+        '<button class="mini-button success" type="button" id="v101FinalizeAttendance" onclick="saveAttendancePage(true)" '+
+        (!youthCache.length?'disabled':'')+'>Save & finalize</button></div>';
+      host.innerHTML='<article class="module-card"><div class="planner-week-head"><div>'+
+        '<span class="module-kicker">Attendance</span><h3>'+esc(event.title)+'</h3>'+
+        '<div class="planner-meta">'+esc(formatEventDate(event.event_date))+
+        (event.theme?' • '+esc(event.theme):'')+'</div></div>'+
+        '<span class="status-pill '+(event.attendance_approved?'finalized':'pending')+'">'+
+        (event.attendance_approved?'Finalized':'Open')+'</span></div>'+
+        '<div style="margin-top:10px">'+rows+'</div>'+controls+
+        '<p id="attendanceSaveMessage" role="status" class="toast-line" aria-live="polite"></p></article>';
+    }catch(e){
+      if(request!==attendanceLoadVersion||currentSession()?.uid!==uid)return;
+      host.innerHTML=staffEmpty('Register could not open',e?.message||'Retry opening the meeting.');
+    }
   }
 
   function collectAttendance(){
-    const selects=[...document.querySelectorAll('.attendance-page-status')];
-    if(!selects.length) throw new Error('There are no Youth in this register yet.');
-    return selects.map(s=>{ if(!['present','absent','excused'].includes(s.value)) throw new Error('Mark every Youth Present, Absent or Excused before saving.'); return {youth_id:s.dataset.youthId,status:s.value}; });
+    const selects=[...document.querySelectorAll('#attendanceRegisterHost .attendance-page-status')];
+    if(!selects.length)throw new Error('There are no approved Youth in this meeting register.');
+    const ids=new Set();
+    return selects.map(s=>{
+      if(!['present','absent','excused'].includes(s.value))
+        throw new Error('Mark every Youth Present, Absent or Excused before saving.');
+      const youth_id=s.dataset.youthId;
+      if(ids.has(youth_id))throw new Error('Duplicate Youth in attendance form.');
+      ids.add(youth_id);
+      return {youth_id,status:s.value};
+    });
   }
 
-  window.saveAttendancePage = async (finalize=false) => {
-    if(!isAdmin()||!activeAttendanceEventId) return;
+  window.saveAttendancePage = async(finalize=false) => {
+    if(!isAdmin()||currentSession()?.approval_status!=='approved'||!activeAttendanceEventId||attendanceMutationBusy)return;
+    const event=eventCache.find(e=>Number(e.id)===Number(activeAttendanceEventId));
+    if(!event || event.attendance_approved)return setLine('#attendanceSaveMessage','This register is already finalized and locked.','error');
+    attendanceMutationBusy=true;
+    const btns=[...document.querySelectorAll('#v101SaveAttendance,#v101FinalizeAttendance')];
+    btns.forEach(b=>b.disabled=true);
     try{
+      const entries=collectAttendance();
       setLine('#attendanceSaveMessage',finalize?'Saving and finalizing…':'Saving attendance…');
-      await EFGCLive.adminSaveAttendance(activeAttendanceEventId,collectAttendance());
-      if(finalize) await EFGCLive.adminFinalizeAttendance(activeAttendanceEventId);
-      setLine('#attendanceSaveMessage',finalize?'Attendance finalized and locked.':'Attendance saved.','ok');
-      await renderAttendanceAdmin(activeAttendanceEventId);
-    }catch(e){ setLine('#attendanceSaveMessage',`Could not save attendance: ${e.message}`,'error'); }
+      const saved=await EFGCLive.adminSaveAttendance(activeAttendanceEventId,entries);
+      if(!Array.isArray(saved)||saved.length!==entries.length)
+        throw new Error('Not every attendance record was confirmed by the server. Register not finalized.');
+      if(finalize)await EFGCLive.adminFinalizeAttendance(activeAttendanceEventId);
+      const id=activeAttendanceEventId;
+      await window.renderAttendanceAdmin(id);
+      setLine('#attendanceSaveMessage',
+        finalize?'Attendance finalized and locked.':'Attendance saved. You can continue editing before finalizing.','ok');
+    }catch(e){setLine('#attendanceSaveMessage','Could not save attendance: '+(e?.message||'Check your connection.'),'error');}
+    finally{attendanceMutationBusy=false;btns.forEach(b=>{if(b.isConnected)b.disabled=false;});}
   };
 
-  window.createAttendanceEvent = async () => {
-    if(!isAdmin()) return;
+  window.createAttendanceEvent = async() => {
+    if(!isAdmin()||currentSession()?.approval_status!=='approved'||attendanceMutationBusy)return;
     const title=$('#attendanceNewTitle')?.value.trim()||'Youth Meeting';
     const localDate=$('#attendanceNewDate')?.value;
     const theme=$('#attendanceNewTheme')?.value.trim()||'';
     const scripture=$('#attendanceNewScripture')?.value.trim()||'';
-    if(!localDate) return setLine('#attendanceCreateMessage','Choose the meeting date and time.','error');
+    if(!localDate)return setLine('#attendanceCreateMessage','Choose the meeting date and time.','error');
+    const date=new Date(localDate);
+    if(!Number.isFinite(date.getTime()))
+      return setLine('#attendanceCreateMessage','Choose a valid meeting date.','error');
+    attendanceMutationBusy=true;
+    const button=$('#v101CreateEvent');if(button)button.disabled=true;
     try{
       setLine('#attendanceCreateMessage','Creating meeting…');
-      const event=await EFGCLive.adminCreateEvent({title,event_date:new Date(localDate).toISOString(),theme,scripture});
-      setLine('#attendanceCreateMessage','Meeting created.','ok');
-      await renderAttendanceAdmin(event?.id||null);
-    }catch(e){ setLine('#attendanceCreateMessage',`Could not create meeting: ${e.message}`,'error'); }
+      const event=await EFGCLive.adminCreateEvent({title,event_date:date.toISOString(),theme,scripture});
+      if(!event?.id)throw new Error('The server did not confirm a new meeting.');
+      await window.renderAttendanceAdmin(event.id);
+      setLine('#attendanceCreateMessage','Meeting created. The Youth register is ready to record attendance.','ok');
+    }catch(e){setLine('#attendanceCreateMessage','Could not create meeting: '+(e?.message||'Check your connection.'),'error');}
+    finally{attendanceMutationBusy=false;if(button?.isConnected)button.disabled=false;}
   };
 
   function renderAdminShortcuts(){
     const panel=$('#adminPanel'); if(!panel||!isAdmin()||$('#v43AdminShortcuts')) return;
     const box=document.createElement('div'); box.id='v43AdminShortcuts'; box.className='admin-shortcuts';
-    box.innerHTML='<button class="admin-shortcut" type="button" data-tab="attendanceAdmin">✓ Attendance Register<span>Record Present/Absent and finalize meetings</span></button><button class="admin-shortcut" type="button" data-tab="plannerRoster">≡ Planner & Duty Roster<span>Plan weeks, assign leaders and track confirmations</span></button>';
+    box.innerHTML='<button class="admin-shortcut" type="button" data-tab="attendanceAdmin">✓ Record Attendance<span>Create a meeting, mark Youth, save and finalize</span></button><button class="admin-shortcut" type="button" data-tab="staffDirectory">☷ Youth Register<span>View approved Youth and Leaders</span></button><button class="admin-shortcut" type="button" data-tab="plannerRoster">≡ Planner & Duty Roster<span>Plan weeks, assign leaders and track confirmations</span></button>';
     panel.prepend(box);
   }
 
   document.addEventListener('click',(e)=>{
     const tab=e.target.closest('[data-tab]')?.dataset.tab;
     if(tab==='plannerRoster') setTimeout(renderPlannerRoster,0);
-    if(tab==='attendanceAdmin') setTimeout(()=>renderAttendanceAdmin(),0);
+    // Attendance is loaded exactly once by the V101 showTab route hook.
+    if(e.target.closest?.('#v101AttendanceRetry')) void window.renderAttendanceAdmin?.();
   });
 
   const priorRenderShell=window.renderShell;

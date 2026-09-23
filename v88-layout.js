@@ -77,7 +77,7 @@
   const routeLabels = Object.freeze({
     scripture:'Daily Scripture', leaders:'Leaders', profile:'Profile',
     security:'Security', plannerRoster:'Planner & Roster',
-    attendanceAdmin:'Attendance Register', admin:'Admin Centre',
+    attendanceAdmin:'Record Attendance', staffDirectory:'Youth & Leaders Register', admin:'Admin Centre',
     mine:'My Attendance', birthdayStudio:'Birthday Studio'
   });
   function labelFor(button) {
@@ -166,7 +166,8 @@
     // The original menu click already routes through the existing EFGC handlers.
     // Do not duplicate prayer requests or Admin fetches by rendering each screen twice.
     if(tab==='plannerRoster')window.renderPlannerRoster?.();
-    if(tab==='attendanceAdmin')window.renderAttendanceAdmin?.();
+    // The attendance route has its own screen loader. Avoid a third overlapping
+    // call here; the source button already runs the [data-tab] handler.
     window.scrollTo?.({top:0,behavior:'auto'});
   }
   document.addEventListener('click',e=>{
