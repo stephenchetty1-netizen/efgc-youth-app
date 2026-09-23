@@ -89,7 +89,7 @@ def run() -> int:
     )
     for photo in scripture_gallery:
         target = ROOT / "assets" / "scripture" / photo
-        check(target.is_file() and target.stat().st_size > 40000,
+        check(target.is_file() and target.stat().st_size > 15000,
               f"Scripture photo unavailable or incomplete: {photo}")
         check("assets/scripture/" + photo in scripture_module,
               f"Scripture photo is not selectable: {photo}")

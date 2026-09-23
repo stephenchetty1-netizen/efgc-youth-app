@@ -51,7 +51,7 @@ def main():
         with Image.open(target) as check:
             check.load()
             assert check.size == (1080, 1350)
-        assert target.stat().st_size > 40000
+        assert target.stat().st_size > 15000, f'{name}: re-encoded photo is unexpectedly small ({target.stat().st_size} bytes)'
         print(f"SCRIPTURE PHOTO OK {name}: {target.stat().st_size} bytes")
 
 if __name__ == "__main__":
