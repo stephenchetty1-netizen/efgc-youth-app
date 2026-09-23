@@ -191,7 +191,9 @@
     busy = true;
     try {
       const uid = userId();
+      const account = typeof session!=='undefined' ? session : null;
       const { news, events } = await fetchLatest();
+      if(userId()!==uid || (typeof session!=='undefined' ? session : null)!==account) return;
       const seenNews = readJSON('seenNews', null);
       const seenEvents = readJSON('seenEvents', null);
 

@@ -1,5 +1,7 @@
 /** EFGC Youth v63 — Leader weekly duty acknowledgement + two-step swaps. */
 (() => {
+  if (window.EFGCDutyPanel) return;
+  function snapshot(){ try { return session; } catch { return null; } }
   const POLL_MS = 15000;
   const DUTY_LABEL = { welcome:'Welcome', energizer:'Energizer', lesson:'Lesson', closing:'Closing' };
   let timer = null;
@@ -127,17 +129,21 @@
   async function load(){
     if(busy || !window.EFGCAuth?.accessToken?.()) return;
     busy=true;
+    const account=uid(), shell=snapshot();
+    const valid=()=>uid()===account && snapshot()===shell;
     try{
       const profile=await EFGCAuth.getMyProfile();
+      if(!valid()) return;
       if(!approvedLeader(profile)){ state={profile,plans:[],duties:[],leaders:[],swaps:[]}; render(); return; }
       const [plans,duties,leaders,swaps]=await Promise.all([
         EFGCLive.planner(), EFGCLive.duties(), EFGCLive.approvedLeaders(),
         EFGCAuth.rest('duty_swap_requests?select=id,duty_assignment_id,requester_leader_id,requested_leader_id,status,created_at,responded_at,updated_at&order=created_at.desc&limit=50')
       ]);
+      if(!valid()) return;
       state={profile,plans:plans||[],duties:duties||[],leaders:leaders||[],swaps:swaps||[]};
       render();
     }catch(e){
-      const host=ensureHost(); if(host && window.EFGCAuth?.userId?.()){ host.classList.remove('hidden'); host.innerHTML=`<div class="efgc-duty-error">Duty notifications could not load: ${esc(e?.message||'Unknown error')}</div>`; }
+      const host=ensureHost(); if(host && valid() && uid()){ host.classList.remove('hidden'); host.innerHTML=`<div class="efgc-duty-error">Duty notifications could not load: ${esc(e?.message||'Unknown error')}</div>`; }
     }finally{ busy=false; }
   }
 

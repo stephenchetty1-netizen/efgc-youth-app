@@ -155,10 +155,7 @@
   function restyleLeaderCards(){ document.querySelectorAll('#leaderList .leader-directory-card').forEach(card=>card.classList.add('mock-leader-row')); }
   async function restyleEventCards(){
     const cards=[...document.querySelectorAll('#eventList .event-card')];
-    try{
-      const events=await EFGCLive.events();
-      cards.forEach((card,i)=>{ card.classList.add('mock-event-row'); if(events[i]?.event_date) card.dataset.eventDate=events[i].event_date; });
-    }catch{ cards.forEach(card=>card.classList.add('mock-event-row')); }
+    cards.forEach(card=>card.classList.add('mock-event-row'));
     filterEventCards();
   }
 

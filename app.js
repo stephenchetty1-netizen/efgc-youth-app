@@ -71,7 +71,21 @@ function renderDailyScripture(){
   if ($('#scriptureCard')) $('#scriptureCard').innerHTML = `<h2>Daily Scripture</h2>${html}`;
 }
 
+let lastShellIdentity = null;
 function renderShell(){
+  const identity=session ? [session.uid,session.role,session.approval_status].join('|') : '';
+  if(identity!==lastShellIdentity){
+    lastShellIdentity=identity;
+    window.EFGCNetwork?.clearCache?.();
+    for(const selector of ['#adminPanel','#leaderList','#profileCard','#plannerRosterHost',
+      '#attendanceAdminHost','#leaderYearPlanner','#v87MinistryHost','#mineList',
+      '#v87MemberList','#eventList','#efgcDutyAckPanel','#efgcDutyToasts',
+      '#efgcNotifyList','#efgcNotifyToasts']) document.querySelector(selector)?.replaceChildren();
+    document.querySelector('#efgcDutySwapModal')?.remove();
+    document.querySelector('#efgcDutyAckPanel')?.classList.add('hidden');
+    document.querySelector('#efgcNotifyPanel')?.classList.remove('open');
+    for(const id of ['efgcDutyMenuBadge','efgcNotifyBadge']) document.getElementById(id)?.classList.add('hidden');
+  }
   const authenticated = Boolean(session?.uid);
   document.querySelectorAll('#mainMenu, .userbar').forEach(el => el.classList.toggle('hidden', !authenticated));
   if (!authenticated) {

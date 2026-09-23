@@ -79,3 +79,7 @@ Verification on 23 September 2026: database role checks returned one approved Yo
 ## V103 Youth Register button repair
 
 The Admin Centre Youth Register tile and the older Home shortcut routed to `admin`, which reopened Admin Centre instead of the directory. Both now route to `staffDirectory`, using its existing verified Admin/Leader access checks and live Youth/Leader lists. The mobile regression now clicks the actual Admin Centre tile as well as the separate More-menu entry; the theme script URL is versioned to refresh cached copies.
+
+## V104 — application audit and repairs
+
+See [AUDIT-V104.md](AUDIT-V104.md) for scope, verified repairs, regression evidence and remaining limits. V104 fixes duty permissions/swaps, attendance locks and archived-member completeness, repeated RSVP/duty loading, event identity/save confirmation, delayed account responses, and birthday batch eligibility. Database migrations and rollback regression SQL are included; the Pages release gate runs the new browser checks alongside the existing suites.

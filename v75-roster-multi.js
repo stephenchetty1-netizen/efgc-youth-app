@@ -9,6 +9,8 @@
   let plannerCache = [];
   let dutyCache = [];
   let leaderCache = [];
+  let pendingLoad = null;
+  let renderVersion = 0;
 
   function currentSession(){
     try { return session || null; } catch (_) { return null; }
@@ -39,7 +41,15 @@
   }
 
   async function loadPlanner(){
-    const [plans,duties,leaders]=await Promise.all([EFGCLive.planner(),EFGCLive.duties(),EFGCLive.approvedLeaders()]);
+    const account=currentSession();
+    if(!pendingLoad || pendingLoad.account!==account){
+      const request={account};
+      request.promise=Promise.all([EFGCLive.planner(),EFGCLive.duties(),EFGCLive.approvedLeaders()])
+        .finally(()=>{if(pendingLoad===request)pendingLoad=null;});
+      pendingLoad=request;
+    }
+    const [plans,duties,leaders]=await pendingLoad.promise;
+    if(currentSession()!==account) return;
     plannerCache=plans||[];
     dutyCache=duties||[];
     leaderCache=leaders||[];
@@ -77,11 +87,13 @@
 
   window.renderPlannerRoster=async()=>{
     const host=$('#plannerRosterHost'); if(!host) return;
-    const s=currentSession();
+    const s=currentSession(), version=++renderVersion;
+    const valid=()=>currentSession()===s && version===renderVersion && isApprovedStaff();
     if(!isApprovedStaff()){host.innerHTML='<article class="module-card"><p>Planner & Roster is restricted to approved Leaders and Admin.</p></article>';return;}
     host.innerHTML='<article class="module-card"><p>Loading Year Planner & Duty Roster…</p></article>';
     try{
       await loadPlanner();
+      if(!valid()) return;
       if(isAdmin()){
         const summary=`<div class="summary-strip"><div class="summary-box"><strong>${plannerCache.length}</strong><span>WEEKS</span></div><div class="summary-box"><strong>${leaderCache.length}</strong><span>LEADERS</span></div><div class="summary-box"><strong>${dutyCache.filter(d=>d.status==='confirmed').length}</strong><span>CONFIRMED DUTIES</span></div><div class="summary-box"><strong>${dutyCache.filter(d=>d.status==='replacement_requested').length}</strong><span>REPLACEMENTS</span></div></div>`;
         const rows=plannerCache.length?`<div class="v44-roster-table"><div class="v44-roster-head"><span>Week</span><span>Date</span><span>Welcome</span><span>Energizer</span><span>Lesson</span><span>Closing</span><span></span></div>${plannerCache.map(rosterAdminRow).join('')}</div>`:'<div class="empty-state"><strong>No planner weeks yet.</strong><div>Generate the annual planner above.</div></div>';
@@ -91,11 +103,13 @@
         const rows=visible.map(p=>rosterLeaderRow(p,s)).filter(Boolean).join('');
         host.innerHTML=`<div class="module-heading"><div><span class="module-kicker">My ministry duties</span><h2>Year Planner & Duty Roster</h2><p>Your allocated Welcome, Energizer, Lesson and Closing duties.</p></div></div>${rows||'<div class="empty-state">No published duties have been allocated to you yet.</div>'}`;
       }
-    }catch(e){host.innerHTML=`<article class="module-card"><p>${esc(`Planner could not load: ${e?.message||'Unknown error'}`)}</p></article>`;}
+    }catch(e){if(!valid())return;host.innerHTML=`<article class="module-card"><p>${esc(`Planner could not load: ${e?.message||'Unknown error'}`)}</p></article>`;}
   };
 
   window.saveRosterWeekV75=async(plannerId)=>{
     if(!isAdmin()) return;
+    const account=currentSession();
+    const checkAccount=()=>{if(currentSession()!==account)throw new Error('Account changed. Reopen the roster before saving.');};
     const row=document.querySelector(`.v44-roster-row[data-planner-id="${Number(plannerId)}"]`); if(!row) return;
     const button=row.querySelector('.v75-save .mini-button');
     if(button){button.disabled=true;button.textContent='Saving…';}
@@ -106,14 +120,17 @@
         const selectedSet=new Set(selectedIds);
         const existingByLeader=new Map(existing.map(a=>[a.leader_id,a]));
         for(const a of existing.filter(a=>!selectedSet.has(a.leader_id))){
+          checkAccount();
           await EFGCAuth.rest(`duty_assignments?id=eq.${Number(a.id)}`,{method:'DELETE',headers:{Prefer:'return=minimal'}});
         }
         const add=selectedIds.filter(id=>!existingByLeader.has(id));
         if(add.length){
+          checkAccount();
           const payload=add.map(leader_id=>({planner_id:Number(plannerId),duty_type:dutyType,leader_id,status:'pending',replacement_note:null}));
           await EFGCAuth.rest('duty_assignments?on_conflict=planner_id,duty_type,leader_id',{method:'POST',headers:{'Content-Type':'application/json',Prefer:'resolution=ignore-duplicates,return=representation'},body:JSON.stringify(payload)});
         }
       }
+      checkAccount();
       await window.renderPlannerRoster();
       if(window.EFGCDutyPanel?.refresh) await window.EFGCDutyPanel.refresh();
     }catch(e){

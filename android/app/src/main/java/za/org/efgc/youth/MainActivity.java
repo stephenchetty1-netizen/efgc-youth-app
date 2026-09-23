@@ -199,6 +199,7 @@ public final class MainActivity extends Activity {
             view.evaluateJavascript(probe, result -> {
                 if (pageFailed || isFinishing() || !url.equals(view.getUrl())) return;
                 if ("true".equals(result)) {
+                    pageReady = true;
                     errorPanel.setVisibility(View.GONE);
                     webView.setVisibility(View.VISIBLE);
                 } else if (attempt < 4) {

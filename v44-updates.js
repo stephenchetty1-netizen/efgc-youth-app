@@ -23,7 +23,8 @@
     EFGCLive.approvedLeaders = async () => EFGCAuth.rest('leader_directory?select=leader_id,full_name,phone,leader_role,face_photo_path&order=full_name.asc');
     EFGCLive.adminCreateEvent = async ({title,event_date,theme=null,scripture=null,post_content=null,image_path=null}) => {
       const rows = await EFGCAuth.rest('events',{method:'POST',headers:jsonHeaders,body:JSON.stringify({title,event_date,theme:theme||null,scripture:scripture||null,post_content:post_content||null,image_path:image_path||null,attendance_approved:false})});
-      return rows?.[0]||null;
+      if(!rows?.[0]?.id) throw new Error('The server did not confirm the new event. Please refresh before trying again.');
+      return rows[0];
     };
   }
 
@@ -64,34 +65,45 @@
     $('#adminEventImage')?.addEventListener('change',e=>{ const file=e.target.files?.[0],host=$('#adminEventMediaPreview'); if(!host) return; host.innerHTML=''; if(!file) return; const img=document.createElement('img'); img.src=URL.createObjectURL(file); img.onload=()=>URL.revokeObjectURL(img.src); host.appendChild(img); });
   }
 
+  let publishingEvent=false;
   window.adminCreateEvent = async () => {
-    if(!isAdmin()) return;
+    if(!isAdmin() || publishingEvent) return;
+    const account=currentSession();
     const title=$('#adminEventTitle')?.value.trim(); const localDate=$('#adminEventDate')?.value;
     const theme=$('#adminEventTheme')?.value.trim()||''; const scripture=$('#adminEventScripture')?.value.trim()||'';
     const post_content=$('#adminEventPost')?.value.trim()||''; const file=$('#adminEventImage')?.files?.[0]||null;
     if(!title||!localDate) return setAdminMessage?.('Event title and date/time are required.');
+    publishingEvent=true;
     try{
       setAdminMessage?.('Publishing event…');
       const image_path=await uploadEventImage(file);
+      if(currentSession()!==account) return;
       const d=new Date(localDate); if(Number.isNaN(d.getTime())) throw new Error('Enter a valid event date and time.');
       await EFGCLive.adminCreateEvent({title,event_date:d.toISOString(),theme,scripture,post_content,image_path});
+      if(currentSession()!==account) return;
       await renderLiveData();
+      if(currentSession()!==account) return;
       setAdminMessage?.('Event published successfully with its post/image.');
-    }catch(e){ setAdminMessage?.(`Could not publish event: ${e.message}`); }
+    }catch(e){ if(currentSession()===account)setAdminMessage?.(`Could not publish event: ${e.message}`); }
+    finally{publishingEvent=false;}
   };
 
+  let eventsVersion=0, leadersVersion=0;
   async function renderEventsV44(){
-    const host=$('#eventList'); if(!host||!currentSession()?.uid) return;
+    const host=$('#eventList'), account=currentSession(), version=++eventsVersion;
+    const valid=()=>currentSession()===account && version===eventsVersion;
+    if(!host||!account?.uid) return;
     try{
       const rows=await EFGCLive.events();
+      if(!valid()) return;
       if(!rows.length){
         const create = currentSession()?.role==='admin' ?
           '<button class="v94-create" type="button" data-v87-go="admin" data-v94-target="adminEventTitle">Create Youth Event →</button>' : '';
         host.innerHTML='<article class="card v94-empty-panel"><span class="v94-empty-icon" aria-hidden="true">▦</span><small>YOUTH CALENDAR</small><h3>No events published yet</h3><p>When an EFGC Youth meeting is published, its date and details will appear here.</p>'+create+'</article>';
         return;
       }
-      host.innerHTML=`<div class="event-feed">${rows.map(e=>{ const img=e.image_path?`<img class="event-cover" src="${esc(eventImageUrl(e.image_path))}" alt="${esc(e.title)} event image">`:''; const post=e.post_content?`<p class="event-post">${esc(e.post_content)}</p>`:''; const details=[e.theme,e.scripture].filter(Boolean).join(' • '); return `<article class="card event-card">${img}<div class="event-card-body"><span class="module-kicker">${esc(fmtEvent(e.event_date))}</span><h3>${esc(e.title)}</h3>${details?`<div class="planner-meta">${esc(details)}</div>`:''}${post}</div></article>`;}).join('')}</div>`;
-    }catch(e){ host.innerHTML=`<article class="card"><p>${esc(`Could not load events: ${e.message}`)}</p></article>`; }
+      host.innerHTML=`<div class="event-feed">${rows.map(e=>{ const img=e.image_path?`<img class="event-cover" src="${esc(eventImageUrl(e.image_path))}" alt="${esc(e.title)} event image">`:''; const post=e.post_content?`<p class="event-post">${esc(e.post_content)}</p>`:''; const details=[e.theme,e.scripture].filter(Boolean).join(' • '); return `<article class="card event-card" data-event-id="${Number(e.id)}" data-event-date="${esc(e.event_date)}">${img}<div class="event-card-body"><span class="module-kicker">${esc(fmtEvent(e.event_date))}</span><h3>${esc(e.title)}</h3>${details?`<div class="planner-meta">${esc(details)}</div>`:''}${post}</div></article>`;}).join('')}</div>`;
+    }catch(e){ if(!valid())return; host.innerHTML=`<article class="card"><p>${esc(`Could not load events: ${e.message}`)}</p></article>`; }
   }
 
   // Profile titles and access come only from the server. A Youth member must
@@ -172,13 +184,16 @@
   };
 
   async function renderLeaderDirectoryV44(){
-    const host=$('#leaderList'); if(!host||!currentSession()?.uid) return;
+    const host=$('#leaderList'), account=currentSession(), version=++leadersVersion;
+    const valid=()=>currentSession()===account && version===leadersVersion;
+    if(!host||!account?.uid) return;
     try{
       const leaders=await EFGCLive.approvedLeaders();
+      if(!valid()) return;
       if(!leaders.length){ host.innerHTML='<h2>Approved Youth Leaders</h2><article class="card"><p>Approved leaders will appear here.</p></article>'; return; }
       host.innerHTML=`<h2>EFGC Youth Leadership</h2><div class="leader-grid">${leaders.map((l,i)=>{ const initials=(l.full_name||'L').split(/\s+/).map(x=>x[0]).join('').slice(0,2).toUpperCase(); return `<article class="card leader-directory-card"><div class="profile-photo-wrap small"><div class="profile-photo-placeholder">${esc(initials)}</div><img id="leaderPhoto${i}" class="profile-photo" alt="${esc(l.full_name)} profile photo"></div><div><h3>${esc(l.full_name)}</h3><p><strong>${esc(l.leader_role||'Youth Leader')}</strong></p>${l.phone?`<p>${esc(l.phone)}</p>`:''}</div></article>`;}).join('')}</div>`;
       leaders.forEach((l,i)=>{ if(l.face_photo_path) loadPrivatePhoto($(`#leaderPhoto${i}`),l.face_photo_path); });
-    }catch(e){ if(host&&currentSession()?.uid) host.innerHTML='<h2>EFGC Youth Leadership</h2><article class="card"><p>'+esc('Could not load the Leader directory: '+(e.message||'Connection error'))+'</p><button type="button" data-tab="leaders">Retry</button></article>'; console.warn('Leader directory v44',e); }
+    }catch(e){ if(host&&valid()&&currentSession()?.uid) host.innerHTML='<h2>EFGC Youth Leadership</h2><article class="card"><p>'+esc('Could not load the Leader directory: '+(e.message||'Connection error'))+'</p><button type="button" data-tab="leaders">Retry</button></article>'; console.warn('Leader directory v44',e); }
   }
 
   async function loadPlanner(){
