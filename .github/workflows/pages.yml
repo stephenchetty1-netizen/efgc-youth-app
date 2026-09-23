@@ -75,7 +75,7 @@ jobs:
               assert len(data)==8+struct.unpack_from('<I',data,4)[0]
               print('OK complete',asset,len(data),'bytes')
           PY
-          for file in index.html manifest.webmanifest v68-scripture-generator.js v68-scripture-generator.css assets/scripture/dawn-cross.webp assets/scripture/prayer-bible.webp assets/scripture/mountain-cross.webp assets/scripture/blue-sky-cross.webp assets/scripture/morning-devotion.webp assets/scripture/cross-at-dusk.webp v98-whatsapp-share.js v98-whatsapp-share.css v97-directory.js v97-directory.css v87-network.js v87-dashboard.js v87-ministry.js v87-admin.js v87.css v88-layout.js v88.css v91.css v92.css v93.css v94.css assets/v74-efgc-logo.webp assets/v74-login-poster.webp; do
+          for file in index.html manifest.webmanifest v68-scripture-generator.js v68-scripture-generator.css assets/scripture/dawn-cross.webp assets/scripture/prayer-bible.webp assets/scripture/mountain-cross.webp assets/scripture/blue-sky-cross.webp assets/scripture/morning-devotion.webp assets/scripture/chapel-dawn.webp v98-whatsapp-share.js v98-whatsapp-share.css v97-directory.js v97-directory.css v87-network.js v87-dashboard.js v87-ministry.js v87-admin.js v87.css v88-layout.js v88.css v91.css v92.css v93.css v94.css assets/v74-efgc-logo.webp assets/v74-login-poster.webp; do
             curl --fail --silent --show-error "http://127.0.0.1:8080/$file" -o /dev/null
             echo "OK $file"
           done

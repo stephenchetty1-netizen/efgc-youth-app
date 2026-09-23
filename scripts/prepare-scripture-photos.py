@@ -14,7 +14,7 @@ from PIL import Image, ImageOps, UnidentifiedImageError
 
 ROOT = Path(__file__).resolve().parents[1]
 DEST = ROOT / "assets" / "scripture"
-PHOTOS = [[415571,"dawn-cross"],[2258251,"prayer-bible"],[20889043,"mountain-cross"],[27434753,"blue-sky-cross"],[8383496,"morning-devotion"],[25186193,"cross-at-dusk"]]
+PHOTOS = [[415571,"dawn-cross"],[2258251,"prayer-bible"],[20889043,"mountain-cross"],[27434753,"blue-sky-cross"],[8383496,"morning-devotion"],[13302238,"chapel-dawn"]]
 
 def fetch(photo_id: int) -> bytes:
     url = ("https://images.pexels.com/photos/" + str(photo_id) +

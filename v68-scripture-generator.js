@@ -36,7 +36,7 @@
     { id:'mountain-hope', label:'Mountain of Hope', image:'assets/scripture/mountain-cross.webp?v=100.0', accent:'#e8d39c', tagline:'MY HELP COMES FROM THE LORD' },
     { id:'blue-faith', label:'Faith in Blue', image:'assets/scripture/blue-sky-cross.webp?v=100.0', accent:'#9ce8ff', tagline:'LET YOUR LIGHT SHINE' },
     { id:'quiet-devotion', label:'Morning Devotion', image:'assets/scripture/morning-devotion.webp?v=100.0', accent:'#ffe3a4', tagline:'GOD WITH US' },
-    { id:'grace-dusk', label:'Grace at Dusk', image:'assets/scripture/cross-at-dusk.webp?v=100.0', accent:'#f4cd89', tagline:'PASS ON THE BATON' }
+    { id:'chapel-faith', label:'Chapel at Dawn', image:'assets/scripture/chapel-dawn.webp?v=100.0', accent:'#f4cd89', tagline:'PASS ON THE BATON' }
   ];
 
   const state = { verseIndex: 0, themeIndex: 0, busy: false, imageCache: new Map() };

@@ -85,7 +85,7 @@ def run() -> int:
     scripture_module = (ROOT / "v68-scripture-generator.js").read_text("utf-8")
     scripture_gallery = (
         "dawn-cross.webp", "prayer-bible.webp", "mountain-cross.webp",
-        "blue-sky-cross.webp", "morning-devotion.webp", "cross-at-dusk.webp"
+        "blue-sky-cross.webp", "morning-devotion.webp", "chapel-dawn.webp"
     )
     for photo in scripture_gallery:
         target = ROOT / "assets" / "scripture" / photo
