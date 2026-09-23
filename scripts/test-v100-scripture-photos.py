@@ -13,7 +13,8 @@ with sync_playwright() as pw:
       user_agent='Mozilla/5.0 (Linux; Android 16; SM-F966B) AppleWebKit/537.36 Chrome/139.0 Mobile Safari/537.36')
     page.goto(BASE,wait_until='domcontentloaded',timeout=45000)
     page.wait_for_function("() => document.documentElement.dataset.scriptureGenerator === '100.0'",timeout=20000)
-    page.evaluate("""() => {document.querySelector('#scripture').classList.remove('hidden');}""")
+    page.evaluate("""() => {session={uid:'00000000-0000-4000-8000-000000000100',name:'Scripture QA Youth',role:'youth',approval_status:'approved'};renderShell();showTab('scripture');}""")
+    assert page.locator('#scripture').is_visible()
     images=page.locator('#scripture img.scripture-theme-photo')
     assert images.count()==6, f'Expected six Scripture choices, found {images.count()}'
     for i in range(6):
