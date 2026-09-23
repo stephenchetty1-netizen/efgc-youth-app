@@ -76,11 +76,25 @@ def run() -> int:
             check(result.returncode == 0, f"JavaScript syntax: {file.name}: {result.stderr.strip()}")
 
     manifest = json.loads((ROOT / "manifest.webmanifest").read_text("utf-8"))
-    check(str(manifest.get("start_url", "")).startswith("./?v=99"), "Manifest must open the V99 app")
+    check(str(manifest.get("start_url", "")).startswith("./?v=100"), "Manifest must open the V100 app")
     for icon in manifest.get("icons", []):
         target = local_asset(icon.get("src", ""), "manifest")
         check(bool(target and target.is_file()), f"Manifest icon missing: {icon.get('src')}")
     check(bool(manifest.get("icons")), "App manifest has no icon")
+
+    scripture_module = (ROOT / "v68-scripture-generator.js").read_text("utf-8")
+    scripture_gallery = (
+        "dawn-cross.webp", "prayer-bible.webp", "mountain-cross.webp",
+        "blue-sky-cross.webp", "morning-devotion.webp", "cross-at-dusk.webp"
+    )
+    for photo in scripture_gallery:
+        target = ROOT / "assets" / "scripture" / photo
+        check(target.is_file() and target.stat().st_size > 40000,
+              f"Scripture photo unavailable or incomplete: {photo}")
+        check("assets/scripture/" + photo in scripture_module,
+              f"Scripture photo is not selectable: {photo}")
+    check("let redrawPending" in scripture_module and "void renderPoster()" in scripture_module,
+          "Rapid Scripture background selection must render the latest choice")
 
     required = (
         "v87-network.js", "v87-dashboard.js", "v87-ministry.js", "v87-admin.js", "v88-layout.js",

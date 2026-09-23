@@ -57,3 +57,6 @@ The V93 style increases text and tap targets, arranges three Admin overview card
 - Stephen's exact WhatsApp Leaders duty reminder is a code-defined, immutable pre-authorised preset available to approved Admins and Leaders under More → WhatsApp. No fresh draft approval is needed when reusing this exact wording.
 - Other draft messages still require ordinary Admin review. App has no automatic WhatsApp sending; user picks intended group/contact and presses Send in WhatsApp. Use preset only on meeting weeks.
 - Monday ChatGPT reminder separately checks whether a confirmed EFGC Youth meeting is scheduled; it cannot itself send to the WhatsApp group.
+
+## V100 Scripture photography refresh
+Six photographic Scripture backgrounds (cross at sunrise, prayer over the Word, mountain cross, blue-sky cross, morning Bible devotion and sunset cross) replace the old 4-item mixed-poster gallery. Source licensing and photographer credits: [`assets/scripture/README.md`](assets/scripture/README.md). The publish workflow downloads/crops each image into a local 1080×1350 WebP file, then validates images and smoke-tests the mobile gallery before deployment. Canvas text, downloadable PNG and official EFGC logo remain local; a failed photo download fails the release rather than presenting a blank gallery. The website update does not rebuild Android APK.
