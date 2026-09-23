@@ -69,7 +69,7 @@ with sync_playwright() as pw:
     page.locator('#staffDirectory').wait_for(state='visible')
     page.wait_for_function("() => document.querySelectorAll('#v97DirectoryRows .v97-person').length===2")
     assert page.locator('#admin').is_hidden()
-    assert page.locator('#mockHomeDashboard').get_by_role('button',name='Youth Register',exact=True).get_attribute('data-mock-tab')=='staffDirectory'
+    assert page.locator('#mockHomeDashboard').get_by_role('button',name='Youth Register',exact=True,include_hidden=True).get_attribute('data-mock-tab')=='staffDirectory'
     page.screenshot(path=str(OUTPUT/"efgc-v103-admin-youth-register.png"),full_page=True)
     page.locator("#v97LeaderTab").click()
     assert page.locator("#v97DirectoryRows .v97-person").count()==2
