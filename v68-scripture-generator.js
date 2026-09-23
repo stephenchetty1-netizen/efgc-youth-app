@@ -82,7 +82,7 @@
 
   function generatorMarkup() {
     const themeButtons = THEMES.map((theme, index) =>
-      '<button type="button" class="scripture-theme '+(index === state.themeIndex ? 'active' : '')+'" data-scripture-theme="'+index+'" aria-pressed="'+(index === state.themeIndex)+'"><img class="scripture-theme-thumb scripture-theme-photo" src="'+theme.image.replace(/&/g,'&amp;')+'" alt="'+escapeHtmlLocal(theme.label)+' realistic Christian background" loading="lazy"><span class="scripture-theme-label">'+escapeHtmlLocal(theme.label)+'</span></button>'
+      '<button type="button" class="scripture-theme '+(index === state.themeIndex ? 'active' : '')+'" data-scripture-theme="'+index+'" aria-pressed="'+(index === state.themeIndex)+'"><img class="scripture-theme-thumb scripture-theme-photo" src="'+theme.image.replace(/&/g,'&amp;')+'" alt="'+escapeHtmlLocal(theme.label)+' realistic Christian background" loading="eager"><span class="scripture-theme-label">'+escapeHtmlLocal(theme.label)+'</span></button>'
     ).join('');
     const verseOptions = VERSES.map((verse, index) =>
       '<option value="'+index+'" '+(index === state.verseIndex ? 'selected' : '')+'>'+escapeHtmlLocal(verse.ref)+'</option>'

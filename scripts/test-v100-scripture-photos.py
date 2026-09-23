@@ -17,7 +17,7 @@ with sync_playwright() as pw:
     images=page.locator('#scripture img.scripture-theme-photo')
     assert images.count()==6, f'Expected six Scripture choices, found {images.count()}'
     for i in range(6):
-        assert images.nth(i).evaluate("(img) => img.decode().then(() => img.naturalWidth >= 600 && img.naturalHeight >= 600)"),f'Photo {i} missing'
+        page.wait_for_function("i => {const im=document.querySelectorAll('#scripture img.scripture-theme-photo')[i]; return !!im && im.complete && im.naturalWidth>=600 && im.naturalHeight>=600;}",arg=i,timeout=20000)
         assert '/assets/scripture/' in images.nth(i).get_attribute('src')
     page.wait_for_function("""()=>document.getElementById('scriptureRenderStatus').textContent.includes('ready')
           ||document.getElementById('scriptureRenderStatus').textContent===''""",timeout=20000)
