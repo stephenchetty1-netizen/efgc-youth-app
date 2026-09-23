@@ -1,0 +1,26 @@
+/* V101: Never render a blank attendance route on a narrow Samsung viewport. */
+#attendanceAdmin{min-width:0;padding-bottom:calc(94px + env(safe-area-inset-bottom));}
+#attendanceAdminHost{display:grid;gap:14px;min-height:180px;}
+#attendanceAdminHost .module-heading{margin:9px 0 4px;}
+#attendanceAdminHost .module-card,#attendanceAdminHost .empty-state{min-width:0;overflow-wrap:anywhere;}
+#attendanceAdminHost :is(button,select,input){min-height:46px;font-size:15px;}
+#attendanceAdminHost button:disabled{opacity:.65;cursor:not-allowed;}
+#attendanceAdminHost .v101-youth-register{border-color:#b8d7ee;background:linear-gradient(145deg,#fff,#f4f9ff);}
+#attendanceAdminHost .v101-count{display:inline-grid;place-items:center;border-radius:999px;min-width:30px;min-height:30px;padding:3px 8px;background:#e2f1ff;color:#07589c;font-size:14px;}
+#attendanceAdminHost .v101-youth-rows{display:grid;gap:6px;margin:12px 0;}
+#attendanceAdminHost .v101-youth-row{display:flex;gap:10px;align-items:center;padding:11px 9px;border-radius:10px;background:#fff;border:1px solid #d9e9f5;}
+#attendanceAdminHost .v101-youth-row span{color:#15784d;font-weight:900;}
+#attendanceAdminHost .v101-youth-row strong{min-width:0;flex:1;font-size:14px;overflow-wrap:anywhere;color:#173a5a;}
+#attendanceAdminHost .v101-youth-row small{font-size:10px;letter-spacing:.04em;font-weight:850;color:#55728b;}
+#attendanceAdminHost .v101-attendance-create{border:1px solid #c9dfec;}
+#attendanceAdminHost .attendance-row label{margin:0;}
+#attendanceAdminHost .attendance-row select{min-width:0;}
+#attendanceAdminHost #attendanceSaveMessage:not(:empty),#attendanceAdminHost #attendanceCreateMessage:not(:empty){
+  background:#edf5fc;border-radius:9px;padding:10px 12px;color:#174c75;}
+#attendanceAdminHost .toast-line.error:not(:empty){color:#9f2929;}
+@media(max-width:600px){#attendanceAdminHost .module-card{padding:15px;}
+ #attendanceAdminHost .summary-strip{grid-template-columns:repeat(2,minmax(0,1fr));}
+ #attendanceAdminHost .attendance-row{grid-template-columns:minmax(0,1fr);}
+ #attendanceAdminHost .attendance-toolbar{grid-template-columns:minmax(0,1fr);}
+ #attendanceAdminHost .inline-actions button{flex:1;min-width:130px;}
+}

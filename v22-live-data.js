@@ -109,7 +109,9 @@
         method: 'POST', headers: jsonHeaders,
         body: JSON.stringify({ title, event_date, theme: theme || null, scripture: scripture || null, attendance_approved: false }),
       });
-      return rows?.[0] || null;
+      if (!Array.isArray(rows) || rows.length!==1 || !rows[0]?.id)
+        throw new Error('The Youth meeting was not confirmed by the server.');
+      return rows[0];
     },
     async adminPublishNews(content) {
       const author_id = window.EFGCAuth.userId();
@@ -128,11 +130,16 @@
         if (!['present', 'absent', 'excused'].includes(e.status)) throw new Error('Every Youth must be marked Present or Absent.');
         return { event_id: Number(eventId), youth_id: e.youth_id, status: e.status, recorded_by };
       });
-      return window.EFGCAuth.rest('attendance?on_conflict=event_id,youth_id', {
+      const saved = await window.EFGCAuth.rest('attendance?on_conflict=event_id,youth_id', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Prefer: 'resolution=merge-duplicates,return=representation' },
         body: JSON.stringify(rows),
       });
+      if (!Array.isArray(saved) || saved.length!==rows.length ||
+          saved.some(r => r.event_id!==Number(eventId) ||
+            !rows.some(e=>e.youth_id===r.youth_id && e.status===r.status)))
+        throw new Error('Attendance save was not fully confirmed; retry before finalizing.');
+      return saved;
     },
     async adminFinalizeAttendance(eventId) {
       const approved_by = window.EFGCAuth.userId();

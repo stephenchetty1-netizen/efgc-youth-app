@@ -76,7 +76,7 @@ def run() -> int:
             check(result.returncode == 0, f"JavaScript syntax: {file.name}: {result.stderr.strip()}")
 
     manifest = json.loads((ROOT / "manifest.webmanifest").read_text("utf-8"))
-    check(str(manifest.get("start_url", "")).startswith("./?v=100"), "Manifest must open the V100 app")
+    check(str(manifest.get("start_url", "")).startswith("./?v=101"), "Manifest must open the V101 app")
     for icon in manifest.get("icons", []):
         target = local_asset(icon.get("src", ""), "manifest")
         check(bool(target and target.is_file()), f"Manifest icon missing: {icon.get('src')}")
@@ -95,6 +95,21 @@ def run() -> int:
               f"Scripture photo is not selectable: {photo}")
     check("let redrawPending" in scripture_module and "void renderPoster()" in scripture_module,
           "Rapid Scripture background selection must render the latest choice")
+
+    attendance=(ROOT / "v43-ministry-tools.js").read_text("utf-8")
+    attendance_route=(ROOT / "v101-attendance-route.js").read_text("utf-8")
+    live=(ROOT / "v22-live-data.js").read_text("utf-8")
+    check(ROOT / "v101-attendance.css" in parser.styles and ROOT / "v101-attendance-route.js" in parser.scripts,
+          "V101 attendance screen and navigation repair are missing")
+    check("attendanceYouthRegister()" in attendance and "getMyProfile()" in attendance and
+          "No Youth meetings are in the app yet" in attendance,
+          "Attendance must show the authorised Youth register and a useful no-meetings state")
+    check("renderAttendanceAdmin" in attendance_route and "clearIfDifferent" in attendance_route,
+          "Attendance route must load on navigation and clear stale Admin data")
+    check("saved.length!==rows.length" in live and "server did not confirm" in attendance,
+          "Saving attendance must be verified before finalization")
+    check('id="attendanceAdminHost"' in html and 'id="staffDirectoryMenu"' in html,
+          "Attendance and Youth Register routes are not present")
 
     required = (
         "v87-network.js", "v87-dashboard.js", "v87-ministry.js", "v87-admin.js", "v88-layout.js",
