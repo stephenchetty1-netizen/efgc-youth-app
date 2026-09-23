@@ -22,7 +22,7 @@ with sync_playwright() as pw:
     page.wait_for_function("""()=>document.getElementById('scriptureRenderStatus').textContent.includes('ready')
           ||document.getElementById('scriptureRenderStatus').textContent===''""",timeout=20000)
     for i in range(6):
-        page.evaluate("i => document.querySelector('#scripture button[data-scripture-theme=\"'+i+'\"]').click()",i)
+        page.evaluate("i => document.querySelectorAll('#scripture [data-scripture-theme]')[i].click()",i)
         page.wait_for_function("""()=>document.querySelector('#scriptureRenderStatus').textContent!=='Generating HD scripture poster…'""",timeout=15000)
         assert page.locator('#scriptureRenderStatus').inner_text().find('Could not')<0
     # Fast successive changes should settle on the final selected image.
