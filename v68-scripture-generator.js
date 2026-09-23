@@ -1,7 +1,7 @@
 (() => {
   'use strict';
 
-  const VERSION = '87.0';
+  const VERSION = '100.0';
   const LOGO_SRC = 'assets/v74-efgc-logo.webp?v=87.0';
   const VERSES = [
     { ref:'Matthew 5:16', text:'Let your light so shine before men, that they may see your good works, and glorify your Father which is in heaven.' },
@@ -31,10 +31,12 @@
   ];
 
   const THEMES = [
-    { id:'sunrise-faith', label:'Sunrise & Faith', image:'assets/v49-sunrise.webp?v=87.0', accent:'#ffd45e', tagline:'FAITH • WORD • LIFE' },
-    { id:'youth-fellowship', label:'Youth Fellowship', image:'assets/v49-youth-fellowship.webp?v=87.0', accent:'#8be9ff', tagline:'PASS ON THE BATON' },
-    { id:'efgc-welcome', label:'EFGC Welcome', image:'assets/v74-login-poster.webp?v=87.0', accent:'#ffd45e', tagline:'GOD WITH US' },
-    { id:'blue-light', label:'Blue Light', image:'assets/efgc-home-hero.webp?v=87.0', accent:'#8be9ff', tagline:'LET YOUR LIGHT SHINE' }
+    { id:'cross-dawn', label:'Cross at Sunrise', image:'assets/scripture/dawn-cross.webp?v=100.0', accent:'#ffd16a', tagline:'FAITH • HOPE • LOVE' },
+    { id:'prayer-word', label:'Prayer & the Word', image:'assets/scripture/prayer-bible.webp?v=100.0', accent:'#e6ca8d', tagline:'STAND FIRM IN FAITH' },
+    { id:'mountain-hope', label:'Mountain of Hope', image:'assets/scripture/mountain-cross.webp?v=100.0', accent:'#e8d39c', tagline:'MY HELP COMES FROM THE LORD' },
+    { id:'blue-faith', label:'Faith in Blue', image:'assets/scripture/blue-sky-cross.webp?v=100.0', accent:'#9ce8ff', tagline:'LET YOUR LIGHT SHINE' },
+    { id:'quiet-devotion', label:'Morning Devotion', image:'assets/scripture/morning-devotion.webp?v=100.0', accent:'#ffe3a4', tagline:'GOD WITH US' },
+    { id:'chapel-faith', label:'Chapel at Dawn', image:'assets/scripture/chapel-dawn.webp?v=100.0', accent:'#f4cd89', tagline:'PASS ON THE BATON' }
   ];
 
   const state = { verseIndex: 0, themeIndex: 0, busy: false, imageCache: new Map() };
@@ -80,12 +82,12 @@
 
   function generatorMarkup() {
     const themeButtons = THEMES.map((theme, index) =>
-      '<button type="button" class="scripture-theme '+(index === state.themeIndex ? 'active' : '')+'" data-scripture-theme="'+index+'" aria-pressed="'+(index === state.themeIndex)+'"><img class="scripture-theme-thumb scripture-theme-photo" src="'+theme.image.replace(/&/g,'&amp;')+'" alt="'+escapeHtmlLocal(theme.label)+' realistic Christian background" loading="lazy"><span class="scripture-theme-label">'+escapeHtmlLocal(theme.label)+'</span></button>'
+      '<button type="button" class="scripture-theme '+(index === state.themeIndex ? 'active' : '')+'" data-scripture-theme="'+index+'" aria-pressed="'+(index === state.themeIndex)+'"><img class="scripture-theme-thumb scripture-theme-photo" src="'+theme.image.replace(/&/g,'&amp;')+'" alt="'+escapeHtmlLocal(theme.label)+' realistic Christian background" loading="eager"><span class="scripture-theme-label">'+escapeHtmlLocal(theme.label)+'</span></button>'
     ).join('');
     const verseOptions = VERSES.map((verse, index) =>
       '<option value="'+index+'" '+(index === state.verseIndex ? 'selected' : '')+'>'+escapeHtmlLocal(verse.ref)+'</option>'
     ).join('');
-    return '<div class="scripture-generator-v68"><div class="scripture-generator-heading"><span class="scripture-kicker">EFGC YOUTH • DAILY FAITH</span><h2>Daily Scripture Generator</h2><p>Choose from '+THEMES.length+' realistic Christian photography backgrounds. Every poster uses the official EFGC logo and is aligned for sharing.</p></div><div class="scripture-generator-layout"><section class="scripture-preview-panel" aria-label="Scripture poster preview"><div class="scripture-canvas-shell"><canvas id="scripturePosterCanvas" width="1080" height="1350" aria-label="Generated EFGC Youth scripture poster"></canvas><div id="scriptureRenderStatus" class="scripture-render-status" aria-live="polite">Preparing today\'s scripture…</div></div></section><section class="scripture-controls-panel"><div class="scripture-control-card"><label for="scriptureVerseSelect"><strong>Scripture</strong></label><select id="scriptureVerseSelect">'+verseOptions+'</select><div class="scripture-inline-actions"><button id="scriptureTodayButton" type="button" class="scripture-secondary">Today</button><button id="scriptureRandomVerseButton" type="button" class="scripture-secondary">New Scripture</button><button id="scriptureRandomButton" type="button" class="scripture-primary">✦ Surprise Me</button></div></div><div class="scripture-control-card"><div class="scripture-gallery-title"><strong>Choose Christian background</strong><span>'+THEMES.length+' images</span></div><div class="scripture-theme-grid">'+themeButtons+'</div></div><div class="scripture-control-card scripture-share-card"><strong>Use your scripture poster</strong><div class="scripture-action-grid"><button id="scriptureDownloadButton" type="button" class="scripture-primary">Download Image</button><button id="scriptureShareButton" type="button" class="scripture-secondary">Share</button><button id="scriptureCopyButton" type="button" class="scripture-secondary">Copy Verse</button></div><p id="scriptureActionMessage" class="scripture-action-message" aria-live="polite"></p></div><div class="scripture-safety-note">KJV • Official EFGC logo • realistic Christian images only • No service details</div></section></div></div>';
+    return '<div class="scripture-generator-v68"><div class="scripture-generator-heading"><span class="scripture-kicker">EFGC YOUTH • DAILY FAITH</span><h2>Daily Scripture Generator</h2><p>Choose from '+THEMES.length+' Christian photography backgrounds: the cross, prayer, and the Word. Every poster uses the official EFGC logo and is aligned for sharing.</p></div><div class="scripture-generator-layout"><section class="scripture-preview-panel" aria-label="Scripture poster preview"><div class="scripture-canvas-shell"><canvas id="scripturePosterCanvas" width="1080" height="1350" aria-label="Generated EFGC Youth scripture poster"></canvas><div id="scriptureRenderStatus" class="scripture-render-status" aria-live="polite">Preparing today\'s scripture…</div></div></section><section class="scripture-controls-panel"><div class="scripture-control-card"><label for="scriptureVerseSelect"><strong>Scripture</strong></label><select id="scriptureVerseSelect">'+verseOptions+'</select><div class="scripture-inline-actions"><button id="scriptureTodayButton" type="button" class="scripture-secondary">Today</button><button id="scriptureRandomVerseButton" type="button" class="scripture-secondary">New Scripture</button><button id="scriptureRandomButton" type="button" class="scripture-primary">✦ Surprise Me</button></div></div><div class="scripture-control-card"><div class="scripture-gallery-title"><strong>Choose Christian background</strong><span>'+THEMES.length+' images</span></div><div class="scripture-theme-grid">'+themeButtons+'</div></div><div class="scripture-control-card scripture-share-card"><strong>Use your scripture poster</strong><div class="scripture-action-grid"><button id="scriptureDownloadButton" type="button" class="scripture-primary">Download Image</button><button id="scriptureShareButton" type="button" class="scripture-secondary">Share</button><button id="scriptureCopyButton" type="button" class="scripture-secondary">Copy Verse</button></div><p id="scriptureActionMessage" class="scripture-action-message" aria-live="polite"></p></div><div class="scripture-safety-note">KJV • Official EFGC logo • realistic Christian images only • No service details</div></section></div></div>';
   }
 
   function drawCover(ctx, img, width, height) {
@@ -182,6 +184,7 @@
       img.src = src;
     });
     state.imageCache.set(src, promise);
+    promise.catch(() => state.imageCache.delete(src));
     return promise;
   }
 
@@ -193,8 +196,9 @@
     chars.forEach((ch, i) => { ctx.fillText(ch, px, y); px += widths[i] + spacing; });
   }
 
+  let redrawPending = false;
   async function renderPoster() {
-    if (state.busy) return;
+    if (state.busy) { redrawPending = true; return; }
     const canvas = el('scripturePosterCanvas');
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
@@ -322,6 +326,7 @@
       if (status) status.textContent='Could not render this image. Choose another background.';
     } finally {
       state.busy=false;
+      if (redrawPending) { redrawPending = false; void renderPoster(); }
     }
   }
 

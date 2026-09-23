@@ -53,3 +53,8 @@
  .scripture-render-status{font-size:11px}
 }
 @media(prefers-reduced-motion:reduce){.scripture-generator-v68 *{scroll-behavior:auto!important;transition:none!important}}
+
+/* V100: full-cover photograph choices and accessible names on real phones. */
+.scripture-theme-photo{object-fit:cover;object-position:center;min-height:0;max-width:100%;aspect-ratio:4/5;filter:saturate(1.07) contrast(1.03)}
+.scripture-theme-label{white-space:normal;overflow-wrap:anywhere;min-height:2.5em;line-height:1.25;font-size:12px}
+#scripture .scripture-theme.active .scripture-theme-label{color:#074f9a}
