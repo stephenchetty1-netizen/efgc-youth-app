@@ -75,3 +75,7 @@ Six photographic Scripture backgrounds (cross at sunrise, prayer over the Word, 
 - Regression coverage: Node tests for refresh, logout, account switching and offline startup; mobile tests for future meetings and switching meetings during a save.
 
 Verification on 23 September 2026: database role checks returned one approved Youth and two leadership entries for both Admin and approved Leader. A rollback-only test saved and finalized a past meeting through authenticated Admin RLS; no test meeting or attendance was retained. Real handset login remains a separate device check.
+
+## V103 Youth Register button repair
+
+The Admin Centre Youth Register tile and the older Home shortcut routed to `admin`, which reopened Admin Centre instead of the directory. Both now route to `staffDirectory`, using its existing verified Admin/Leader access checks and live Youth/Leader lists. The mobile regression now clicks the actual Admin Centre tile as well as the separate More-menu entry; the theme script URL is versioned to refresh cached copies.

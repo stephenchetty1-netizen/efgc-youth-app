@@ -82,7 +82,7 @@
     if(!s) return [];
     const staff = s.role==='admin' || (s.role==='leader' && s.approval_status==='approved');
     if(s.role==='admin') return [
-      ['Manage Events','calendar','admin','adminEventTitle'],['Record Attendance','users','attendanceAdmin'],['Youth Register','list','admin','adminPanel'],['Safeguarding Contacts','shield','admin','adminPanel'],['Leader Management','users','leaders'],['Duty Roster','calendar','plannerRoster'],['Feedback','chat','news'],['Settings','gear','security']
+      ['Manage Events','calendar','admin','adminEventTitle'],['Record Attendance','users','attendanceAdmin'],['Youth Register','list','staffDirectory'],['Safeguarding Contacts','shield','admin','adminPanel'],['Leader Management','users','leaders'],['Duty Roster','calendar','plannerRoster'],['Feedback','chat','news'],['Settings','gear','security']
     ];
     if(staff) return [
       ['News Feed','news','news'],['Events','calendar','events'],['Duty Roster','users','plannerRoster'],['Daily Scripture','book','scripture'],['Leaders','users','leaders'],['Profile','profile','profile'],['Feedback','chat','news'],['Contact','phone','leaders']
@@ -148,7 +148,7 @@
     const panel=$('#adminPanel'); if(!panel) return;
     let dash=$('#mockAdminDashboard');
     if(!dash){ dash=document.createElement('div'); dash.id='mockAdminDashboard'; dash.className='mock-admin-dashboard'; panel.prepend(dash); }
-    const tiles=[['Manage Events','calendar','admin','adminEventTitle'],['Record Attendance','users','attendanceAdmin'],['Youth Register','list','admin'],['Safeguarding Contacts','shield','admin'],['Leader Management','users','leaders'],['Duty Roster','calendar','plannerRoster'],['Feedback','chat','news'],['Settings','gear','security']];
+    const tiles=[['Manage Events','calendar','admin','adminEventTitle'],['Record Attendance','users','attendanceAdmin'],['Youth Register','list','staffDirectory'],['Safeguarding Contacts','shield','admin'],['Leader Management','users','leaders'],['Duty Roster','calendar','plannerRoster'],['Feedback','chat','news'],['Settings','gear','security']];
     dash.innerHTML=`<div class="mock-admin-title"><h2>Admin Centre</h2><span>${icon('gear')}</span></div><div class="mock-admin-grid">${tiles.map(([label,ico,tab,anchor])=>`<button type="button" data-mock-tab="${tab}" ${anchor?`data-mock-anchor="${anchor}"`:''}>${icon(ico)}<strong>${label}</strong></button>`).join('')}</div>`;
   }
 

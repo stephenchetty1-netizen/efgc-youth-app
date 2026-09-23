@@ -58,6 +58,19 @@ with sync_playwright() as pw:
     assert page.locator("#staffDirectory").is_visible()
     assert page.locator("#v97DirectoryRows .v97-person").count()==2
     assert page.get_by_text("Pending Candidate").count()==0
+    # V103: the Admin Centre tile previously pointed back to Admin Centre.
+    # Click the actual tile, not only the separate working More-menu entry.
+    page.locator("#v88MobileNav [data-v88-more]").click()
+    page.locator('#v88MoreLinks [data-v88-route="admin"]').click()
+    admin_register=page.locator('#mockAdminDashboard').get_by_role('button',name='Youth Register',exact=True)
+    admin_register.wait_for(state='visible',timeout=15000)
+    assert admin_register.get_attribute('data-mock-tab')=='staffDirectory'
+    admin_register.click()
+    page.locator('#staffDirectory').wait_for(state='visible')
+    page.wait_for_function("() => document.querySelectorAll('#v97DirectoryRows .v97-person').length===2")
+    assert page.locator('#admin').is_hidden()
+    assert page.locator('#mockHomeDashboard').get_by_role('button',name='Youth Register',exact=True).get_attribute('data-mock-tab')=='staffDirectory'
+    page.screenshot(path=str(OUTPUT/"efgc-v103-admin-youth-register.png"),full_page=True)
     page.locator("#v97LeaderTab").click()
     assert page.locator("#v97DirectoryRows .v97-person").count()==2
     assert page.locator("#v97DirectoryRows").get_by_text("Main Youth Leader").count()==1
