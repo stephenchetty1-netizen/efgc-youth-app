@@ -29,8 +29,9 @@
     const result=beforeTab.call(this,id,...args);
     if(id==='attendanceAdmin'&&admin()){
       const h=host();
-      if(h&&!h.textContent.trim())h.innerHTML=
-        '<article class="module-card"><h2>Attendance Register</h2>'+
+      // Discard old form immediately: a delayed refresh must not replace inputs
+      // after the Admin starts typing a new event date.
+      if(h)h.innerHTML='<article class="module-card" role="status"><h2>Attendance Register</h2>'+
         '<p>Loading approved Youth and meetings…</p></article>';
       // Preserve existing data if already displayed; the route click handler
       // will refresh it, including any empty-state or permission error.

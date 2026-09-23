@@ -405,7 +405,7 @@
   document.addEventListener('click',(e)=>{
     const tab=e.target.closest('[data-tab]')?.dataset.tab;
     if(tab==='plannerRoster') setTimeout(renderPlannerRoster,0);
-    if(tab==='attendanceAdmin') setTimeout(()=>window.renderAttendanceAdmin?.(),0);
+    // Attendance is loaded exactly once by the V101 showTab route hook.
     if(e.target.closest?.('#v101AttendanceRetry')) void window.renderAttendanceAdmin?.();
   });
 

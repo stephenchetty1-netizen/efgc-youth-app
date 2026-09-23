@@ -75,8 +75,6 @@ with sync_playwright() as pw:
     page.wait_for_function("() => !!document.querySelector('#v101CreateEvent')",timeout=18000)
     page.locator('#attendanceNewDate').fill('2026-09-25T18:30')
     page.locator('#v101CreateEvent').click()
-    page.wait_for_timeout(900)
-    print("DEBUG CREATE",page.evaluate("""() => ({html:document.querySelector("#attendanceAdminHost")?.innerText.slice(0,1300),status:document.querySelector("#attendanceCreateMessage")?.innerText,events:window.__v101Events,created:window.__v101CreateCount,tabHidden:document.querySelector("#attendanceAdmin")?.classList.contains("hidden")})"""),flush=True)
     page.wait_for_function("() => !!document.querySelector('#v101SaveAttendance')",timeout=18000)
     assert page.locator('#attendanceRegisterHost .attendance-page-status').count()==1
     page.locator('#attendanceRegisterHost .attendance-page-status').select_option('present')
