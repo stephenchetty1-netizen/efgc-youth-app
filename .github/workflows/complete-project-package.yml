@@ -1,0 +1,97 @@
+name: Package complete EFGC Youth app
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - ".github/workflows/complete-project-package.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Checkout the full EFGC Youth source
+        uses: actions/checkout@v4
+
+      - name: Restore original EFGC visual assets
+        run: python3 scripts/restore-mobile-brand-assets.py
+
+      - name: Include validated licensed Scripture photos
+        run: |
+          python3 -m pip install --disable-pip-version-check "Pillow==11.3.0"
+          python3 scripts/prepare-scripture-photos.py
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v4
+        with:
+          packages: 'platform-tools'
+
+      - name: Install Android 35 platform and build tools
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+
+      - name: Set up Gradle 8.9
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Restore the official app icon
+        run: |
+          mkdir -p android/app/src/main/res/drawable
+          cp assets/v74-efgc-logo.webp android/app/src/main/res/drawable/efgc_logo.webp
+
+      - name: Build test-signed Android APK
+        working-directory: android
+        run: gradle --no-daemon --stacktrace assembleDebug
+
+      - name: Assemble complete source plus Android test package
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s android/app/build/outputs/apk/debug/app-debug.apk
+          base=release/EFGC-Youth-App
+          mkdir -p "$base/Android-install" "$base/Source/assets/scripture"
+          git ls-files -z | tar --null -T - -cf - | tar -xf - -C "$base/Source"
+          cp assets/v74-efgc-logo.webp "$base/Source/assets/v74-efgc-logo.webp"
+          cp assets/v74-login-poster.webp "$base/Source/assets/v74-login-poster.webp"
+          cp assets/scripture/*.webp "$base/Source/assets/scripture/"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "$base/Android-install/EFGC-Youth-V104-test.apk"
+          sha256sum "$base/Android-install/EFGC-Youth-V104-test.apk" > "$base/Android-install/SHA256SUMS.txt"
+          printf '%s\n' \
+            '# EFGC Youth complete project handover' \
+            '' \
+            "Source commit: ${GITHUB_SHA}" \
+            "Build run: ${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" \
+            '' \
+            '- Source/: the checked-in web app, tests, documentation, SQL migrations, Android wrapper source, artwork, and workflow files.' \
+            '- Source/assets/scripture/: six generated/licensed scripture photographs.' \
+            '- Android-install/EFGC-Youth-V104-test.apk: debug-signed Android WebView test installer; opens the deployed website, not an offline app.' \
+            '- Android-install/SHA256SUMS.txt: APK checksum.' \
+            '' \
+            'NOT INCLUDED: live Supabase database records, private API credentials, signing/release keys, or an iOS build.' \
+            'This is not a Google Play-signed release. A successfully built APK is not proof that all functions work on your device.' \
+            'See Source/README.md and Source/AUDIT-V104.md for feature descriptions and remaining tests.' \
+            > "$base/START-HERE.md"
+          printf 'Git source commit: %s\nBuilt UTC: %s\n' "$GITHUB_SHA" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$base/BUILD-INFO.txt"
+          cd release
+          zip -q -r ../EFGC-Youth-V104-Complete-Project.zip EFGC-Youth-App
+          test -s ../EFGC-Youth-V104-Complete-Project.zip
+          unzip -t ../EFGC-Youth-V104-Complete-Project.zip | tail -1
+
+      - name: Upload single complete EFGC Youth ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: EFGC-Youth-V104-Complete-Project
+          path: EFGC-Youth-V104-Complete-Project.zip
+          if-no-files-found: error
+          retention-days: 30
