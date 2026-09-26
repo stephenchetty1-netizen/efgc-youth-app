@@ -40,14 +40,20 @@
       ['overflow','hidden'],['z-index','30'],['pointer-events','auto']
     ]) welcome.style.setProperty(prop,value,'important');
 
+    // Draw the same original artwork as the frame background. This prevents
+    // Android WebView/Chrome from letterboxing the <img> despite CSS object-fit.
+    const posterUrl = art.currentSrc || art.src;
     for (const [prop,value] of [
       ['position','absolute'],['inset','0px'],['width','100%'],['height','100%'],
-      ['max-width','none'],['aspect-ratio','auto'],['overflow','hidden'],['pointer-events','auto']
+      ['max-width','none'],['aspect-ratio','auto'],['overflow','hidden'],['pointer-events','auto'],
+      ['background-image','url("'+posterUrl.replace(/"/g,'%22')+'")'],
+      ['background-size','cover'],['background-position','center center'],
+      ['background-repeat','no-repeat']
     ]) frame.style.setProperty(prop,value,'important');
 
     for (const [prop,value] of [
       ['width','100%'],['height','100%'],['object-fit','cover'],['object-position','center center'],
-      ['pointer-events','none']
+      ['opacity','0'],['pointer-events','none']
     ]) art.style.setProperty(prop,value,'important');
 
     const placeHitbox = (button, rect) => {
@@ -119,6 +125,7 @@
       login.insertBefore(welcome, card);
       const poster = welcome.querySelector('.v74-login-art');
       const showFallback = () => {
+        welcome.querySelector('.v74-poster-frame')?.style.removeProperty('background-image');
         welcome.querySelector('#v89WelcomeFallback')?.classList.remove('hidden');
         if (poster) poster.style.display = 'none';
         $('#v74LoginButton')?.style.setProperty('display','none','important');
