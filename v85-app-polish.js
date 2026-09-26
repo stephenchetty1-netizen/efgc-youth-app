@@ -111,7 +111,7 @@
   function markup() {
     return '<div class="efgc-birthday-kicker">ADMIN ONLY • EFGC YOUTH</div>'
       + '<h2>🎉 Birthday Studio</h2>'
-      + '<p>Create and privately download a full-colour 1080 × 1350 birthday poster. Publishing to Youth News requires the member’s opt-in and guardian permission where applicable. Nothing is posted automatically.</p>'
+      + '<p>Create and privately download a full-colour 1080 × 1350 birthday poster. Birthday greetings post automatically to Youth News at 08h00 South African time for members who enabled birthday sharing, with guardian permission where required.</p>'
       + '<div id="birthdayUpcoming" class="efgc-birthday-upcoming">Loading birthday dates…</div>'
       + '<p id="birthdayConsentInfo" class="efgc-birthday-upcoming" role="status">Choose a member to check their sharing permission.</p>'
       + '<div class="efgc-birthday-control">'
@@ -125,9 +125,7 @@
       + '<button id="birthdayDownload" class="efgc-outline" type="button" disabled>Download PNG</button>'
       + '</div>'
       + '<div id="birthdayPreviewHost" aria-live="polite"></div>'
-      + '<label class="efgc-birthday-consent" for="birthdayApproved"><input id="birthdayApproved" type="checkbox">'
-      + '<span>I confirm this birthday greeting and the member’s name are approved for sharing in the EFGC Youth News Feed.</span></label>'
-      + '<div class="efgc-birthday-actions"><button id="birthdayPublish" type="button" disabled>Publish greeting text to News</button></div>'
+      + '<p class="efgc-birthday-upcoming" id="birthdayAutomationStatus">Automatic News Feed greeting: every birthday at 08h00 (South Africa). No per-card Admin approval needed. Members can change their birthday sharing preference in My Journey.</p>'
       + '<p id="birthdayStudioMessage" role="status" aria-live="polite"></p>';
   }
 
@@ -165,8 +163,6 @@
     $('#birthdayMember').addEventListener('change', selectMember);
     $('#birthdayPreview').addEventListener('click', preview);
     $('#birthdayDownload').addEventListener('click', download);
-    $('#birthdayPublish').addEventListener('click', publish);
-    $('#birthdayApproved').addEventListener('change', updatePublish);
     ['birthdayName', 'birthdayBlessing', 'birthdayDate'].forEach((id) => {
       $('#' + id).addEventListener('input', invalidatePreview);
     });
@@ -292,7 +288,7 @@
       + '<div class="efgc-birthday-verse">“The LORD bless thee, and keep thee.”<br>Numbers 6:24 (KJV)</div>'
       + '<p>With love from EFGC Youth • Pass on the Baton</p></div>';
     $('#birthdayDownload').disabled = false;
-    $('#birthdayApproved').checked = false;
+    if ($('#birthdayApproved')) $('#birthdayApproved').checked = false;
     updatePublish();
     const permission = memberSharingPermission(selectedMember());
     showMessage(permission.ok
