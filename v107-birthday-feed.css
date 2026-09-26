@@ -1,0 +1,12 @@
+/* V107 — scheduled birthday wishes render as a full-colour EFGC feed card. */
+.efgc-feed-birthday{width:100%;min-width:0;max-width:100%;margin:14px 0 18px;overflow:hidden;border-radius:21px;border:1px solid #d9ba6a;background:#ffffff;box-shadow:0 11px 27px #09275024;color:#12304f}
+.efgc-feed-birthday,.efgc-feed-birthday *{box-sizing:border-box}
+.efgc-feed-birthday-inner{display:flex;align-items:center;flex-direction:column;justify-content:center;gap:10px;min-height:430px;padding:28px 19px;background:radial-gradient(circle at 50% 8%,#1567b3 0%,#083f81 44%,#041631 100%);text-align:center;color:#fff;border:6px double #e5c275}
+.efgc-feed-birthday-logo{display:block;flex:0 0 auto;max-width:92px;width:92px;height:92px;object-fit:contain;background:#fff;border:4px solid #edce86;border-radius:50%;padding:4px}
+.efgc-feed-birthday-inner small{font-size:11px!important;font-weight:850;letter-spacing:.1em;line-height:1.5;color:#ffe3a1!important}
+.efgc-feed-birthday-inner h3{font-size:clamp(30px,8vw,48px)!important;font-weight:950;letter-spacing:.005em;line-height:1.08;margin:6px 0 0!important;color:#fff!important}
+.efgc-feed-birthday-name{font-size:clamp(23px,6vw,38px);font-weight:900;line-height:1.16;overflow-wrap:anywhere;color:#ffde82}
+.efgc-feed-birthday-inner p{max-width:530px;margin:5px 0!important;font-size:15px!important;line-height:1.65;color:#eff7ff!important;overflow-wrap:anywhere}
+.efgc-feed-birthday-verse{font:italic 17px/1.45 Georgia,serif;color:#ffe3a1}
+.efgc-feed-birthday-date{padding:10px 16px;font-size:12px;font-weight:750;color:#27517b;background:#f6faff}
+@media(max-width:420px){.efgc-feed-birthday-inner{padding:24px 13px;min-height:410px}.efgc-feed-birthday-inner p{font-size:14px!important}.efgc-feed-birthday-inner h3{font-size:32px!important}}
