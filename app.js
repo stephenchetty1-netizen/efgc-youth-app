@@ -118,6 +118,8 @@ function card(title, body, meta='') {
   return `<article class="card"><h3>${escapeHtml(title)}</h3>${meta ? `<small>${escapeHtml(meta)}</small>` : ''}<p>${escapeHtml(body)}</p></article>`;
 }
 
+function birthdayFeedCard(n){return `<article class="efgc-feed-birthday"><div class="efgc-feed-birthday-inner"><img class="efgc-feed-birthday-logo" alt="EFGC logo" src="assets/v74-efgc-logo.webp?v=89.1" loading="lazy"><small>EFGC YOUTH • CELEBRATES YOU</small><h3>HAPPY BIRTHDAY</h3><strong class="efgc-feed-birthday-name">${escapeHtml(n.member_name || 'EFGC Youth member')}</strong><p>${escapeHtml(n.content || '')}</p><div class="efgc-feed-birthday-verse">“The LORD bless thee, and keep thee.”<br>Numbers 6:24 (KJV)</div><small>WITH LOVE FROM EFGC YOUTH • PASS ON THE BATON</small></div><div class="efgc-feed-birthday-date">${escapeHtml(fmtDate(n.published_at))}</div></article>`;}
+
 function adminProfileCard(p){
   const isArchived = Boolean(p.archived_at);
   const pendingLeader = !isArchived && p.role === 'leader' && p.approval_status === 'pending';
@@ -252,9 +254,9 @@ async function renderLiveData(){
   try {
     const news = await EFGCLive.news();
     if (!stillCurrent()) return;
-    const html = news.length ? news.map(n => card('EFGC Youth Update', n.content, fmtDate(n.published_at))).join('') : '<article class="card v94-empty-panel"><span class="v94-empty-icon" aria-hidden="true">▤</span><small>EFGC YOUTH NEWS</small><h3>No announcements published yet</h3><p>Approved ministry notices and Youth updates will be displayed here.</p>'+ (session.role==='admin' ? '<button class="v94-create" type="button" data-v87-go="admin" data-v94-target="adminNewsContent">Publish announcement →</button>' : '') + '</article>';
+    const html = news.length ? news.map(n => n.post_type === 'birthday' ? birthdayFeedCard(n) : card('EFGC Youth Update', n.content, fmtDate(n.published_at))).join('') : '<article class="card v94-empty-panel"><span class="v94-empty-icon" aria-hidden="true">▤</span><small>EFGC YOUTH NEWS</small><h3>No announcements published yet</h3><p>Approved ministry notices and Youth updates will be displayed here.</p>'+ (session.role==='admin' ? '<button class="v94-create" type="button" data-v87-go="admin" data-v94-target="adminNewsContent">Publish announcement →</button>' : '') + '</article>';
     $('#newsList').innerHTML = html;
-    $('#homeNews').innerHTML = news.length ? news.slice(0,3).map(n => card('EFGC Youth Update', n.content, fmtDate(n.published_at))).join('') : card('Stay connected','No announcements have been published yet. New EFGC Youth updates will appear here.');
+    $('#homeNews').innerHTML = news.length ? news.slice(0,3).map(n => n.post_type === 'birthday' ? birthdayFeedCard(n) : card('EFGC Youth Update', n.content, fmtDate(n.published_at))).join('') : card('Stay connected','No announcements have been published yet. New EFGC Youth updates will appear here.');
   } catch(e){ errors.push(`News: ${e.message}`); }
 
   try {
