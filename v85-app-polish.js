@@ -111,7 +111,7 @@
   function markup() {
     return '<div class="efgc-birthday-kicker">ADMIN ONLY • EFGC YOUTH</div>'
       + '<h2>🎉 Birthday Studio</h2>'
-      + '<p>Create and privately download a full-colour 1080 × 1350 birthday poster. Birthday greetings post automatically to Youth News at 08h00 South African time for members who enabled birthday sharing, with guardian permission where required.</p>'
+      + '<p>Create and privately download a full-colour 1080 × 1350 birthday poster. Birthday greetings post automatically to Youth News at 08h00 South African time after the member enables birthday sharing. Under-18 permission is verified once, not for every card.</p>'
       + '<div id="birthdayUpcoming" class="efgc-birthday-upcoming">Loading birthday dates…</div>'
       + '<p id="birthdayConsentInfo" class="efgc-birthday-upcoming" role="status">Choose a member to check their sharing permission.</p>'
       + '<div class="efgc-birthday-control">'
@@ -125,7 +125,7 @@
       + '<button id="birthdayDownload" class="efgc-outline" type="button" disabled>Download PNG</button>'
       + '</div>'
       + '<div id="birthdayPreviewHost" aria-live="polite"></div>'
-      + '<p class="efgc-birthday-upcoming" id="birthdayAutomationStatus">Automatic News Feed greeting: every birthday at 08h00 (South Africa). No per-card Admin approval needed. Members can change their birthday sharing preference in My Journey.</p>'
+      + '<p class="efgc-birthday-upcoming" id="birthdayAutomationStatus">Automatic News Feed greeting: every eligible birthday at 08h00 (South Africa). No per-card Admin approval. Members can change their preference in My Journey.</p>'
       + '<p id="birthdayStudioMessage" role="status" aria-live="polite"></p>';
   }
 
@@ -213,7 +213,7 @@
     const ageKnown = dob && !Number.isNaN(dob.getTime());
     const minorOrUnknown = !ageKnown || dob > new Date(new Date().setFullYear(new Date().getFullYear()-18));
     if (minorOrUnknown && !guardianPermissions.get(member.id)?.birthday_and_photo_authorized) {
-      return { ok: false, reason: 'Admin must record guardian permission before publishing this greeting.' };
+      return { ok: false, reason: 'Admin must verify guardian permission once for future annual greetings.' };
     }
     return { ok: true, reason: 'Member birthday-sharing permission confirmed.' };
   }
