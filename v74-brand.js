@@ -46,14 +46,16 @@
     ]) frame.style.setProperty(prop,value,'important');
 
     for (const [prop,value] of [
-      ['width','100%'],['height','100%'],['object-fit','contain'],['object-position','center center'],
+      ['width','100%'],['height','100%'],['object-fit','cover'],['object-position','center center'],
       ['pointer-events','none']
     ]) art.style.setProperty(prop,value,'important');
 
     const placeHitbox = (button, rect) => {
       const iw = art.naturalWidth || 1080;
       const ih = art.naturalHeight || 1920;
-      const scale = Math.min(width / iw, height / ih);
+      // The poster fills the viewport, with any cropping applied only to its sides.
+      // The transparent hitboxes must follow the same cover geometry as the image.
+      const scale = Math.max(width / iw, height / ih);
       const renderedW = iw * scale;
       const renderedH = ih * scale;
       const offsetX = (width - renderedW) / 2;
@@ -79,9 +81,10 @@
       ]) button.style.setProperty(prop,value,'important');
     };
 
-    // Match the uploaded 864 x 1536 poster's buttons, including letterboxing.
-    placeHitbox(loginButton,  { x:0.195, y:0.753, w:0.610, h:0.048 });
-    placeHitbox(createButton, { x:0.195, y:0.804, w:0.610, h:0.048 });
+    // Coordinates measured from the original poster image, not from the screen.
+    // Artwork-specific buttons are approximately 71% of poster width.
+    placeHitbox(loginButton,  { x:0.145, y:0.756, w:0.710, h:0.054 });
+    placeHitbox(createButton, { x:0.145, y:0.819, w:0.710, h:0.054 });
   }
 
   function ensureWelcome() {
