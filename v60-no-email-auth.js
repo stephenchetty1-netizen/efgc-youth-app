@@ -2,6 +2,8 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   let authMode = 'signin';
+  let registrationInFlight = false;
+  let registrationCooldownUntil = 0;
 
   function message(text) {
     const el = $('#loginMessage');
@@ -256,6 +258,7 @@
     message('');
     const d = readForm();
     const button = $('#continueButton');
+    if (button?.disabled || registrationInFlight) return;
     if (button) button.disabled = true;
     try {
       if (!d.phone) throw new Error('Enter your registered cellphone number or Admin username.');
@@ -266,6 +269,10 @@
         if (!/^\+27\d{9}$/.test(EFGCAuth.normalizeZA(d.phone))) {
           throw new Error('Enter a valid South African cellphone number to register.');
         }
+        const remaining = registrationCooldownUntil - Date.now();
+        if (remaining > 0) throw new Error('Please wait ' + Math.ceil(remaining / 1000) + ' seconds before another registration attempt.');
+        registrationInFlight = true;
+        registrationCooldownUntil = Date.now() + 15000;
         const result = await authBridge({
           action: 'register', role: 'youth', name: d.name, phone: d.phone,
           password: d.password,
@@ -285,6 +292,7 @@
     } catch (e) {
       message(e.message || 'Sign-in could not be completed.');
     } finally {
+      registrationInFlight = false;
       if (button) button.disabled = false;
     }
   };
