@@ -254,3 +254,19 @@ body.v74-signed-out:not(.v74-form-open) #v74Welcome .v74-art-button{
   -webkit-tap-highlight-color:transparent;
   min-height:0;
 }
+
+/* V112: render the original poster as a viewport-cover background.
+   The <img> stays loaded for its intrinsic dimensions and accurate hitboxes,
+   but no longer draws a smaller, contained rectangle on Android browsers. */
+body.v74-signed-out:not(.v74-form-open) #v74Welcome .v74-poster-frame {
+  background-image:url("assets/v74-login-poster.webp?v=112.0")!important;
+  background-size:cover!important;
+  background-position:center center!important;
+  background-repeat:no-repeat!important;
+}
+body.v74-signed-out:not(.v74-form-open) #v74Welcome .v74-login-art {
+  opacity:0!important;
+}
+body.v74-signed-out:not(.v74-form-open) #v74Welcome .v74-poster-frame::before{
+  content:none!important;display:none!important;
+}
