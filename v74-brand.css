@@ -236,3 +236,21 @@ body.v74-form-open .login-card textarea{
   background:linear-gradient(130deg,#19c0fe,#0569d2)!important;color:#fff!important;
   font-weight:900;font-size:17px;border:1px solid #8ee2ff;border-radius:18px;cursor:pointer}
 .v89-welcome-fallback button+button{background:transparent!important;border:1px solid #dfbd6d;color:#ffe4a9!important}
+
+/* V111 Android / installed PWA: fill the usable viewport without the visible
+   horizontal letterbox seam. The JS positions image hitboxes using cover math. */
+body.v74-signed-out:not(.v74-form-open) #v74Welcome,
+body.v74-signed-out:not(.v74-form-open) #v74Welcome .v74-poster-frame {
+  background:#031a38!important;
+}
+body.v74-signed-out:not(.v74-form-open) #v74Welcome .v74-poster-frame::before{
+  display:none!important;
+}
+body.v74-signed-out:not(.v74-form-open) #v74Welcome .v74-login-art {
+  width:100%!important;height:100%!important;
+  object-fit:cover!important;object-position:center center!important;
+}
+body.v74-signed-out:not(.v74-form-open) #v74Welcome .v74-art-button{
+  -webkit-tap-highlight-color:transparent;
+  min-height:0;
+}
