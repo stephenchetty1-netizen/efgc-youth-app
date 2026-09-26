@@ -1,4 +1,4 @@
-name: Validate and deploy EFGC Youth V104
+name: Validate and deploy EFGC Youth V105
 
 on:
   push:
@@ -103,6 +103,7 @@ jobs:
           EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=100" EFGC_SCREENSHOT_DIR="v101-qa" python3 scripts/test-v100-scripture-photos.py
           EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=101" EFGC_SCREENSHOT_DIR="v101-qa" python3 scripts/test-v101-attendance-register.py
           python3 scripts/test-v104-audit.py
+          EFGC_SCREENSHOT_DIR="v101-qa" python3 scripts/test-v105-features.py
 
       - name: Preserve visual smoke-test screenshots
         if: always()

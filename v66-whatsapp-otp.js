@@ -31,6 +31,9 @@
     if (!r.ok) {
       const e = new Error(body?.error || 'Authentication request failed.');
       e.status = r.status;
+      const retry = r.headers.get('Retry-After');
+      e.retryAfter = Number(body.retry_after ?? body.retryAfter ?? retry) ||
+        (retry ? Math.ceil((Date.parse(retry) - Date.now()) / 1000) : 0);
       throw e;
     }
     return body;
@@ -341,21 +344,10 @@
     });
   }
 
+  window.EFGCRegistrationHandler = beginRegistrationWithOtp;
   window.loginUser = async () => {
     syncForgotButton();
-    if (!isRegistrationMode()) return originalLoginUser();
-    const d = readRegistrationForm();
-    const button = $('#continueButton');
-    if (button) button.disabled = true;
-    try {
-      setLoginMessage('');
-      validateRegistration(d);
-      await beginRegistrationWithOtp(d);
-    } catch (e) {
-      setLoginMessage(e.message || 'Registration could not be completed.');
-    } finally {
-      if (button) button.disabled = false;
-    }
+    return originalLoginUser();
   };
 
   document.addEventListener('click', (e) => {

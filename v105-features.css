@@ -1,0 +1,27 @@
+#communityHub{max-width:1100px;margin:auto;padding:16px 12px 100px;color:#15304c}
+#communityHub .v105-hero{padding:26px;border-radius:22px;background:linear-gradient(130deg,#061c35,#0654aa);color:white;margin-bottom:18px}
+#communityHub .v105-hero small{color:#efcf7d;letter-spacing:.12em;font-weight:700}
+#communityHub .v105-hero h2{color:white!important;margin:8px 0;font-size:clamp(25px,5vw,38px)}
+#communityHub .v105-hero p{color:#e2edfa;margin-bottom:0}
+#communityHub .v105-tabs{display:flex;gap:8px;overflow-x:auto;padding:4px 0 14px;scrollbar-width:thin}
+#communityHub .v105-tabs button{flex:0 0 auto;background:#e7eff8;color:#123f71;border:1px solid #becfe4;padding:11px 15px;border-radius:20px;min-height:44px}
+#communityHub .v105-tabs button[aria-pressed=true]{background:#075fcc;color:white;border-color:#075fcc}
+#communityHub .v105-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:16px;align-items:start}
+#communityHub .v105-card{background:white;border:1px solid #d7e2ee;border-radius:18px;padding:20px;margin:0 0 16px;box-shadow:0 5px 20px #09274b08;overflow-wrap:anywhere;min-width:0}
+#communityHub h3{font-size:21px;color:#092a4c;margin:0 0 12px}
+#communityHub .v105-copy{white-space:pre-wrap;line-height:1.65}
+#communityHub label{display:block;font-weight:600;margin:12px 0}
+#communityHub input,#communityHub textarea,#communityHub select{box-sizing:border-box;display:block;width:100%;max-width:100%;font:inherit;font-size:16px;padding:12px;margin:5px 0;border:1px solid #a9bdd3;border-radius:10px;background:white;color:#102d4a}
+#communityHub textarea{min-height:115px;resize:vertical}
+#communityHub button,#communityHub .v105-link{min-height:44px;border-radius:10px;padding:10px 15px;border:1px solid #b7cbe0;background:#eef4fb;color:#084577;font:inherit;font-weight:600;cursor:pointer;white-space:normal}
+#communityHub button:disabled{opacity:.55;cursor:default}
+#communityHub button:focus-visible,#communityHub a:focus-visible{outline:3px solid #cf9e24;outline-offset:3px}
+#communityHub button.v105-primary{background:#0764d3;color:white;border-color:#0764d3}
+#communityHub .v105-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+#communityHub .v105-meta{font-size:13px;color:#506780;margin-bottom:12px}
+#communityHub .v105-empty{padding:20px;background:#eef4fb;border-radius:14px;line-height:1.6}
+#communityHub .v105-stats{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#communityHub .v105-stats strong{display:block;font-size:32px;color:#075ac0}
+#communityHub #v105Status{min-height:24px;line-height:1.5;color:#294760}
+#communityHub .v105-link{display:inline-block;text-decoration:underline}
+@media(max-width:480px){#communityHub .v105-hero{padding:20px}#communityHub .v105-card{padding:16px}}
