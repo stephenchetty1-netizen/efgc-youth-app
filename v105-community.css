@@ -1,0 +1,36 @@
+/* EFGC Youth V105 Community & Ministry; responsive and accessible. */
+#communityHub{min-width:0;max-width:100%;padding-bottom:36px}
+#communityHub *{box-sizing:border-box}
+.v105-heading{margin:15px 0;padding:27px 22px;border-radius:22px;background:linear-gradient(120deg,#041d40,#0960b4);color:#fff;border:1px solid #4276b0}
+.v105-heading small{font-size:11px;font-weight:900;letter-spacing:.13em;color:#f2cc7a}
+.v105-heading h2{font-size:clamp(24px,5vw,36px);color:#fff!important;margin:10px 0}
+.v105-heading p{margin:0;color:#e8f5ff;font-size:15px}
+.v105-nav{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}
+.v105-nav button{min-height:43px;padding:10px 14px;font-weight:800;font-size:13px;color:#13467b;background:#fff;border:1px solid #b9d6ef;border-radius:999px;cursor:pointer}
+.v105-nav button.active{background:#0867c3;color:white;border-color:#0867c3}
+#v105Status{min-height:19px;line-height:1.5;font-size:13px;color:#15538e}
+#v105Status[data-error="yes"]{color:#ae2437;font-weight:750}
+.v105-post-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:13px;margin:12px 0}
+.v105-card{min-width:0;border:1px solid #cbdff1;background:#fff;color:#183650;border-radius:18px;padding:20px;margin:12px 0;box-shadow:0 8px 22px #122d4a10}
+.v105-card h3{color:#104a86!important;line-height:1.3;font-size:20px;margin:8px 0 12px}
+.v105-card small{color:#286caa;font-weight:850;font-size:11px;letter-spacing:.04em}
+.v105-card p{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.55;color:#314b64;font-size:14px}
+.v105-card button:not(.v105-nav button),.v105-resource-link{
+  display:inline-flex;align-items:center;justify-content:center;min-height:43px;
+  padding:10px 15px;border-radius:10px;border:1px solid #0965b6;
+  background:#086ac4;color:#fff;font-size:13px;font-weight:800;
+  text-decoration:none;margin:5px 8px 5px 0;cursor:pointer;
+}
+.v105-card button:disabled{opacity:.56;cursor:not-allowed}
+.v105-card button[data-state="archived"]{background:#fff;color:#8c3030;border-color:#d8a6a6}
+.v105-card label{display:block;font-weight:800;color:#123b64;font-size:13px;margin:11px 0}
+.v105-card input,.v105-card textarea{display:block;width:100%;min-width:0;max-width:100%;margin:6px 0;border:1px solid #b4cde4;background:#fff;border-radius:11px;padding:12px;font:500 15px system-ui,sans-serif;color:#1b3856}
+.v105-card textarea{resize:vertical}
+.v105-actions{display:flex;gap:8px;flex-wrap:wrap}
+.v105-pill{display:inline-block;padding:8px 11px;color:#10457c;background:#e4f2ff;border-radius:999px;font-size:12px;font-weight:800}
+.v105-note{background:#f4f8ff;border-left:3px solid #0d6ac2;padding:12px 15px;border-radius:9px;color:#214d7b;font-size:13px}
+.v105-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.v105-stats>div{padding:15px 10px;border:1px solid #d2e5f5;border-radius:13px;background:#f4f9ff;text-align:center}
+.v105-stats strong{display:block;font-size:27px;color:#105eb2}
+.v105-stats span{font-size:12px;color:#37516a}
+@media(max-width:570px){.v105-stats{grid-template-columns:1fr}.v105-card{padding:16px}.v105-heading{padding:21px 16px}.v105-nav{flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px}.v105-nav button{flex:0 0 auto}}
