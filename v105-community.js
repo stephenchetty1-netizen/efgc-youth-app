@@ -47,6 +47,11 @@
     const canJoin=p.status==="published"&&["group","service"].includes(p.kind);
     const joined=signups.find(s=>s.post_id===p.id&&s.member_id===signed()?.uid);
     const href=p.url&&/^https:\/\/[^\s]+$/i.test(p.url)?'<a class="v105-resource-link" href="'+h(p.url)+'" target="_blank" rel="noopener noreferrer">Open resource ↗</a>':"";
+    const applicants=admin()&&canJoin?signups.filter(x=>x.post_id===p.id&&x.status==="requested"):[];
+    const requests=applicants.length?'<div class="v105-applicants"><strong>Pending join requests</strong>'+applicants.map(x=>
+      '<div class="v105-actions"><span>Member '+h(String(x.member_id).slice(0,8))+'…</span>'+
+      '<button type="button" data-v105-signup="'+h(x.id)+'" data-state="approved">Approve</button>'+
+      '<button type="button" data-v105-signup="'+h(x.id)+'" data-state="declined">Decline</button></div>').join("")+'</div>':"";
     const moderation=admin()?'<div class="v105-actions">'+
       (p.status!=="published"?'<button data-v105-review="'+h(p.id)+'" data-state="published">Publish</button>':"")+
       (p.status!=="archived"?'<button data-v105-review="'+h(p.id)+'" data-state="archived">Archive</button>':"")+'</div>':"";
@@ -55,7 +60,7 @@
       href+(canJoin?(joined?'<span class="v105-pill">Sign-up: '+h(joined.status)+'</span>':
       '<button type="button" data-v105-join="'+h(p.id)+'">Request to join</button>'):"")+
       (owned&&!admin()&&p.status==="pending"?'<button type="button" data-v105-withdraw="'+h(p.id)+'">Withdraw draft</button>':"")+
-      moderation+'</article>';
+      requests+moderation+'</article>';
   }
   function renderContent(){
     if(!signed())return;
@@ -158,6 +163,8 @@
     if(withdraw){run(withdraw,async()=>{await api("v105_content?id=eq."+encodeURIComponent(withdraw.dataset.v105Withdraw),{method:"DELETE"});});return;}
     const review=e.target.closest?.("[data-v105-review]");
     if(review&&admin()){run(review,async()=>{const r=await api("v105_content?id=eq."+encodeURIComponent(review.dataset.v105Review),json({status:review.dataset.state},"PATCH"));if(!Array.isArray(r)||!r.length)throw Error("The content was not updated.");});return;}
+    const signup=e.target.closest?.("[data-v105-signup]");
+    if(signup&&admin()){run(signup,async()=>{const r=await api("v105_signups?id=eq."+encodeURIComponent(signup.dataset.v105Signup),json({status:signup.dataset.state},"PATCH"));if(!Array.isArray(r)||!r.length)throw Error("Join request could not be updated.");});return;}
     const mentor=e.target.closest?.("[data-v105-mentoring]");
     if(mentor&&admin()){run(mentor,async()=>{const r=await api("v105_mentoring?id=eq."+encodeURIComponent(mentor.dataset.v105Mentoring),json({status:mentor.dataset.state},"PATCH"));if(!Array.isArray(r)||!r.length)throw Error("The mentoring request was not updated.");});return;}
     const ci=e.target.closest?.("[data-v105-checkin]");
