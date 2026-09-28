@@ -2,6 +2,8 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   let authMode = 'signin';
+  let registrationInFlight = false;
+  let registrationCooldownUntil = 0;
 
   function message(text) {
     const el = $('#loginMessage');
@@ -35,6 +37,7 @@
     $('#phoneField')?.classList.remove('hidden');
     $('#nameField')?.classList.toggle('hidden', !registering);
     $('#dobField')?.classList.toggle('hidden', !registering);
+    $('#birthdaySharingField')?.classList.toggle('hidden', !registering);
     $('#photoField')?.classList.toggle('hidden', !registering);
     $('#roleField')?.classList.add('hidden');
     $('#youthSafeguardingFields')?.classList.toggle('hidden', !registering);
@@ -214,6 +217,25 @@
       emergency_name: $('#emergencyName').value.trim(),
       emergency_phone: $('#emergencyPhone').value.trim(),
     });
+    // One-time birthday preference recorded at registration. It can be revoked
+    // in My Journey. For minors the server continues to require a guardian's
+    // verified permission before a name is published in the Youth News Feed.
+    const savedBirthdayPrefs = await EFGCAuth.rest('member_preferences?on_conflict=member_id', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=representation',
+      },
+      body: JSON.stringify({
+        member_id: profile.id,
+        birthday_opt_in: Boolean($('#birthdaySharingOptIn')?.checked),
+        photo_opt_in: false,
+        whatsapp_opt_in: false,
+      }),
+    });
+    if (!Array.isArray(savedBirthdayPrefs) || !savedBirthdayPrefs.length) {
+      throw new Error('Account created, but birthday-sharing choice was not saved. Sign in and set it in My Journey.');
+    }
     return finish(profile, result.session.user);
   }
 
@@ -236,6 +258,7 @@
     message('');
     const d = readForm();
     const button = $('#continueButton');
+    if (button?.disabled || registrationInFlight) return;
     if (button) button.disabled = true;
     try {
       if (!d.phone) throw new Error('Enter your registered cellphone number or Admin username.');
@@ -246,6 +269,10 @@
         if (!/^\+27\d{9}$/.test(EFGCAuth.normalizeZA(d.phone))) {
           throw new Error('Enter a valid South African cellphone number to register.');
         }
+        const remaining = registrationCooldownUntil - Date.now();
+        if (remaining > 0) throw new Error('Please wait ' + Math.ceil(remaining / 1000) + ' seconds before another registration attempt.');
+        registrationInFlight = true;
+        registrationCooldownUntil = Date.now() + 15000;
         const result = await authBridge({
           action: 'register', role: 'youth', name: d.name, phone: d.phone,
           password: d.password,
@@ -265,6 +292,7 @@
     } catch (e) {
       message(e.message || 'Sign-in could not be completed.');
     } finally {
+      registrationInFlight = false;
       if (button) button.disabled = false;
     }
   };

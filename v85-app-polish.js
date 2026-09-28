@@ -111,7 +111,7 @@
   function markup() {
     return '<div class="efgc-birthday-kicker">ADMIN ONLY • EFGC YOUTH</div>'
       + '<h2>🎉 Birthday Studio</h2>'
-      + '<p>Create a personalised EFGC Youth birthday greeting and download a full-colour 1080 × 1350 poster. Nothing is posted automatically.</p>'
+      + '<p>Create and privately download a full-colour 1080 × 1350 birthday poster. Birthday greetings post automatically to Youth News at 08h00 South African time after the member enables birthday sharing. Under-18 permission is verified once, not for every card.</p>'
       + '<div id="birthdayUpcoming" class="efgc-birthday-upcoming">Loading birthday dates…</div>'
       + '<p id="birthdayConsentInfo" class="efgc-birthday-upcoming" role="status">Choose a member to check their sharing permission.</p>'
       + '<div class="efgc-birthday-control">'
@@ -125,10 +125,22 @@
       + '<button id="birthdayDownload" class="efgc-outline" type="button" disabled>Download PNG</button>'
       + '</div>'
       + '<div id="birthdayPreviewHost" aria-live="polite"></div>'
-      + '<label class="efgc-birthday-consent" for="birthdayApproved"><input id="birthdayApproved" type="checkbox">'
-      + '<span>I confirm this birthday greeting and the member’s name are approved for sharing in the EFGC Youth News Feed.</span></label>'
-      + '<div class="efgc-birthday-actions"><button id="birthdayPublish" type="button" disabled>Publish greeting text to News</button></div>'
+      + '<p class="efgc-birthday-upcoming" id="birthdayAutomationStatus">Automatic News Feed greeting: every eligible birthday at 08h00 (South Africa). No per-card Admin approval. Members can change their preference in My Journey.</p>'
       + '<p id="birthdayStudioMessage" role="status" aria-live="polite"></p>';
+  }
+
+  function placeStudio(panel, section) {
+    // The Admin dashboard has its own h2 inside the blue title bar. Never put
+    // Birthday Studio after that nested heading: it overlaps the dashboard.
+    const dashboard = panel.querySelector(':scope > #mockAdminDashboard');
+    if (dashboard) {
+      if (dashboard.nextElementSibling !== section) dashboard.insertAdjacentElement('afterend', section);
+      return;
+    }
+    const heading = Array.from(panel.children).find(child => child.tagName === 'H2');
+    if (heading) {
+      if (heading.nextElementSibling !== section) heading.insertAdjacentElement('afterend', section);
+    } else if (panel.firstElementChild !== section) panel.prepend(section);
   }
 
   function renderStudio() {
@@ -138,20 +150,19 @@
       $('#birthdayStudio')?.remove();
       return;
     }
-    if ($('#birthdayStudio')) return;
+    if ($('#birthdayStudio')) {
+      placeStudio(panel, $('#birthdayStudio'));
+      return;
+    }
     const section = document.createElement('section');
     section.id = 'birthdayStudio';
     section.setAttribute('aria-label', 'EFGC Youth Birthday Studio');
     section.innerHTML = markup();
-    const heading = panel.querySelector('h2');
-    if (heading) heading.insertAdjacentElement('afterend', section);
-    else panel.prepend(section);
+    placeStudio(panel, section);
     $('#birthdayBlessing').value = DEFAULT_BLESSING;
     $('#birthdayMember').addEventListener('change', selectMember);
     $('#birthdayPreview').addEventListener('click', preview);
     $('#birthdayDownload').addEventListener('click', download);
-    $('#birthdayPublish').addEventListener('click', publish);
-    $('#birthdayApproved').addEventListener('change', updatePublish);
     ['birthdayName', 'birthdayBlessing', 'birthdayDate'].forEach((id) => {
       $('#' + id).addEventListener('input', invalidatePreview);
     });
@@ -202,7 +213,7 @@
     const ageKnown = dob && !Number.isNaN(dob.getTime());
     const minorOrUnknown = !ageKnown || dob > new Date(new Date().setFullYear(new Date().getFullYear()-18));
     if (minorOrUnknown && !guardianPermissions.get(member.id)?.birthday_and_photo_authorized) {
-      return { ok: false, reason: 'Admin must record guardian permission before publishing this greeting.' };
+      return { ok: false, reason: 'Admin must verify guardian permission once for future annual greetings.' };
     }
     return { ok: true, reason: 'Member birthday-sharing permission confirmed.' };
   }
@@ -251,7 +262,8 @@
       && latestPreview?.name === member.full_name);
     if (button) button.disabled = !(latestPreview && $('#birthdayApproved')?.checked && isAdmin() && allowed);
     const downloadButton=$('#birthdayDownload');
-    if(downloadButton) downloadButton.disabled=!(latestPreview && allowed);
+    // Private poster export is independent of permission to publish publicly.
+    if(downloadButton) downloadButton.disabled=!(latestPreview && isAdmin());
     updateConsentInfo();
   }
 
@@ -275,10 +287,13 @@
       + '<p>' + esc(blessing) + '</p>'
       + '<div class="efgc-birthday-verse">“The LORD bless thee, and keep thee.”<br>Numbers 6:24 (KJV)</div>'
       + '<p>With love from EFGC Youth • Pass on the Baton</p></div>';
-    $('#birthdayDownload').disabled = !memberSharingPermission(selectedMember()).ok;
-    $('#birthdayApproved').checked = false;
+    $('#birthdayDownload').disabled = false;
+    if ($('#birthdayApproved')) $('#birthdayApproved').checked = false;
     updatePublish();
-    showMessage('Preview generated. Review the name and blessing before downloading or publishing.');
+    const permission = memberSharingPermission(selectedMember());
+    showMessage(permission.ok
+      ? 'Preview generated. Review the name and blessing. Download is private; publishing requires confirmation.'
+      : 'Preview generated. You may privately download the poster, but publishing is disabled: ' + permission.reason);
     dismissKeyboard();
   }
 
@@ -391,8 +406,7 @@
     } catch (error) {
       showMessage('Could not export poster: ' + (error.message || 'Please try again.'), true);
     } finally {
-      if ($('#birthdayDownload')) $('#birthdayDownload').disabled =
-        !(latestPreview && memberSharingPermission(selectedMember()).ok);
+      if ($('#birthdayDownload')) $('#birthdayDownload').disabled = !(latestPreview && isAdmin());
     }
   }
 

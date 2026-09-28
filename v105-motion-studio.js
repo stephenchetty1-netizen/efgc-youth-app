@@ -30,24 +30,25 @@
     {id:'dark',name:'Dark Cinematic Technical',bg:'#132338',grid:'#314458',accent:'#54d9ef',contrast:'#ffffff',line:'#2b4054',detail:'slate-charcoal surface, soft technical grid, cyan/electric-blue accent planes, white typography and restrained gold EFGC identification'},
     {id:'heritage',name:'High-Contrast Editorial',bg:'#f4eadd',grid:'#d8cec2',accent:'#b65b38',contrast:'#302e30',line:'#e6dccc',detail:'pale bone paper, fine cross-dot grid, terracotta editorial curves, charcoal type and subtle official EFGC blue/gold insignia'}
   ];
-  const state = {stage:1,topic:-1,theme:-1,playId:0,recording:false,recorder:null,logo:null,tabVisible:false};
+  const state = {stage:1,topic:-1,theme:-1,playId:0,recording:false,logo:null,lastFrame:3500,cancelRecording:null,downloadUrl:null};
+  const DURATION = 30000;
   const el = id => document.getElementById(id);
   const root = () => el(ROOT_ID);
   const esc = s => String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const topic = () => topics[state.topic];
   const theme = () => themes[state.theme];
-  const status = s => {let e=el('v105Status');if(e)e.textContent=s;};
+  const status = s => {let e=el('v105MotionStatus');if(e)e.textContent=s;};
   const stageLabels = ['IDEAS','SCRIPT','PALETTE','POSTERS','MOTION'];
-  let logo = new Image();logo.onload=()=>{state.logo=logo;if(state.stage===5)drawAt(0);};logo.src=LOGO;
+  let logo = new Image();logo.onload=()=>{state.logo=logo;if(state.stage===5&&!state.recording)drawAt(state.lastFrame);};logo.src=LOGO;
   function intro() {
-    return '<div class="v105-head"><img src="'+LOGO+'" alt="Official EFGC logo"><div><span class="v105-kicker">EFGC Youth • Build • Belong • Be a Light</span><h2>Motion Graphics Studio</h2></div></div>'+
-      '<p class="v105-subtitle">Create a 30-second Christian motion explainer in five approved stages. Silent on-screen story, KJV references, 9:16 format, 6 seconds per scene. No voice-over, background music, paid API or automatic posting.</p>'+
-      '<div class="v105-progress" aria-label="Production stages">'+stageLabels.map((s,i)=>'<span class="'+(state.stage===i+1?'active':state.stage>i+1?'done':'')+'">'+(i+1)+' '+s+'</span>').join('')+'</div>';
+    return '<div class="v105-motion-head"><img src="'+LOGO+'" alt="Official EFGC logo"><div><span class="v105-motion-kicker">EFGC Youth • Build • Belong • Be a Light</span><h2>Motion Graphics Studio</h2></div></div>'+
+      '<p class="v105-motion-subtitle">Create a 30-second Christian motion explainer in five approved stages. Silent on-screen story, KJV references, 9:16 format, 6 seconds per scene. No voice-over, background music, paid API or automatic posting.</p>'+
+      '<div class="v105-motion-progress" aria-label="Production stages">'+stageLabels.map((s,i)=>'<span class="'+(state.stage===i+1?'active':state.stage>i+1?'done':'')+'">'+(i+1)+' '+s+'</span>').join('')+'</div>';
   }
   function actions(back,next,label='NEXT'){
-    return '<div class="v105-actions">'+(back?'<button type="button" class="secondary" data-v105="back">← BACK</button>':'')+
-      (next?'<button type="button" data-v105="next">'+label+' →</button>':'')+
-      '</div><p class="v105-status" id="v105Status" role="status" aria-live="polite"></p>';
+    return '<div class="v105-motion-actions">'+(back?'<button type="button" class="secondary" data-motion="back">← BACK</button>':'')+
+      (next?'<button type="button" data-motion="next">'+label+' →</button>':'')+
+      '</div><p class="v105-motion-status" id="v105MotionStatus" role="status" aria-live="polite"></p>';
   }
   const scenePrompt=(n)=>{
     const t=topic(),p=theme(),hero=t.heroes[n],em=t.punch[n];
@@ -59,15 +60,25 @@
   };
   function stageHTML(){
     const t=topic();let body='';
-    if(state.stage===1)body='<h3>Stage 1 — Choose a Christian video idea</h3><p>Select one topic. The next stage reveals its full silent story.</p><div class="v105-grid">'+topics.map((v,i)=>'<button class="v105-topic" type="button" data-v105-topic="'+i+'" aria-pressed="'+(state.topic===i)+'"><b>0'+(i+1)+'</b>'+esc(v.title)+'<small> • '+esc(v.ref)+'</small></button>').join('')+'</div>'+actions(false,state.topic>=0,'DEVELOP IDEA');
-    if(state.stage===2)body='<h3>Stage 2 — Silent story script</h3><p>Five short visual beats, one 6-second shot each. KJV reference: <b>'+esc(t.ref)+'</b>. This script is on-screen copy, not voice-over.</p><ol class="v105-script">'+t.lines.map(v=>'<li>'+esc(v)+'</li>').join('')+'</ol><p class="v105-note">Biblical quotations are excerpts; original editorial statements are not labeled as word-for-word Bible text. No automatic posting.</p>'+actions(true,true,'LOCK SCRIPT & NEXT');
-    if(state.stage===3)body='<h3>Stage 3 — Lock the visual palette</h3><p>Select one palette. The same grid, colours and exactly two drifting diagonal background lines carry across every shot.</p><div class="v105-grid">'+themes.map((v,i)=>'<button type="button" class="v105-option" data-v105-theme="'+i+'" aria-pressed="'+(state.theme===i)+'"><span class="v105-swatch '+v.id+'"></span><strong>0'+(i+1)+' • '+esc(v.name)+'</strong>'+esc(v.detail)+'</button>').join('')+'</div>'+actions(true,state.theme>=0,'LOCK PALETTE & NEXT');
-    if(state.stage===4)body='<h3>Stage 4 — Five self-contained keyframe posters</h3><p>Each prompt specifies one main 3D hero object, up to two vector accents and the locked EFGC Youth theme.</p>'+t.lines.map((v,i)=>'<article class="v105-prompt"><h4>Scene '+(i+1)+' — '+esc(v)+'</h4><p><strong>Typography:</strong> '+esc(t.punch[i])+' • Bold Sans / optional Italic Serif</p><pre>'+esc(scenePrompt(i))+'</pre><button type="button" class="v105-copy" data-v105-copy="poster-'+i+'">Copy poster prompt</button></article>').join('')+actions(true,true,'GENERATE MOTION PROMPTS');
-    if(state.stage===5)body='<h3>Stage 5 — 6-second motion scenes</h3><p>Five scenes × six seconds = 30 seconds. The browser preview is a stylized 2.5D reference; use the prompts with realistic 3D assets for full cinematic production.</p><div class="v105-preview"><canvas id="v105Canvas" width="1080" height="1920" aria-label="Silent EFGC Youth motion graphic preview"></canvas><div class="v105-previewinfo"><p><b>Silent visual story:</b> '+esc(t.title)+'</p><p><b>Reference:</b> '+esc(t.ref)+'</p><p>On-screen story text, EFGC logo and the locked palette. The downloadable draft contains no sound, music or voice-over.</p><div class="v105-actions"><button data-v105="play" type="button">▶ Preview 30s</button><button data-v105="poster" type="button" class="secondary">Download frame PNG</button><button data-v105="export" class="v105-export" type="button">Export silent WebM</button></div><p class="v105-note">WebM export requires MediaRecorder and canvas capture support in this browser. An MP4 or photorealistic 3D render is not claimed; on unsupported Android browsers use the copyable production prompts.</p></div></div>'+t.lines.map((v,i)=>'<article class="v105-prompt"><h4>Scene '+(i+1)+' • 6 seconds</h4><pre>'+esc(motionPrompt(i))+'</pre><button type="button" class="v105-copy" data-v105-copy="motion-'+i+'">Copy motion prompt</button></article>').join('')+'<div class="v105-actions"><button data-v105="all" class="v105-copy" type="button">Copy all prompts</button></div>'+actions(true,false);
-    return '<div class="v105-studio">'+intro()+'<div class="v105-panel">'+body+'</div></div>';
+    if(state.stage===1)body='<h3>Stage 1 — Choose a Christian video idea</h3><p>Select one topic. The next stage reveals its full silent story.</p><div class="v105-motion-grid">'+topics.map((v,i)=>'<button class="v105-motion-topic" type="button" data-motion-topic="'+i+'" aria-pressed="'+(state.topic===i)+'"><b>0'+(i+1)+'</b>'+esc(v.title)+'<small> • '+esc(v.ref)+'</small></button>').join('')+'</div>'+actions(false,state.topic>=0,'DEVELOP IDEA');
+    if(state.stage===2)body='<h3>Stage 2 — Silent story script</h3><p>Five short visual beats, one 6-second shot each. KJV reference: <b>'+esc(t.ref)+'</b>. This script is on-screen copy, not voice-over.</p><ol class="v105-motion-script">'+t.lines.map(v=>'<li>'+esc(v)+'</li>').join('')+'</ol><p class="v105-motion-note">Biblical quotations are excerpts; original editorial statements are not labeled as word-for-word Bible text. No automatic posting.</p>'+actions(true,true,'LOCK SCRIPT & NEXT');
+    if(state.stage===3)body='<h3>Stage 3 — Lock the visual palette</h3><p>Select one palette. The same grid, colours and exactly two drifting diagonal background lines carry across every shot.</p><div class="v105-motion-grid">'+themes.map((v,i)=>'<button type="button" class="v105-motion-option" data-motion-theme="'+i+'" aria-pressed="'+(state.theme===i)+'"><span class="v105-motion-swatch '+v.id+'"></span><strong>0'+(i+1)+' • '+esc(v.name)+'</strong>'+esc(v.detail)+'</button>').join('')+'</div>'+actions(true,state.theme>=0,'LOCK PALETTE & NEXT');
+    if(state.stage===4)body='<h3>Stage 4 — Five self-contained keyframe posters</h3><p>Each prompt specifies one main 3D hero object, up to two vector accents and the locked EFGC Youth theme.</p>'+t.lines.map((v,i)=>'<article class="v105-motion-prompt"><h4>Scene '+(i+1)+' — '+esc(v)+'</h4><p><strong>Typography:</strong> '+esc(t.punch[i])+' • Bold Sans / optional Italic Serif</p><pre>'+esc(scenePrompt(i))+'</pre><button type="button" class="v105-motion-copy" data-motion-copy="poster-'+i+'">Copy poster prompt</button></article>').join('')+actions(true,true,'GENERATE MOTION PROMPTS');
+    if(state.stage===5)body='<h3>Stage 5 — 6-second motion scenes</h3><p>Five scenes × six seconds = 30 seconds. The browser preview is a stylized 2.5D reference; use the prompts with realistic 3D assets for full cinematic production.</p><div class="v105-motion-preview"><canvas id="v105MotionCanvas" width="1080" height="1920" aria-label="Silent EFGC Youth motion graphic preview"></canvas><div class="v105-motion-previewinfo"><p><b>Silent visual story:</b> '+esc(t.title)+'</p><p><b>Reference:</b> '+esc(t.ref)+'</p><p>On-screen story text, EFGC logo and the locked palette. The downloadable draft contains no sound, music or voice-over.</p><div class="v105-motion-actions"><button data-motion="play" type="button">▶ Preview 30s</button><button data-motion="poster" type="button" class="secondary">Download frame PNG</button><button data-motion="export" class="v105-motion-export" type="button">Export silent WebM</button><button data-motion="cancel" class="secondary" type="button" hidden>Cancel export</button></div><p id="v105MotionDownload"></p><p class="v105-motion-note">WebM export requires MediaRecorder and canvas capture support in this browser. An MP4 or photorealistic 3D render is not claimed; on unsupported Android browsers use the copyable production prompts.</p></div></div>'+t.lines.map((v,i)=>'<article class="v105-motion-prompt"><h4>Scene '+(i+1)+' • 6 seconds</h4><pre>'+esc(motionPrompt(i))+'</pre><button type="button" class="v105-motion-copy" data-motion-copy="motion-'+i+'">Copy motion prompt</button></article>').join('')+'<div class="v105-motion-actions"><button data-motion="all" class="v105-motion-copy" type="button">Copy all prompts</button></div>'+actions(true,false);
+    return '<div class="v105-motion-studio">'+intro()+'<div class="v105-motion-panel">'+body+'</div></div>';
   }
-  function render(){if(!root())return;stopPreview();root().innerHTML=stageHTML();if(state.stage===5)drawAt(0);}
-  function stopPreview(){if(state.playId)cancelAnimationFrame(state.playId);state.playId=0;}
+  function clearDownload(){
+    if(state.downloadUrl)URL.revokeObjectURL(state.downloadUrl);
+    state.downloadUrl=null;
+    el('v105MotionDownload')?.replaceChildren();
+  }
+  function render(){if(!root())return;stopPreview();clearDownload();root().innerHTML=stageHTML();if(state.stage===5)drawAt(3500);}
+  function stopAnimation(){if(state.playId)cancelAnimationFrame(state.playId);state.playId=0;}
+  function stopPreview(){state.cancelRecording?.('Export cancelled. No video was saved.');stopAnimation();}
+  function studioVisible(){return !document.hidden && !!el('motionStudio') && !el('motionStudio').classList.contains('hidden');}
+  function leaveStudio(){
+    stopPreview();clearDownload();
+  }
   function fitText(ctx,text,maxWidth,maxSize){
     let size=maxSize;ctx.font='900 '+size+'px system-ui,sans-serif';
     while(size>35 && ctx.measureText(text).width>maxWidth){size-=3;ctx.font='900 '+size+'px system-ui,sans-serif';}
@@ -79,8 +90,9 @@
     if(line)out.push(line);return out;
   }
   function drawAt(ms){
-    const canvas=el('v105Canvas');if(!canvas||state.topic<0||state.theme<0)return;
+    const canvas=el('v105MotionCanvas');if(!canvas||state.topic<0||state.theme<0)return;
     const ctx=canvas.getContext('2d');if(!ctx)return;
+    state.lastFrame=ms;
     const W=canvas.width,H=canvas.height,p=theme(),t=topic();
     const segment=Math.min(4,Math.floor(Math.max(0,Math.min(ms,29999))/6000)),s=(ms-segment*6000)/1000;
     const enter=Math.max(0,Math.min(1,(s-.5)/2.5)),ease=1-Math.pow(1-enter,3),opacity=Math.max(0,Math.min(1,(6-s)/1.3));
@@ -127,39 +139,76 @@
     const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),20000);
   }
   function framePNG(){
-    drawAt(0);const canvas=el('v105Canvas');if(!canvas)return;
-    canvas.toBlob(blob=>blob?downloadBlob(blob,'EFGC-Youth-Motion-Frame.png'):status('PNG capture failed.'),'image/png');
+    if(state.recording)return status('Finish or cancel the export before capturing a frame.');
+    if(!state.logo)return status('Wait for the EFGC logo to load before exporting.');
+    stopAnimation();
+    // Capture the readable hold of the current scene, not its transparent entrance.
+    drawAt(Math.min(4,Math.floor(state.lastFrame/6000))*6000+3500);
+    const canvas=el('v105MotionCanvas');if(!canvas)return;
+    try{canvas.toBlob(blob=>blob?downloadBlob(blob,'EFGC-Youth-Motion-Frame.png'):status('PNG capture failed.'),'image/png');}
+    catch(e){status('PNG capture failed. Please reload and try again.');}
   }
   function record(){
     if(state.recording)return;
-    const canvas=el('v105Canvas');
-    if(!canvas||typeof MediaRecorder==='undefined'||typeof canvas.captureStream!=='function')return status('This browser cannot record canvas video. Copy the prompts for production instead.');
-    const mime=['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm'].find(x=>MediaRecorder.isTypeSupported(x));
+    const canvas=el('v105MotionCanvas');
+    if(!studioVisible())return;
+    if(!state.logo)return status('Wait for the EFGC logo to load before exporting.');
+    if(!canvas||typeof MediaRecorder==='undefined'||typeof MediaRecorder.isTypeSupported!=='function'||typeof canvas.captureStream!=='function')return status('This browser cannot record canvas video. Copy the prompts for production instead.');
+    const mime=['video/webm;codecs=vp8','video/webm;codecs=vp9','video/webm'].find(x=>MediaRecorder.isTypeSupported(x));
     if(!mime)return status('WebM export is unsupported here. Use the production prompts instead.');
-    stopPreview();state.recording=true;const chunks=[];let stream,recorder,start=0;
-    const controls=Array.from(root().querySelectorAll('[data-v105="export"],[data-v105="play"]'));controls.forEach(b=>b.disabled=true);
-    const cleanup=()=>{state.recording=false;state.recorder=null;controls.forEach(b=>b.disabled=false);stream?.getTracks().forEach(track=>track.stop());stopPreview();};
+    stopAnimation();clearDownload();state.recording=true;
+    const chunks=[],scenes=new Set();let stream,recorder,start=0,lastTick=0,watchdog,finished=false,complete=false;
+    const controls=Array.from(root().querySelectorAll('[data-motion="export"],[data-motion="play"],[data-motion="poster"],[data-motion="back"]'));
+    const cancel=root().querySelector('[data-motion="cancel"]');
+    controls.forEach(b=>b.disabled=true);if(cancel)cancel.hidden=false;
+    const cleanup=()=>{
+      if(finished)return;
+      finished=true;clearTimeout(watchdog);stopAnimation();
+      if(recorder){recorder.ondataavailable=null;recorder.onerror=null;recorder.onstop=null;
+        try{if(recorder.state!=='inactive')recorder.stop();}catch(e){/* release tracks below */}}
+      stream?.getTracks().forEach(track=>track.stop());chunks.length=0;
+      state.recording=false;state.cancelRecording=null;
+      controls.forEach(b=>b.disabled=false);if(cancel)cancel.hidden=true;
+    };
+    const fail=message=>{if(finished)return;cleanup();status(message);};
+    state.cancelRecording=fail;
     try{
       drawAt(0);stream=canvas.captureStream(30);
-      recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:3500000});state.recorder=recorder;
-      recorder.ondataavailable=e=>{if(e.data?.size)chunks.push(e.data);};
-      recorder.onerror=()=>{status('Video recording failed in this browser.');cleanup();};
+      recorder=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:3500000});
+      recorder.ondataavailable=e=>{if(!finished&&e.data?.size)chunks.push(e.data);};
+      recorder.onerror=()=>fail('Video recording failed. The incomplete export was discarded.');
       recorder.onstop=()=>{
+        if(finished)return;
+        if(!complete||scenes.size!==5||!studioVisible())return fail('Recording was interrupted. The incomplete export was discarded.');
         const blob=new Blob(chunks,{type:mime});
-        if(blob.size>10000){downloadBlob(blob,'EFGC-Youth-Silent-Motion-30s.webm');status('Silent WebM saved. Review the file before sharing.');}
-        else status('The browser did not produce a usable video. Try a supported desktop browser.');
+        if(blob.size<=10000)return fail('The browser did not produce a usable video. Try Chrome in your browser.');
         cleanup();
+        // A deliberate tap preserves the download user gesture on mobile. This
+        // confirms timeline completion, not successful disk save or decoded duration.
+        try{
+          const link=document.createElement('a');state.downloadUrl=URL.createObjectURL(blob);
+          link.href=state.downloadUrl;link.download='EFGC-Youth-Silent-Motion-30s.webm';link.textContent='Download silent WebM';
+          el('v105MotionDownload').replaceChildren(link);
+          status('Recording complete. Tap Download, then check all five scenes and the full duration before sharing.');
+        }catch(e){clearDownload();status('Could not prepare the download. Please try again.');}
       };
-      recorder.start(1000);start=performance.now();
-      status('Recording silent 30-second motion video locally. Keep this screen open.');
+      recorder.start(1000);start=lastTick=performance.now();
+      watchdog=setTimeout(()=>fail('Recording timed out. The incomplete export was discarded.'),DURATION+5000);
+      status('Recording silent 30-second motion video. Keep this screen open and your phone awake.');
       const tick=now=>{
-        if(!state.recording||recorder.state!=='recording')return;
-        const elapsed=now-start;drawAt(Math.min(elapsed,29999));
-        if(elapsed<30000)state.playId=requestAnimationFrame(tick);
-        else {state.playId=0;recorder.stop();}
+        if(finished)return;
+        if(!studioVisible())return fail('Export cancelled because Motion Studio was closed.');
+        if(recorder.state!=='recording'||now-lastTick>1000)return fail('Recording stalled. The incomplete export was discarded. Keep this screen open and try again.');
+        lastTick=now;const elapsed=now-start;
+        try{
+          drawAt(Math.min(elapsed,DURATION-1));
+          scenes.add(Math.min(4,Math.floor(elapsed/6000)));
+          if(elapsed<DURATION)state.playId=requestAnimationFrame(tick);
+          else {state.playId=0;complete=true;recorder.stop();}
+        }catch(e){fail('Video rendering failed. The incomplete export was discarded.');}
       };
       state.playId=requestAnimationFrame(tick);
-    }catch(e){cleanup();status('Video export failed: '+(e.message||'unsupported browser'));}
+    }catch(e){fail('Video export failed: '+(e.message||'unsupported browser'));}
   }
   async function copy(text){
     try{if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(text);else{
@@ -167,14 +216,15 @@
     }status('Copied to clipboard.');}catch(e){status('Copy is unavailable here. Select and copy the displayed prompts.');}
   }
   document.addEventListener('click',e=>{
-    const b=e.target.closest?.('[data-v105-topic],[data-v105-theme],[data-v105],[data-v105-copy]');
+    const b=e.target.closest?.('[data-motion-topic],[data-motion-theme],[data-motion],[data-motion-copy]');
     if(!b||!root()?.contains(b))return;
-    if(b.hasAttribute('data-v105-topic')){state.topic=Number(b.dataset.v105Topic);state.theme=-1;render();return;}
-    if(b.hasAttribute('data-v105-theme')){state.theme=Number(b.dataset.v105Theme);render();return;}
-    if(b.hasAttribute('data-v105-copy')){
-      const [kind,i]=b.dataset.v105Copy.split('-');void copy(kind==='poster'?scenePrompt(Number(i)):motionPrompt(Number(i)));return;
+    if(b.hasAttribute('data-motion-topic')){state.topic=Number(b.dataset.motionTopic);state.theme=-1;render();return;}
+    if(b.hasAttribute('data-motion-theme')){state.theme=Number(b.dataset.motionTheme);render();return;}
+    if(b.hasAttribute('data-motion-copy')){
+      const [kind,i]=b.dataset.motionCopy.split('-');void copy(kind==='poster'?scenePrompt(Number(i)):motionPrompt(Number(i)));return;
     }
-    const action=b.dataset.v105;
+    const action=b.dataset.motion;
+    if(action==='cancel')stopPreview();
     if(action==='back'){if(state.recording)return status('Finish the current export before leaving.');state.stage=Math.max(1,state.stage-1);render();}
     if(action==='next'){if(state.stage===1&&state.topic<0)return; if(state.stage===3&&state.theme<0)return;state.stage=Math.min(5,state.stage+1);render();}
     if(action==='play')preview();
@@ -182,7 +232,17 @@
     if(action==='export')record();
     if(action==='all')void copy(topic().lines.map((_,i)=>'KEYFRAME '+(i+1)+'\n'+scenePrompt(i)+'\n\nMOTION '+(i+1)+'\n'+motionPrompt(i)).join('\n\n-----\n\n'));
   });
-  function init(){if(root())render();}
+  let tabObserver;
+  function init(){
+    if(!root())return;
+    render();
+    if(!tabObserver){
+      tabObserver=new MutationObserver(()=>{if(!studioVisible())leaveStudio();});
+      tabObserver.observe(el('motionStudio'),{attributes:true,attributeFilter:['class']});
+    }
+  }
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)leaveStudio();});
+  window.addEventListener('pagehide',leaveStudio);
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init,{once:true});else init();
-  window.EFGCMotionStudio={version:'105.0',init,preview,stopPreview};
+  window.EFGCMotionStudio={version:'105.1',init,preview,stopPreview};
 })();

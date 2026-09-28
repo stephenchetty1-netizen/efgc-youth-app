@@ -62,8 +62,8 @@
   function preferencesHtml(prefs) {
     const ck = key => prefs?.[key] ? ' checked' : '';
     return panel('My sharing preferences',
-      '<p class="v87-muted">Nothing below is an automatic post or message. Turn on only what you agree EFGC Youth may use. A guardian’s permission is also required for under-18 birthday publication.</p>'+
-      '<label class="v87-check"><input type="checkbox" id="v87BirthdayOptIn"'+ck('birthday_opt_in')+'>Birthday greeting may be shared publicly</label>'+
+      '<p class="v87-muted">Birthday greetings can post automatically to the EFGC Youth News Feed at 08h00 on your birthday each year. Switch birthday sharing off at any time. Under-18 members need their guardian’s permission verified once by an Admin; you will not be asked to approve each birthday card.</p>'+
+      '<label class="v87-check"><input type="checkbox" id="v87BirthdayOptIn"'+ck('birthday_opt_in')+'>Automatically share my birthday greeting with my name in EFGC Youth News at 08h00 each year</label>'+
       '<label class="v87-check"><input type="checkbox" id="v87PhotoOptIn"'+ck('photo_opt_in')+'>My photo may appear in an approved greeting</label>'+
       '<label class="v87-check"><input type="checkbox" id="v87WhatsAppOptIn"'+ck('whatsapp_opt_in')+'>I agree to receive EFGC ministry updates on WhatsApp</label>'+
       '<button type="button" id="v87SavePreferences" class="primary-login">Save my preferences</button>'+

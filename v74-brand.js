@@ -4,7 +4,7 @@
   window.EFGC_V74_ACTIVE = true;
 
   const $ = (s) => document.querySelector(s);
-  const LOGIN_ART = 'assets/v74-login-poster.webp?v=89.1';
+  const LOGIN_ART = 'assets/v74-login-poster.webp?v=112.0';
   const LOGO = 'assets/v74-efgc-logo.webp?v=89.1';
 
   function sessionActive() {
@@ -40,20 +40,28 @@
       ['overflow','hidden'],['z-index','30'],['pointer-events','auto']
     ]) welcome.style.setProperty(prop,value,'important');
 
+    // Draw the same original artwork as the frame background. This prevents
+    // Android WebView/Chrome from letterboxing the <img> despite CSS object-fit.
+    const posterUrl = art.currentSrc || art.src;
     for (const [prop,value] of [
       ['position','absolute'],['inset','0px'],['width','100%'],['height','100%'],
-      ['max-width','none'],['aspect-ratio','auto'],['overflow','hidden'],['pointer-events','auto']
+      ['max-width','none'],['aspect-ratio','auto'],['overflow','hidden'],['pointer-events','auto'],
+      ['background-image','url("'+posterUrl.replace(/"/g,'%22')+'")'],
+      ['background-size','cover'],['background-position','center center'],
+      ['background-repeat','no-repeat']
     ]) frame.style.setProperty(prop,value,'important');
 
     for (const [prop,value] of [
-      ['width','100%'],['height','100%'],['object-fit','contain'],['object-position','center center'],
-      ['pointer-events','none']
+      ['width','100%'],['height','100%'],['object-fit','cover'],['object-position','center center'],
+      ['opacity','0'],['pointer-events','none']
     ]) art.style.setProperty(prop,value,'important');
 
     const placeHitbox = (button, rect) => {
       const iw = art.naturalWidth || 1080;
       const ih = art.naturalHeight || 1920;
-      const scale = Math.min(width / iw, height / ih);
+      // The poster fills the viewport, with any cropping applied only to its sides.
+      // The transparent hitboxes must follow the same cover geometry as the image.
+      const scale = Math.max(width / iw, height / ih);
       const renderedW = iw * scale;
       const renderedH = ih * scale;
       const offsetX = (width - renderedW) / 2;
@@ -79,9 +87,10 @@
       ]) button.style.setProperty(prop,value,'important');
     };
 
-    // Match the uploaded 864 x 1536 poster's buttons, including letterboxing.
-    placeHitbox(loginButton,  { x:0.195, y:0.753, w:0.610, h:0.048 });
-    placeHitbox(createButton, { x:0.195, y:0.804, w:0.610, h:0.048 });
+    // Coordinates measured from the original poster image, not from the screen.
+    // Artwork-specific buttons are approximately 71% of poster width.
+    placeHitbox(loginButton,  { x:0.145, y:0.756, w:0.710, h:0.054 });
+    placeHitbox(createButton, { x:0.145, y:0.819, w:0.710, h:0.054 });
   }
 
   function ensureWelcome() {
@@ -116,6 +125,7 @@
       login.insertBefore(welcome, card);
       const poster = welcome.querySelector('.v74-login-art');
       const showFallback = () => {
+        welcome.querySelector('.v74-poster-frame')?.style.removeProperty('background-image');
         welcome.querySelector('#v89WelcomeFallback')?.classList.remove('hidden');
         if (poster) poster.style.display = 'none';
         $('#v74LoginButton')?.style.setProperty('display','none','important');

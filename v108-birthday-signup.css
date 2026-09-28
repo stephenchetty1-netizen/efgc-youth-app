@@ -1,0 +1,15 @@
+/* V108: optional birthday sharing preference is asked once at signup. */
+#birthdaySharingField.efgc-birthday-signup {
+  display:flex;align-items:flex-start;gap:11px;width:100%;max-width:100%;
+  padding:14px;margin:10px 0 16px;border:1px solid #b6d6f5;
+  border-radius:14px;background:#edf6ff;color:#123859;
+  box-sizing:border-box;
+}
+#birthdaySharingField.hidden{display:none!important;}
+#birthdaySharingField input[type="checkbox"] {
+  flex:0 0 21px;width:21px!important;height:21px!important;
+  margin:2px 0 0!important;padding:0!important;accent-color:#0d66b5;
+}
+#birthdaySharingField span{display:block;flex:1;min-width:0}
+#birthdaySharingField strong{display:block;font-size:14px;font-weight:850;color:#093e76}
+#birthdaySharingField small{display:block;margin-top:5px;font-size:12px;line-height:1.5;color:#315372}

@@ -8,7 +8,7 @@
       return get('events?select=id,title,event_date,theme,scripture,attendance_approved&order=event_date.asc');
     },
     async news() {
-      return get('news_posts?select=id,content,published_at,is_published&is_published=eq.true&order=published_at.desc&limit=50');
+      return get('news_posts?select=id,content,published_at,is_published,post_type,member_name,celebration_year&is_published=eq.true&order=published_at.desc&limit=50');
     },
     async myAttendance(userId) {
       if (!userId) return [];
