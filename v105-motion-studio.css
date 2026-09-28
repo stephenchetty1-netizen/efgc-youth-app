@@ -1,0 +1,43 @@
+
+/* EFGC Motion Studio V105 — isolated from existing Scripture poster UI. */
+#motionStudio{color:#eaf2ff}
+.v105-motion-studio{max-width:1150px;margin:auto;padding:22px;background:linear-gradient(145deg,#081a39,#112c53 70%,#0b1831);border:1px solid #7193cb55;border-radius:24px;box-shadow:0 24px 60px #02102640}
+.v105-motion-kicker{letter-spacing:.16em;font-size:.72rem;font-weight:900;color:#e6c476;text-transform:uppercase}
+.v105-motion-studio h2{color:#fff;font-size:clamp(1.5rem,5vw,2.4rem);margin:.4rem 0}
+.v105-motion-subtitle{color:#c6d9f3;line-height:1.5;max-width:720px}
+.v105-motion-head{display:flex;align-items:center;gap:16px}
+.v105-motion-head img{width:66px;height:66px;object-fit:contain}
+.v105-motion-progress{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:20px 0}
+.v105-motion-progress span{border-radius:12px;background:#ffffff16;color:#c4d4eb;text-align:center;padding:10px 2px;font-weight:800;font-size:.72rem}
+.v105-motion-progress span.active{background:#dfbd67;color:#0a1834}
+.v105-motion-progress span.done{background:#1a579a;color:#fff}
+.v105-motion-panel{background:#ffffff0d;border:1px solid #d7e4ff27;padding:18px;border-radius:18px}
+.v105-motion-panel h3{color:#fff;margin:0 0 12px;font-size:1.3rem}
+.v105-motion-panel p,.v105-motion-panel small{color:#d0dcf0}
+.v105-motion-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:14px 0}
+.v105-motion-topic,.v105-motion-option{cursor:pointer;text-align:left;border-radius:15px;padding:16px;background:#091e40;color:#fff;border:1px solid #658bc95c;line-height:1.45;font:inherit;min-height:85px}
+.v105-motion-topic b,.v105-motion-option strong{color:#f4d987;display:block;margin-bottom:7px}
+.v105-motion-topic[aria-pressed=true],.v105-motion-option[aria-pressed=true]{border:2px solid #f1cb72;background:#164278}
+.v105-motion-script{display:grid;gap:10px;counter-reset:scene;list-style:none;padding:0}
+.v105-motion-script li{padding:13px 15px;background:#082146;border-left:3px solid #edcc79;border-radius:10px;color:#fff;font-weight:700}
+.v105-motion-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.v105-motion-actions button,.v105-motion-copy,.v105-motion-export{cursor:pointer;border:0;border-radius:12px;background:#e9c878;color:#0d2243;padding:12px 16px;font:inherit;font-weight:850}
+.v105-motion-actions button.secondary,.v105-motion-copy{background:#204c84;color:#fff;border:1px solid #b1cdf055}
+.v105-motion-actions button:disabled,.v105-motion-copy:disabled,.v105-motion-export:disabled{opacity:.5;cursor:not-allowed}
+.v105-motion-option .v105-motion-swatch{display:block;height:72px;border-radius:10px;margin-bottom:9px;position:relative;overflow:hidden;border:1px solid #a3a3a355}
+.v105-motion-swatch::after{content:"EFGC YOUTH";position:absolute;left:12px;bottom:10px;font-weight:900;letter-spacing:.1em}
+.v105-motion-swatch.editorial{background:repeating-linear-gradient(90deg,transparent,transparent 19px,#ccd4dc 20px),#f2f0e9;color:#234f94}
+.v105-motion-swatch.dark{background:repeating-linear-gradient(90deg,transparent,transparent 19px,#456176 20px),#152336;color:#52d9ec}
+.v105-motion-swatch.heritage{background:repeating-linear-gradient(90deg,transparent,transparent 19px,#ddcfc0 20px),#f3e9d8;color:#a74834}
+.v105-motion-prompt{margin:12px 0;padding:16px;border-radius:13px;background:#061a34;border:1px solid #9bb7dc44}
+.v105-motion-prompt h4{color:#f0cf7f;margin:0 0 10px}
+.v105-motion-prompt p{margin:7px 0}
+.v105-motion-prompt pre{font-family:inherit;white-space:pre-wrap;overflow-wrap:anywhere;color:#ecf4ff;font-size:.9rem;line-height:1.55}
+.v105-motion-preview{display:grid;grid-template-columns:minmax(0,290px) minmax(0,1fr);gap:18px;align-items:start}
+#v105MotionCanvas{width:100%;height:auto;aspect-ratio:9/16;border:1px solid #e3d8ab88;border-radius:13px;background:#f0eee7}
+.v105-motion-previewinfo p{line-height:1.5}
+.v105-motion-status{min-height:26px;color:#f4d989!important;overflow-wrap:anywhere}
+.v105-motion-note{padding:12px;border-radius:11px;background:#14416a;color:#f4e7c9!important;border-left:3px solid #f4d487}
+@media(max-width:620px){.v105-motion-studio{padding:14px}.v105-motion-preview{grid-template-columns:1fr}#v105MotionCanvas{max-width:280px;display:block;margin:auto}.v105-motion-head img{width:46px;height:46px}.v105-motion-progress span{font-size:.59rem;padding:8px 0}.v105-motion-panel{padding:12px}}
+
+#v105MotionDownload a{display:inline-block;padding:12px 16px;color:#fff;background:#204c84;border-radius:12px;font-weight:800}

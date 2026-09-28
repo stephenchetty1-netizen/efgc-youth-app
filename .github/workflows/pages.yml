@@ -54,6 +54,9 @@ jobs:
       - name: Verify session refresh and account switching
         run: node --test scripts/test-session-refresh.cjs
 
+      - name: Verify Motion Studio export failure and cancellation paths
+        run: node --test scripts/test-motion-studio.cjs
+
       - name: Validate V101 source, logout privacy, manifest and safeguarding gates
         run: python3 scripts/validate-v87.py
 
@@ -104,17 +107,36 @@ jobs:
           EFGC_TEST_URL="http://127.0.0.1:8081/index.html?v=101" EFGC_SCREENSHOT_DIR="v101-qa" python3 scripts/test-v101-attendance-register.py
           python3 scripts/test-v104-audit.py
 
+      - name: Record and decode a complete Motion Studio WebM in Chromium
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y ffmpeg
+          python3 -m http.server 8082 >/tmp/efgc-motion-http.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" || true' EXIT
+          for i in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:8082/index.html >/dev/null; then break; fi
+            sleep 1
+          done
+          EFGC_TEST_URL="http://127.0.0.1:8082/index.html" EFGC_SCREENSHOT_DIR="v101-qa" python3 scripts/test-motion-studio-browser.py
+
       - name: Preserve visual smoke-test screenshots
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: EFGC-V101-Phone-Layout-Checks
-          path: v101-qa/*.png
+          path: |
+            v101-qa/*.png
+            v101-qa/motion-studio.webm
+            v101-qa/motion-studio-probe.json
           if-no-files-found: ignore
           retention-days: 14
 
   deploy:
-    if: github.event_name != 'pull_request'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: validate
     runs-on: ubuntu-latest
     environment:
