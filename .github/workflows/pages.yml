@@ -108,6 +108,7 @@ jobs:
           python3 scripts/test-v104-audit.py
 
       - name: Record and decode a complete Motion Studio WebM in Chromium
+        if: ${{ !cancelled() }}
         shell: bash
         run: |
           set -euo pipefail

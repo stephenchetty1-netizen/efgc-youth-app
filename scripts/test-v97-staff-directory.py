@@ -5,7 +5,7 @@ All accounts are synthetic. This test never needs real member credentials.
 """
 import os
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 
 BASE = os.environ.get("EFGC_TEST_URL", "http://127.0.0.1:8081/index.html?v=97")
 OUTPUT = Path(os.environ.get("EFGC_SCREENSHOT_DIR", "/tmp"))
@@ -55,7 +55,9 @@ with sync_playwright() as pw:
     page.locator("#v88MobileNav [data-v88-more]").click()
     page.locator('#v88MoreLinks [data-v88-route="staffDirectory"]').click()
     page.wait_for_function("() => document.querySelector('#v97YouthCount').textContent === '2'")
-    assert page.locator("#staffDirectory").is_visible()
+    # The welcome-art observer reconciles signed-in CSS asynchronously. A loaded
+    # directory count alone does not mean that reconciliation has completed.
+    expect(page.locator("#staffDirectory")).to_be_visible()
     assert page.locator("#v97DirectoryRows .v97-person").count()==2
     assert page.get_by_text("Pending Candidate").count()==0
     # V103: the Admin Centre tile previously pointed back to Admin Centre.
@@ -102,7 +104,7 @@ with sync_playwright() as pw:
       renderShell();showTab('staffDirectory');
     }""",[LEADER])
     page.wait_for_function("() => document.querySelector('#v97YouthCount').textContent === '2'")
-    assert page.locator("#staffDirectory").is_visible()
+    expect(page.locator("#staffDirectory")).to_be_visible()
     page.evaluate("""([LEADER]) => {
       session={uid:LEADER,name:'Pending Candidate',role:'leader',approval_status:'pending'};
       renderShell();showTab('staffDirectory');
