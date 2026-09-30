@@ -66,3 +66,24 @@ body:not(.mock-authenticated) #rememberField small { color: #d2e9ff !important; 
  .efgc-birthday-poster { min-height: 430px; padding: 25px 15px; }
  .efgc-birthday-actions button { flex: 1 1 44%; }
 }
+
+
+/* V106: Birthday Studio is a standalone Admin panel, never blue title-bar content. */
+#adminPanel > #birthdayStudio {
+  display:block;position:relative;clear:both;isolation:isolate;
+  width:100%;max-width:100%;min-width:0;margin:16px 0 22px;
+  box-sizing:border-box;
+}
+#birthdayStudio, #birthdayStudio * { box-sizing:border-box; }
+#birthdayStudio .efgc-birthday-control > label { display:block;min-width:0;max-width:100%; }
+#birthdayStudio :is(input[type="text"], input[type="date"], select, textarea) {
+  display:block;width:100%;max-width:100%;min-width:0;
+}
+#birthdayStudio .efgc-birthday-poster { width:100%;box-sizing:border-box; }
+@media (max-width:760px) {
+  #birthdayStudio .efgc-birthday-control {
+    display:grid;grid-template-columns:minmax(0,1fr);gap:7px;
+  }
+  #birthdayStudio { padding:16px; }
+  #birthdayStudio .efgc-birthday-actions button {min-height:44px;}
+}

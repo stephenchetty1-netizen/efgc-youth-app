@@ -4,6 +4,39 @@ The named `EFGC-Youth-V105-Applied.zip` was unavailable. This release rebuilds
 the requested features on the existing V104 source; it is not a recovered copy
 of that archive.
 
+## Reconciliation with current main — 30 September 2026
+
+PR #23 now includes main through `83fa526` (V112). The V112 welcome artwork,
+installed-app launch version, birthday preferences and other newer changes are
+preserved. Only `v105-features.js` and its stylesheet implement the Community
+Hub; the competing `v105-community.js` and stylesheet have been removed.
+
+Signup and mentoring INSERTs omit the protected `status` column and use its
+database default. Registration uses the shared request/cooldown guard, and both
+direct and OTP completion save the same birthday preferences and safeguarding
+details. No database migration needs to be applied again.
+
+The complete local browser suite passes, including the WhatsApp visibility check,
+V101 attendance, V104 RSVP/roster/duty and V105 flows. V105 tests now reject
+forbidden INSERT columns, reload the registration cooldown, and exercise successful
+registration with and without OTP. The WhatsApp test waits for the welcome
+controller's debounced visual transition rather than checking visibility before
+that transition settles. V105 and WhatsApp tests block external API requests.
+
+The original live SQL permission-test pass below is historical evidence; those
+write tests were not rerun during this reconciliation. Read-only database checks
+confirmed migration history, all four RLS-enabled tables, 14 policies, protected
+INSERT grants, and an empty content table on 30 September.
+
+Before merge, require green CI on this reconciled commit and a real-account smoke
+test on Android Chrome and the installed app. Check login/logout/account switching,
+registration and configured OTP, durable saves after refresh, moderation/privacy,
+join/mentoring requests, attendance and WhatsApp sharing. Admins must supply real
+content and assign prayer/mentoring queue owners. No content was invented or
+published. Merge to main can deploy Pages; this branch is for review first.
+
+## Features
+
 Open **More → Community Hub** after signing in.
 
 - **Devotional:** seven rotating KJV reflections, with a private daily completion record.

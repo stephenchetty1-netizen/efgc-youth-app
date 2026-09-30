@@ -2,7 +2,7 @@
 """V98: real Chromium smoke test for Facebook-free WhatsApp sharing, using only synthetic data."""
 import os
 from pathlib import Path
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import sync_playwright, expect
 
 BASE=os.environ.get('EFGC_TEST_URL','http://127.0.0.1:8081/index.html?v=98')
 OUT=Path(os.environ.get('EFGC_SCREENSHOT_DIR','/tmp'))
@@ -15,6 +15,7 @@ with sync_playwright() as p:
     page=browser.new_page(viewport={'width':393,'height':852},
       screen={'width':393,'height':852},is_mobile=True,has_touch=True,
       user_agent='Mozilla/5.0 (Linux; Android 16; SM-F966B) AppleWebKit/537.36 Chrome/139.0 Mobile Safari/537.36')
+    page.route('https://**/*',lambda route:route.abort())
     page.goto(BASE,wait_until='domcontentloaded',timeout=30000)
     page.wait_for_function("() => !!window.EFGCV98WhatsApp && !!window.EFGCV88Layout",timeout=15000)
     page.evaluate("""([A,L,Y])=>{
@@ -47,7 +48,9 @@ with sync_playwright() as p:
     page.locator('#v88MobileNav [data-v88-more]').click()
     page.locator('#v88MoreLinks [data-v88-route="whatsappShare"]').click()
     page.wait_for_function("() => document.querySelectorAll('#v98WhatsAppApproved .v98-whatsapp-message').length===3")
-    assert page.locator('#whatsappShare').is_visible()
+    # The welcome controller clears its signed-out CSS in a debounced observer.
+    # Loaded messages alone do not mean that the visual transition has settled.
+    expect(page.locator('#whatsappShare')).to_be_visible()
     assert page.locator('#v98WhatsAppApproved').get_by_text('UNAPPROVED draft').count()==0
     links=page.locator('#v98WhatsAppApproved a.v98-whatsapp-action')
     assert links.count()==3

@@ -52,6 +52,7 @@
     $('#phoneField')?.classList.remove('hidden');
     $('#nameField')?.classList.toggle('hidden', !registering);
     $('#dobField')?.classList.toggle('hidden', !registering);
+    $('#birthdaySharingField')?.classList.toggle('hidden', !registering);
     $('#photoField')?.classList.toggle('hidden', !registering);
     $('#roleField')?.classList.add('hidden');
     $('#youthSafeguardingFields')?.classList.toggle('hidden', !registering);
@@ -234,8 +235,30 @@
       emergency_name: $('#emergencyName').value.trim(),
       emergency_phone: $('#emergencyPhone').value.trim(),
     });
+    // One-time birthday preference recorded at registration. It can be revoked
+    // in My Journey. For minors the server continues to require a guardian's
+    // verified permission before a name is published in the Youth News Feed.
+    const savedBirthdayPrefs = await EFGCAuth.rest('member_preferences?on_conflict=member_id', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=representation',
+      },
+      body: JSON.stringify({
+        member_id: profile.id,
+        birthday_opt_in: Boolean($('#birthdaySharingOptIn')?.checked),
+        photo_opt_in: false,
+        whatsapp_opt_in: false,
+      }),
+    });
+    if (!Array.isArray(savedBirthdayPrefs) || !savedBirthdayPrefs.length) {
+      throw new Error('Account created, but birthday-sharing choice was not saved. Sign in and set it in My Journey.');
+    }
     return finish(profile, result.session.user);
   }
+
+  // Both direct and OTP registration must save the same profile/preferences.
+  window.EFGCCompleteRegistration = completeRegistration;
 
   async function adminAliasSignIn(d) {
     // Keep the existing Admin account accessible until the Admin links a cellphone.

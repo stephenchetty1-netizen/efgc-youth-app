@@ -34,14 +34,15 @@
       '<p id="v87AdminStatus" role="status"></p>'+
       '<div id="v87RoleAudit">Loading access history…</div></div>'+
       '<div class="v87-panel"><small>SAFEGUARDING • VERIFIED BY ADMIN</small><h3>Guardian permission register</h3>'+
-      '<p class="v87-muted">Check with the parent or guardian before authorising any public birthday greeting, photo or direct WhatsApp communication for a minor. Members must also opt in themselves.</p>'+
+      '<p class="v87-muted">Verify birthday sharing with a parent or guardian once for an under-18 member. This approval stays recorded for future annual 08h00 birthday posts unless changed. Members must also opt in themselves. WhatsApp permission remains a separate choice.</p>'+
       '<label>Member<select id="v87GuardianMember"><option value="">Choose a registered member</option></select></label>'+
       '<p id="v87GuardianAge" class="v87-muted"></p>'+
       '<label class="v87-check"><input type="checkbox" id="v87GuardianBirthday">Guardian authorises birthday greeting / photo</label>'+
       '<label class="v87-check"><input type="checkbox" id="v87GuardianWhatsApp">Guardian authorises EFGC WhatsApp updates</label>'+
       '<label class="v87-check"><input type="checkbox" id="v87GuardianVerified">I verified these permissions with a parent or guardian</label>'+
       '<button id="v87SaveGuardian" type="button" class="primary-login">Record verified permission</button>'+
-      '<p id="v87GuardianStatus" role="status"></p></div>';
+      '<p id="v87GuardianStatus" role="status"></p>'+ 
+      '<p id="v108BirthdayPermissionQueue" class="v87-muted" role="status">Checking birthday requests…</p></div>';
     const heading=[...panel.querySelectorAll('h2')].find(h=>/member directory|accounts/i.test(h.textContent||''));
     if(heading)heading.before(host);
     else panel.appendChild(host);
@@ -52,10 +53,32 @@
     const host=ensure();if(!host)return;
     const n=++serial;
     visibleMembers();
-    const results=await Promise.allSettled([EFGCLive.adminProfiles(),EFGCLive.auditLog()]);
+    const results=await Promise.allSettled([
+      EFGCLive.adminProfiles(), EFGCLive.auditLog(),
+      EFGCAuth.rest('member_preferences?select=member_id,birthday_opt_in'),
+      EFGCAuth.rest('member_guardian_permissions?select=member_id,birthday_and_photo_authorized'),
+    ]);
     if(!admin()||n!==serial||!$('#v87AdminExtensions'))return;
     people=results[0].status==='fulfilled'?results[0].value||[]:[];
     audit=results[1].status==='fulfilled'?results[1].value||[]:[];
+    const queue=$('#v108BirthdayPermissionQueue');
+    if(queue){
+      if(results[0].status!=='fulfilled'||results[2].status!=='fulfilled'||results[3].status!=='fulfilled'){
+        queue.textContent='Birthday sharing requests could not be checked. Retry Admin Centre.';
+      }else{
+        const opted=new Set((results[2].value||[]).filter(p=>p.birthday_opt_in).map(p=>p.member_id));
+        const verified=new Set((results[3].value||[]).filter(p=>p.birthday_and_photo_authorized).map(p=>p.member_id));
+        const today=new Date();
+        const cutoff=new Date(today.getFullYear()-18,today.getMonth(),today.getDate());
+        const pending=people.filter(p=>p.archived_at==null && p.birthday &&
+          p.approval_status==='approved' && opted.has(p.id) && !verified.has(p.id) &&
+          new Date(p.birthday+'T12:00:00')>cutoff);
+        queue.textContent=pending.length ?
+          'One-time birthday permission still to verify ('+pending.length+'): '+
+            pending.map(p=>p.full_name).join(' • ')+'. Select a member above, confirm permission and save once.' :
+          'No opted-in under-18 birthday greetings await guardian verification.';
+      }
+    }
     const select=$('#v87GuardianMember');
     if(select)select.innerHTML='<option value="">Choose a registered member</option>'+
       people.filter(p=>p.role!=='admin'&&!p.archived_at)

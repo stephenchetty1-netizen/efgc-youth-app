@@ -21,6 +21,9 @@ with sync_playwright() as pw:
         const u=new URL(path,'https://test/'),table=u.pathname.slice(1),q=u.searchParams;
         const method=options.method||'GET',body=options.body?JSON.parse(options.body):null;
         if(method!=='GET'){
+          // Mirror the production INSERT column grants: status is server-owned.
+          const allowed={v105_signups:['post_id','member_id'],v105_mentoring:['member_id','topic'],v105_checkins:['event_id','member_id']};
+          if(method==='POST'&&allowed[table]&&Object.keys(body).some(k=>!allowed[table].includes(k)))throw Error('Permission denied for insert column');
           __writes.push({path,method,body});if(__emptyAck)return [];
           if(method==='POST'){
             const row={id:'00000000-0000-4000-8000-'+String(__writes.length).padStart(12,'0'),created_at:new Date().toISOString(),status:'requested',...body};
@@ -142,5 +145,55 @@ with sync_playwright() as pw:
     assert page.evaluate('__authCalls')==1
     page.evaluate("()=>document.querySelector('[data-auth-mode=signin]').click()")
     assert page.locator('#continueButton').is_enabled()
+    # The same tab must retain the cooldown across a full reload.
+    page.reload(wait_until='domcontentloaded')
+    page.wait_for_function('()=>!!window.EFGCRegistrationHandler')
+    page.evaluate("()=>document.querySelector('[data-auth-mode=register]').click()")
+    assert page.locator('#continueButton').is_disabled()
+    assert '15 min' in page.locator('#continueButton').text_content()
+    page.evaluate("()=>document.querySelector('[data-auth-mode=signin]').click()")
+    assert page.locator('#continueButton').is_enabled()
     print('V105 AUTH PASS: OTP adapter shares busy guard; 429 starts persistent cooldown; sign-in remains available')
+    page.close()
+    # Exercise both successful registration paths through the actual scripts.
+    # The OTP adapter must preserve main's birthday choice and safeguarding save.
+    for needs_otp in (False, True):
+        page=browser.new_page()
+        page.route('https://**/*',lambda route:route.abort())
+        page.goto(BASE,wait_until='domcontentloaded')
+        page.wait_for_function('()=>!!window.EFGCRegistrationHandler')
+        page.evaluate("""async needsOtp=>{
+          document.querySelector('[data-auth-mode=register]').click();
+          const values={loginName:'Test Youth',loginPhone:'0712345678',loginPassword:'A test password 123!',loginDob:'2000-01-01',parentName:'Guardian',parentPhone:'0712345679',emergencyName:'Emergency',emergencyPhone:'0712345679'};
+          for(const [id,value] of Object.entries(values))document.getElementById(id).value=value;
+          const dt=new DataTransfer();dt.items.add(new File(['test'],'photo.png',{type:'image/png'}));document.querySelector('#loginPhoto').files=dt.files;
+          document.querySelector('#birthdaySharingOptIn').checked=needsOtp;
+          const uid='00000000-0000-4000-8000-000000000102';
+          window.__actions=[];window.__prefs=null;window.__safeguarding=null;
+          EFGCAuth.setRememberDevice=()=>{};EFGCAuth.setSession=()=>{};
+          EFGCAuth.upsertProfile=async p=>({id:uid,...p});
+          EFGCAuth.upsertSafeguarding=async p=>{__safeguarding=p;};
+          EFGCPhotoSecurity.upload=async()=>uid+'/test.webp';
+          EFGCAuth.rest=async(path,options)=>{__prefs=JSON.parse(options.body);return [__prefs];};
+          window.render=async()=>{};
+          window.fetch=async(url,options)=>{
+            const request=JSON.parse(options.body);__actions.push(request);
+            const body=request.action==='request-registration-otp'?{required:needsOtp}:
+              request.action==='verify-registration-otp'?{registrationToken:'test-verification'}:
+              {session:{user:{id:uid}},profile:{role:'youth',approval_status:'approved'}};
+            return new Response(JSON.stringify(body),{status:200,headers:{'Content-Type':'application/json'}});
+          };
+          await loginUser();
+        }""",needs_otp)
+        if needs_otp:
+            page.locator('#v66RegistrationCode').fill('123456')
+            page.locator('#v66VerifyRegistrationCode').click()
+        page.wait_for_function('()=>!!window.__prefs && !!session?.uid')
+        assert page.evaluate('__prefs.birthday_opt_in')==needs_otp
+        assert page.evaluate('__safeguarding.parent_name')=='Guardian'
+        assert page.evaluate("__actions.filter(x=>x.action==='register').length")==1
+        assert page.locator('#loginPassword').input_value()==''
+        assert page.evaluate("__actions.find(x=>x.action==='register').phoneVerificationToken")==('test-verification' if needs_otp else None)
+        page.close()
+    print('V105 REGISTRATION PASS: direct and OTP completion preserve birthday preferences and safeguarding')
     browser.close()
