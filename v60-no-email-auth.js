@@ -2,8 +2,23 @@
 (() => {
   const $ = (s) => document.querySelector(s);
   let authMode = 'signin';
-  let registrationInFlight = false;
-  let registrationCooldownUntil = 0;
+  let authBusy = false;
+  let registrationRetryAt = Number(sessionStorage.getItem('efgcRegistrationRetryAt')) || 0;
+  let retryTimer = null;
+
+  function syncContinue() {
+    const button = $('#continueButton');
+    const seconds = Math.max(0, Math.ceil((registrationRetryAt - Date.now()) / 1000));
+    if (button) {
+      button.disabled = authBusy || (authMode === 'register' && seconds > 0);
+      button.textContent = authBusy ? 'Please wait…' : authMode === 'register'
+        ? (seconds ? `Try registration in ${Math.ceil(seconds / 60)} min` : 'Create Youth Profile') : 'Sign In';
+    }
+    if (!seconds) {
+      clearInterval(retryTimer); retryTimer = null;
+      sessionStorage.removeItem('efgcRegistrationRetryAt');
+    } else if (!retryTimer) retryTimer = setInterval(syncContinue, 1000);
+  }
 
   function message(text) {
     const el = $('#loginMessage');
@@ -20,7 +35,7 @@
     hint.insertAdjacentElement('afterend', wrap);
     wrap.addEventListener('click', (e) => {
       const b = e.target.closest('[data-auth-mode]');
-      if (!b) return;
+      if (!b || authBusy) return;
       authMode = b.dataset.authMode;
       syncUi();
     });
@@ -53,7 +68,7 @@
     const password = $('#loginPassword');
     if (password) password.placeholder = registering ? 'Create your password' : 'Enter your password';
     const button = $('#continueButton');
-    if (button) button.textContent = registering ? 'Create Youth Profile' : 'Sign In';
+    syncContinue();
     $('#loginTitle').textContent = registering ? 'Join EFGC Youth' : 'EFGC Youth Sign In';
     $('#loginHint').textContent = registering
       ? 'Register as Youth. An Admin can approve your account for Leader access later.'
@@ -86,6 +101,9 @@
     if (!r.ok) {
       const e = new Error(body?.error || 'Authentication request failed.');
       e.status = r.status;
+      const retry = r.headers.get('Retry-After');
+      e.retryAfter = Number(body.retry_after ?? body.retryAfter ?? retry) ||
+        (retry ? Math.ceil((Date.parse(retry) - Date.now()) / 1000) : 0);
       throw e;
     }
     return body;
@@ -239,6 +257,9 @@
     return finish(profile, result.session.user);
   }
 
+  // Both direct and OTP registration must save the same profile/preferences.
+  window.EFGCCompleteRegistration = completeRegistration;
+
   async function adminAliasSignIn(d) {
     // Keep the existing Admin account accessible until the Admin links a cellphone.
     // The backend verifies the password and the Admin role against Supabase.
@@ -255,11 +276,19 @@
   }
 
   window.loginUser = async () => {
+    if (authBusy) return;
+    if (authMode === 'register' && registrationRetryAt > Date.now()) {
+      message('Registration is temporarily limited. Please wait for the timer, or sign in if your account already exists.');
+      syncContinue(); return;
+    }
+    authBusy = true;
+    const mode = authMode;
     message('');
     const d = readForm();
     const button = $('#continueButton');
-    if (button?.disabled || registrationInFlight) return;
-    if (button) button.disabled = true;
+    const fields = [...document.querySelectorAll('#login input, #noEmailModeSwitch button')].filter(el => !el.disabled);
+    fields.forEach(el => el.disabled = true);
+    syncContinue();
     try {
       if (!d.phone) throw new Error('Enter your registered cellphone number or Admin username.');
       if (!d.password) throw new Error('Enter your password.');
@@ -269,10 +298,10 @@
         if (!/^\+27\d{9}$/.test(EFGCAuth.normalizeZA(d.phone))) {
           throw new Error('Enter a valid South African cellphone number to register.');
         }
-        const remaining = registrationCooldownUntil - Date.now();
-        if (remaining > 0) throw new Error('Please wait ' + Math.ceil(remaining / 1000) + ' seconds before another registration attempt.');
-        registrationInFlight = true;
-        registrationCooldownUntil = Date.now() + 15000;
+        // The optional OTP adapter shares this single busy/cooldown guard.
+        if (typeof window.EFGCRegistrationHandler === 'function') {
+          return await window.EFGCRegistrationHandler(d);
+        }
         const result = await authBridge({
           action: 'register', role: 'youth', name: d.name, phone: d.phone,
           password: d.password,
@@ -290,10 +319,17 @@
       if (!profile) throw new Error('Your EFGC profile could not be loaded.');
       return await finish(profile, result.session.user);
     } catch (e) {
+      if (mode === 'register' && e.status === 429) {
+        // The backend uses a 15-minute rate-limit window. Honour a longer
+        // explicit server retry time; never retry registration automatically.
+        registrationRetryAt = Date.now() + Math.max(1, Number.isFinite(e.retryAfter) && e.retryAfter > 0 ? e.retryAfter : 900) * 1000;
+        sessionStorage.setItem('efgcRegistrationRetryAt', String(registrationRetryAt));
+      }
       message(e.message || 'Sign-in could not be completed.');
     } finally {
-      registrationInFlight = false;
-      if (button) button.disabled = false;
+      authBusy = false;
+      fields.forEach(el => el.disabled = false);
+      syncContinue();
     }
   };
 

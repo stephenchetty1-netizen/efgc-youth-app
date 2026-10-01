@@ -31,6 +31,9 @@
     if (!r.ok) {
       const e = new Error(body?.error || 'Authentication request failed.');
       e.status = r.status;
+      const retry = r.headers.get('Retry-After');
+      e.retryAfter = Number(body.retry_after ?? body.retryAfter ?? retry) ||
+        (retry ? Math.ceil((Date.parse(retry) - Date.now()) / 1000) : 0);
       throw e;
     }
     return body;
@@ -265,32 +268,7 @@
   }
 
   async function completeRegistration(d, result) {
-    EFGCAuth.setRememberDevice(Boolean($('#rememberDevice')?.checked));
-    EFGCAuth.setSession(result.session);
-    const base = result.profile;
-    let profile = await EFGCAuth.upsertProfile({
-      full_name:d.name,
-      phone:EFGCAuth.normalizeZA(d.phone),
-      birthday:d.dob,
-      face_photo_path:base?.face_photo_path || null,
-      role:base.role,
-      approval_status:base.approval_status,
-      leader_role:null,
-    });
-    const photo = $('#loginPhoto')?.files?.[0];
-    if (photo) {
-      const path = await EFGCPhotoSecurity.upload(photo);
-      profile = await EFGCAuth.upsertProfile({
-        full_name:profile.full_name, phone:profile.phone, birthday:profile.birthday,
-        face_photo_path:path, role:profile.role, approval_status:profile.approval_status,
-        leader_role:profile.leader_role,
-      }) || profile;
-    }
-    await EFGCAuth.upsertSafeguarding({
-      parent_name:$('#parentName').value.trim(), parent_phone:$('#parentPhone').value.trim(),
-      emergency_name:$('#emergencyName').value.trim(), emergency_phone:$('#emergencyPhone').value.trim(),
-    });
-    return finish(profile, result.session.user);
+    return window.EFGCCompleteRegistration(d, result);
   }
 
   async function createRegistration(d, phoneVerificationToken = null) {
@@ -341,21 +319,10 @@
     });
   }
 
+  window.EFGCRegistrationHandler = beginRegistrationWithOtp;
   window.loginUser = async () => {
     syncForgotButton();
-    if (!isRegistrationMode()) return originalLoginUser();
-    const d = readRegistrationForm();
-    const button = $('#continueButton');
-    if (button) button.disabled = true;
-    try {
-      setLoginMessage('');
-      validateRegistration(d);
-      await beginRegistrationWithOtp(d);
-    } catch (e) {
-      setLoginMessage(e.message || 'Registration could not be completed.');
-    } finally {
-      if (button) button.disabled = false;
-    }
+    return originalLoginUser();
   };
 
   document.addEventListener('click', (e) => {

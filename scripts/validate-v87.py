@@ -64,6 +64,13 @@ def run() -> int:
     parser.feed(html)
     check(len(parser.scripts) >= 20, "App module list is unexpectedly short")
     check(len(parser.styles) >= 12, "App stylesheet list is unexpectedly short")
+    check(parser.scripts.count(ROOT / "v105-features.js") == 1 and
+          ROOT / "v105-community.js" not in parser.scripts,
+          "Load exactly one reconciled Community Hub implementation")
+    check(ROOT / "v105-features.css" in parser.styles and
+          ROOT / "v105-community.css" not in parser.styles,
+          "Load only the reconciled Community Hub styles")
+
 
     checked = set()
     for file in parser.scripts + parser.styles + parser.assets:
@@ -76,7 +83,7 @@ def run() -> int:
             check(result.returncode == 0, f"JavaScript syntax: {file.name}: {result.stderr.strip()}")
 
     manifest = json.loads((ROOT / "manifest.webmanifest").read_text("utf-8"))
-    check(str(manifest.get("start_url", "")).startswith("./?v=101"), "Manifest must open the V101 app")
+    check(str(manifest.get("start_url", "")) == "./?v=112.0", "Preserve the current V112 installed-app launch URL")
     for icon in manifest.get("icons", []):
         target = local_asset(icon.get("src", ""), "manifest")
         check(bool(target and target.is_file()), f"Manifest icon missing: {icon.get('src')}")
